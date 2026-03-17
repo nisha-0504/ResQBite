@@ -1,1 +1,1 @@
-This is our app 'ResQBite'.
+This is our app 'ResQBite'!
