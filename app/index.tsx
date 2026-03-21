@@ -10,14 +10,15 @@ export default function Index() {
     const checkRole = async () => {
       const role = await AsyncStorage.getItem("role");
 
+
       if (role === "donor") {
         router.replace("/donor/dashboard");
       } else if (role === "ngo") {
         router.replace("/ngo/dashboard");
       } else if (role === "volunteer") {
-        router.replace("/volunteer/dashboard");
+        router.replace("/volunteer");
       } else {
-        router.replace("/splash");
+        router.replace("\home");
       }
     };
 
@@ -25,4 +26,5 @@ export default function Index() {
   }, []);
 
   return <View />;
+
 }
