@@ -31,9 +31,4 @@ export default function Index() {
   }, []);
 
   return <View />;
-<<<<<<< HEAD
-
 }
-=======
-}
->>>>>>> 956a0a6 (Volunteer)
