@@ -16,7 +16,9 @@ export default function Index() {
       } else if (role === "ngo") {
         router.replace("/ngo/dashboard");
       } else if (role === "volunteer") {
-        router.replace("/volunteer");
+
+        router.replace("/(volunteer)/(tabs)/home");
+
       } else {
         router.replace("\home");
       }
@@ -26,5 +28,9 @@ export default function Index() {
   }, []);
 
   return <View />;
+<<<<<<< HEAD
 
 }
+=======
+}
+>>>>>>> 956a0a6 (Volunteer)
