@@ -1,13 +1,13 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  View,
+  Modal,
+  Pressable,
+  ScrollView,
   Text,
   TextInput,
-  Pressable,
-  Modal,
-  ScrollView,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function Payments() {
   const [search, setSearch] = useState("");
@@ -81,11 +81,8 @@ export default function Payments() {
           {/* PAYMENT LIST (ROWS) */}
           {filteredData.map((item) => {
             // ✅ STEP 3 PASTE HERE
-            const totalDistance = item.deliveries.reduce(
-              (sum, d) => sum + d.distance,
-              0,
-            );
-
+            const totalDistance =
+              item.deliveries?.reduce((sum, d) => sum + d.distance, 0) || 0;
             const amount = totalDistance * RATE_PER_KM;
 
             return (
