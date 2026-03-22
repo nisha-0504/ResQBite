@@ -9,6 +9,43 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleLogin = async () => {
+  try {
+    const response = await fetch("http://192.168.29.159:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log("Login Success:", data);
+
+      // ✅ Navigate based on role
+      if (data.user.role === "donor") {
+        router.push("/donor/dashboard");
+      } else if (data.user.role === "ngo") {
+        router.push("/ngo/dashboard");
+      } else if (data.user.role === "volunteer") {
+        router.push("/volunteer/dashboard");
+      }
+
+    } else {
+      alert(data.message || "Login failed");
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Server error");
+  }
+};
+
   return (
     <View style={styles.container}>
       

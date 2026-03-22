@@ -8,6 +8,9 @@ export default function Index() {
 
   useEffect(() => {
     const checkRole = async () => {
+
+      await AsyncStorage.clear(); // ✅ TEMPORARY RESET
+
       const role = await AsyncStorage.getItem("role");
 
       if (role === "donor") {
