@@ -20,7 +20,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="active"
+        name="current_task"
         options={{
           title: "Current Task",
           tabBarIcon: ({ color }) => (

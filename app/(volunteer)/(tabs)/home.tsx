@@ -1,47 +1,83 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { getData, getStats, KEYS, saveData } from "./utils/storage";
 
 export default function Home() {
   const router = useRouter();
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const tasks = [
-    {
-      id: 1,
-      restaurant: "A2B",
-      ngo: "Care Center",
-      distance: 2,
-      quantity: 20,
-      time: "6 PM",
-      priority: 2,
-      notes: "Handle carefully",
-      vehicle: "Bike",
-    },
-    {
-      id: 2,
-      restaurant: "Green Leaf",
-      ngo: "Hope NGO",
-      distance: 5,
-      quantity: 40,
-      time: "7 PM",
-      priority: 1,
-      notes: "Urgent",
-      vehicle: "Bike",
-    },
-    {
-      id: 3,
-      restaurant: "Dominos",
-      ngo: "Food Shelter",
-      distance: 3,
-      quantity: 15,
-      time: "5 PM",
-      priority: 3,
-      notes: "Fragile",
-      vehicle: "Scooter",
-    },
-  ];
+  const [tasks, setTasks] = useState([]);
+  const [stats, setStats] = useState({
+    deliveries: 0,
+    meals: 0,
+    people: 0
+  });
+  useFocusEffect(
+    useCallback(() => {
+      const loadTasks = async () => {
+        const data = await getData(KEYS.AVAILABLE);
+        setTasks(data || []);
+      };
+
+      loadTasks();
+    }, [])
+  );
+  useFocusEffect(
+    useCallback(() => {
+      const loadStats = async () => {
+        const data = await getStats();
+        setStats(data);
+      };
+
+      loadStats();
+    }, [])
+  );
+  useEffect(() => {
+    saveData(KEYS.AVAILABLE, [
+      {
+        id: 1,
+        restaurant: "A2B",
+        ngo: "Care Center",
+        distance: 2,
+        quantity: 20,
+        time: "6 PM",
+        priority: 2,
+      },
+      {
+        id: 2,
+        restaurant: "Dominos",
+        ngo: "Food Shelter",
+        distance: 3,
+        quantity: 15,
+        time: "5 PM",
+        priority: 1,
+      }
+    ]);
+  }, []);
+  const handleAccept = async (task) => {
+    // 1. Save active task
+    await saveData(KEYS.ACTIVE, task);
+
+    // 2. Remove from available
+    const tasks = await getData(KEYS.AVAILABLE) || [];
+    const updated = tasks.filter((t) => t.id !== task.id);
+
+    await saveData(KEYS.AVAILABLE, updated);
+
+    // 3. Close modal
+    setModalVisible(false);
+
+    // 4. Navigate
+    router.push("/(volunteer)/(tabs)/current_task");
+  };
+  {tasks.length === 0 && (
+      <Text style={{ textAlign: "center", marginTop: 20 }}>
+        No available tasks
+      </Text>
+  )}
+
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.priority !== b.priority) {
       return a.priority - b.priority;
@@ -87,9 +123,9 @@ export default function Home() {
           }}
         >
           {[
-            { icon: "bicycle", value: "45", label: "Deliveries" },
-            { icon: "trending-up", value: "680", label: "Meals" },
-            { icon: "ribbon", value: "1250", label: "Points" },
+            { icon: "bicycle", value: stats.deliveries, label: "Deliveries" },
+            { icon: "trending-up", value: stats.meals, label: "Meals" },
+            { icon: "people", value: stats.people, label: "People" },
           ].map((item, index) => (
             <View
               key={index}
@@ -202,10 +238,7 @@ export default function Home() {
             <Text>🚲 Vehicle: {selectedTask?.vehicle}</Text>
             {/* ACCEPT */}
             <Pressable
-              onPress={() => {
-                setModalVisible(false);
-                router.push("/(volunteer)/(tabs)/active");
-              }}
+              onPress={() => handleAccept(selectedTask)}
               style={{
                 marginTop: 15,
                 backgroundColor: "#2ECC71",

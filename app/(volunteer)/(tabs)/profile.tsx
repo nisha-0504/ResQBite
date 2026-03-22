@@ -1,15 +1,44 @@
-import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
-  View,
-  Text,
+  Image,
+  Modal,
   Pressable,
   ScrollView,
-  Modal,
+  Text,
   TextInput,
-  Image,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { getStats } from "./utils/storage";
+
+const iconBox = {
+  backgroundColor: "#E8F5E9",
+  padding: 10,
+  borderRadius: 50,
+  marginRight: 10,
+};
+
+const label = { color: "#6B7280" };
+const value = { fontWeight: "bold" };
+
+const smallCard = {
+  backgroundColor: "#fff",
+  padding: 12,
+  borderRadius: 12,
+  alignItems: "center",
+  width: "30%",
+  elevation: 3,
+};
+
+const smallValue = { fontWeight: "bold" };
+const smallLabel = { fontSize: 12, color: "#6B7280" };
+
+const input = {
+  borderBottomWidth: 1,
+  marginTop: 10,
+};
 
 export default function Profile() {
   const router = useRouter();
@@ -17,53 +46,61 @@ export default function Profile() {
   const [user, setUser] = useState({
     name: "Raj",
     phone: "+91 9876543210",
+    email: "raj@gmail.com",
+    age: 21,
+    gender: "Male",
+    address: "Bangalore, Karnataka",
+    verified: true,
     location: "Bangalore",
     vehicle: "Bike",
-    role: "Volunteer",
-    deliveries: 45,
-    meals: 680,
-    people: 500,
-    points: 1250,
+    deliveries: 0,
+    meals: 0,
+    people: 0,
+    rating: 4.8,
+    joined: "Jan 2026",
   });
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handleSave = () => {
-    setModalVisible(false);
-  };
+  useFocusEffect(
+    useCallback(() => {
+      const loadStats = async () => {
+        const stats = await getStats();
+        setUser((prev) => ({
+          ...prev,
+          deliveries: stats.deliveries,
+          meals: stats.meals,
+          people: stats.people,
+        }));
+      };
+      loadStats();
+    }, [])
+  );
 
-  const handleLogout = () => {
-    router.replace("/login"); // logout
-  };
+  const handleSave = () => setModalVisible(false);
+  const handleLogout = () => router.replace("/login");
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
+
       <ScrollView>
+
         {/* HEADER */}
-        <View
-          style={{
-            backgroundColor: "#2ECC71",
-            padding: 20,
-            paddingTop: 50,
-            borderBottomLeftRadius: 30,
-            borderBottomRightRadius: 30,
-            alignItems: "center",
-          }}
-        >
+        <View style={{
+          backgroundColor: "#2ECC71",
+          padding: 20,
+          paddingTop: 50,
+          borderBottomLeftRadius: 30,
+          borderBottomRightRadius: 30,
+          alignItems: "center",
+        }}>
           <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
             Profile
           </Text>
 
           <Image
-            source={{
-              uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-            }}
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              marginTop: 10,
-            }}
+            source={{ uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png" }}
+            style={{ width: 80, height: 80, borderRadius: 40, marginTop: 10 }}
           />
 
           <Text style={{ color: "#fff", fontSize: 18, marginTop: 10 }}>
@@ -71,220 +108,160 @@ export default function Profile() {
           </Text>
         </View>
 
-        {/* BASIC DETAILS */}
-        <View style={{ padding: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>Details</Text>
+        {/* DETAILS */}
+        <View style={{
+          backgroundColor: "#fff",
+          borderRadius: 20,
+          padding: 15,
+          marginTop: 10,
+          elevation: 3,
+        }}>
 
-          <View
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 20,
-              padding: 15,
-              marginTop: 10,
-              elevation: 3,
-            }}
-          >
-            {/* NAME */}
-            <View style={{ flexDirection: "row", marginBottom: 15 }}>
-              <View
-                style={{
-                  backgroundColor: "#E8F5E9",
-                  padding: 10,
-                  borderRadius: 50,
-                  marginRight: 10,
-                }}
-              >
-                <Ionicons name="person-outline" size={20} color="#2ECC71" />
-              </View>
-
-              <View>
-                <Text style={{ color: "#6B7280" }}>Name</Text>
-                <Text style={{ fontWeight: "bold" }}>{user.name}</Text>
-              </View>
+          {/* NAME */}
+          <View style={{ flexDirection: "row", marginBottom: 15 }}>
+            <View style={iconBox}>
+              <Ionicons name="person-outline" size={20} color="#2ECC71" />
             </View>
-
-            {/* PHONE */}
-            <View style={{ flexDirection: "row", marginBottom: 15 }}>
-              <View
-                style={{
-                  backgroundColor: "#E8F5E9",
-                  padding: 10,
-                  borderRadius: 50,
-                  marginRight: 10,
-                }}
-              >
-                <Ionicons name="call-outline" size={20} color="#2ECC71" />
-              </View>
-
-              <View>
-                <Text style={{ color: "#6B7280" }}>Phone</Text>
-                <Text style={{ fontWeight: "bold" }}>{user.phone}</Text>
-              </View>
-            </View>
-
-            {/* LOCATION */}
-            <View style={{ flexDirection: "row", marginBottom: 15 }}>
-              <View
-                style={{
-                  backgroundColor: "#E8F5E9",
-                  padding: 10,
-                  borderRadius: 50,
-                  marginRight: 10,
-                }}
-              >
-                <Ionicons name="location-outline" size={20} color="#2ECC71" />
-              </View>
-
-              <View>
-                <Text style={{ color: "#6B7280" }}>Location</Text>
-                <Text style={{ fontWeight: "bold" }}>{user.location}</Text>
-              </View>
-            </View>
-
-            {/* VEHICLE */}
-            <View style={{ flexDirection: "row" }}>
-              <View
-                style={{
-                  backgroundColor: "#E8F5E9",
-                  padding: 10,
-                  borderRadius: 50,
-                  marginRight: 10,
-                }}
-              >
-                <Ionicons name="bicycle-outline" size={20} color="#2ECC71" />
-              </View>
-
-              <View>
-                <Text style={{ color: "#6B7280" }}>Vehicle</Text>
-                <Text style={{ fontWeight: "bold" }}>{user.vehicle}</Text>
-              </View>
+            <View>
+              <Text style={label}>Name</Text>
+              <Text style={value}>{user.name}</Text>
             </View>
           </View>
 
-          {/* IMPACT */}
-          <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
-            Your Impact ⭐
-          </Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginTop: 10,
-            }}
-          >
-            {[
-              { label: "Deliveries", value: user.deliveries },
-              { label: "Meals", value: user.meals },
-              { label: "People", value: user.people },
-            ].map((item, index) => (
-              <View
-                key={index}
-                style={{
-                  backgroundColor: "#2ECC71",
-                  padding: 15,
-                  borderRadius: 16,
-                  alignItems: "center",
-                  width: "30%",
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                  {item.value}
-                </Text>
-                <Text style={{ color: "#E5E7EB" }}>{item.label}</Text>
-              </View>
-            ))}
+          {/* PHONE */}
+          <View style={{ flexDirection: "row", marginBottom: 15 }}>
+            <View style={iconBox}>
+              <Ionicons name="call-outline" size={20} color="#2ECC71" />
+            </View>
+            <View>
+              <Text style={label}>Phone</Text>
+              <Text style={value}>{user.phone}</Text>
+            </View>
           </View>
 
-          {/* ACTIONS */}
-          <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
-            Actions
-          </Text>
+          {/* LOCATION */}
+          <View style={{ flexDirection: "row", marginBottom: 15 }}>
+            <View style={iconBox}>
+              <Ionicons name="location-outline" size={20} color="#2ECC71" />
+            </View>
+            <View>
+              <Text style={label}>Location</Text>
+              <Text style={value}>{user.location}</Text>
+            </View>
+          </View>
 
-          {/* EDIT PROFILE */}
-          <Pressable
-            onPress={() => setModalVisible(true)}
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 16,
-              padding: 15,
-              marginTop: 10,
-              flexDirection: "row",
-              alignItems: "center",
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="create-outline" size={20} color="#2ECC71" />
-            <Text style={{ marginLeft: 10 }}>Edit Profile</Text>
-          </Pressable>
+          {/* VEHICLE */}
+          <View style={{ flexDirection: "row" }}>
+            <View style={iconBox}>
+              <Ionicons name="bicycle-outline" size={20} color="#2ECC71" />
+            </View>
+            <View>
+              <Text style={label}>Vehicle</Text>
+              <Text style={value}>{user.vehicle}</Text>
+            </View>
+          </View>
 
-          {/* LOGOUT */}
-          <Pressable
-            onPress={handleLogout}
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 16,
-              padding: 15,
-              marginTop: 10,
-              flexDirection: "row",
-              alignItems: "center",
-              elevation: 3,
-            }}
-          >
-            <Ionicons name="log-out-outline" size={20} color="red" />
-            <Text style={{ marginLeft: 10, color: "red" }}>Logout</Text>
-          </Pressable>
         </View>
+
+        {/* SMALL STATS */}
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 15 }}>
+          <View style={smallCard}>
+            <Text style={smallValue}>⭐ {user.rating}</Text>
+            <Text style={smallLabel}>Rating</Text>
+          </View>
+
+          <View style={smallCard}>
+            <Text style={smallValue}>📅 {user.joined}</Text>
+            <Text style={smallLabel}>Joined</Text>
+          </View>
+
+          <View style={smallCard}>
+            <Text style={[smallValue, { color: "#2ECC71" }]}>
+              {user.verified ? "Verified" : "Pending"}
+            </Text>
+            <Text style={smallLabel}>Status</Text>
+          </View>
+        </View>
+
+        {/* IMPACT */}
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
+          Your Impact ⭐
+        </Text>
+
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+          {[
+            { label: "Deliveries", value: user.deliveries },
+            { label: "Meals", value: user.meals },
+            { label: "People", value: user.people },
+          ].map((item, index) => (
+            <View key={index} style={{
+              backgroundColor: "#2ECC71",
+              padding: 15,
+              borderRadius: 16,
+              alignItems: "center",
+              width: "30%",
+            }}>
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>{item.value}</Text>
+              <Text style={{ color: "#E5E7EB" }}>{item.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* ACTIONS */}
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
+          Actions
+        </Text>
+
+        <Pressable
+          onPress={() => setModalVisible(true)}
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 16,
+            padding: 15,
+            marginTop: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            elevation: 3,
+          }}>
+          <Ionicons name="create-outline" size={20} color="#2ECC71" />
+          <Text style={{ marginLeft: 10 }}>Edit Profile</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={handleLogout}
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 16,
+            padding: 15,
+            marginTop: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            elevation: 3,
+          }}>
+          <Ionicons name="log-out-outline" size={20} color="red" />
+          <Text style={{ marginLeft: 10, color: "red" }}>Logout</Text>
+        </Pressable>
+
       </ScrollView>
 
-      {/* EDIT MODAL */}
+      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        >
-          <View
-            style={{
-              margin: 20,
-              padding: 20,
-              borderRadius: 16,
-              backgroundColor: "#fff",
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-              Edit Profile
-            </Text>
+        <View style={{ flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <View style={{ margin: 20, padding: 20, borderRadius: 16, backgroundColor: "#fff" }}>
 
-            <TextInput
-              placeholder="Name"
-              value={user.name}
-              onChangeText={(text) => setUser({ ...user, name: text })}
-              style={{ borderBottomWidth: 1, marginTop: 10 }}
-            />
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>Edit Profile</Text>
 
-            <TextInput
-              placeholder="Phone"
-              value={user.phone}
-              onChangeText={(text) => setUser({ ...user, phone: text })}
-              style={{ borderBottomWidth: 1, marginTop: 10 }}
-            />
-
-            <TextInput
-              placeholder="Location"
-              value={user.location}
-              onChangeText={(text) => setUser({ ...user, location: text })}
-              style={{ borderBottomWidth: 1, marginTop: 10 }}
-            />
-
-            <TextInput
-              placeholder="Vehicle"
-              value={user.vehicle}
-              onChangeText={(text) => setUser({ ...user, vehicle: text })}
-              style={{ borderBottomWidth: 1, marginTop: 10 }}
-            />
+            {["name", "phone", "location", "vehicle", "email", "age", "gender", "address"].map((field) => (
+              <TextInput
+                key={field}
+                placeholder={field}
+                value={String(user[field])}
+                onChangeText={(text) =>
+                  setUser({ ...user, [field]: field === "age" ? Number(text) : text })
+                }
+                style={input}
+              />
+            ))}
 
             <Pressable
               onPress={handleSave}
@@ -294,13 +271,14 @@ export default function Profile() {
                 padding: 12,
                 borderRadius: 10,
                 alignItems: "center",
-              }}
-            >
+              }}>
               <Text style={{ color: "#fff" }}>Save</Text>
             </Pressable>
+
           </View>
         </View>
       </Modal>
+
     </View>
   );
 }

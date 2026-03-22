@@ -1,185 +1,273 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import {
+  FlatList,
   Modal,
-  Pressable,
-  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
-  View,
+  TouchableOpacity,
+  View
 } from "react-native";
+import { getData, KEYS } from "./utils/storage";
 
-export default function Payments() {
+// 🧠 Helper: get week range
+const getWeekRange = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const start = new Date(date);
+  start.setDate(date.getDate() - date.getDay());
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+
+  return `${start.toDateString().slice(4, 10)} → ${end
+    .toDateString()
+    .slice(4, 10)}`;
+};
+
+export default function PaymentsScreen() {
+  const [selectedWeek, setSelectedWeek] = useState<any>(null);
   const [search, setSearch] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const RATE_PER_KM = 10;
+  const [payments, setPayments] = useState([]);
 
-  // ✅ SAMPLE DATA
-  const payments = [
-    {
-      id: "PAY001",
-      date: "20 Mar, 2026",
-      status: "Paid",
-      method: "UPI",
-      deliveries: [{ distance: 2 }, { distance: 3 }, { distance: 1 }],
-    },
-    {
-      id: "PAY002",
-      date: "13 Mar, 2026",
-      status: "Pending",
-      method: "Wallet",
-      deliveries: [{ distance: 4 }, { distance: 2 }],
-    },
-  ];
+  // 🔥 LOAD + GROUP DATA
+  useFocusEffect(
+    useCallback(() => {
+      const loadPayments = async () => {
+        const history = ((await getData(KEYS.HISTORY)) || []).sort(
+          (a, b) => new Date(b.completedAt) - new Date(a.completedAt)
+        );
 
-  // ✅ SEARCH FILTER
-  const filteredData = payments.filter(
-    (item) =>
-      item.date?.toLowerCase().includes(search.toLowerCase()) ||
-      item.status?.toLowerCase().includes(search.toLowerCase()),
+        const grouped: any = {};
+
+        history.forEach((task: any, index: number) => {
+          const week = getWeekRange(task.completedAt);
+
+          if (!grouped[week]) {
+            grouped[week] = {
+              id: week,
+              week,
+              total: 0,
+              status: "Completed",
+              orders: []
+            };
+          }
+
+          const order = {
+            id: index.toString(),
+            route: `${task.restaurant} → ${task.ngo}`,
+            distance: `${task.distance} km`,
+            fee: task.earnings || 0,
+            date: new Date(task.completedAt).toISOString()
+          };
+
+          grouped[week].orders.push(order);
+          grouped[week].total += order.fee;
+        });
+
+        // 🔥 SORT ORDERS INSIDE WEEK
+        Object.values(grouped).forEach((week: any) => {
+          week.orders.sort(
+            (a: any, b: any) =>
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+        });
+
+        setPayments(Object.values(grouped));
+      };
+
+      loadPayments();
+    }, [])
   );
+
+  // 🔍 SEARCH
+  const filteredPayments = payments.filter((item: any) =>
+    item.week.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
-      <ScrollView>
-        {/* HEADER */}
-        <View
-          style={{
-            backgroundColor: "#2ECC71",
-            padding: 20,
-            paddingTop: 50,
-            borderBottomLeftRadius: 30,
-            borderBottomRightRadius: 30,
-          }}
-        >
-          <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
-            Payments
-          </Text>
-        </View>
+    <View style={styles.container}>
 
-        {/* SEARCH BAR */}
-        <View style={{ padding: 20 }}>
-          <View
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 12,
-              padding: 10,
-              flexDirection: "row",
-              alignItems: "center",
-              elevation: 3,
-            }}
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Payments</Text>
+      </View>
+
+      {/* SEARCH */}
+      <TextInput
+        placeholder="Search by date (e.g. Mar, 18)"
+        value={search}
+        onChangeText={setSearch}
+        style={styles.search}
+      />
+
+      {/* EMPTY */}
+      {filteredPayments.length === 0 && (
+        <Text style={{ textAlign: "center", marginTop: 20 }}>
+          No payments yet
+        </Text>
+      )}
+
+      {/* LIST */}
+      <FlatList
+        data={filteredPayments}
+        keyExtractor={(item: any) => item.id}
+        renderItem={({ item }: any) => (
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => setSelectedWeek(item)}
           >
-            <Ionicons name="search" size={20} color="#6B7280" />
-            <TextInput
-              placeholder="Search by task or date"
-              value={search}
-              onChangeText={setSearch}
-              style={{ marginLeft: 10, flex: 1 }}
-            />
-          </View>
-
-          {/* PAYMENT LIST (ROWS) */}
-          {filteredData.map((item) => {
-            // ✅ STEP 3 PASTE HERE
-            const totalDistance =
-              item.deliveries?.reduce((sum, d) => sum + d.distance, 0) || 0;
-            const amount = totalDistance * RATE_PER_KM;
-
-            return (
-              <Pressable
-                key={item.id}
-                onPress={() => {
-                  setSelectedPayment({ ...item, amount, totalDistance });
-                  setModalVisible(true);
-                }}
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: 16,
-                  padding: 15,
-                  marginTop: 15,
-                  elevation: 3,
-                }}
-              >
-                <Text style={{ fontWeight: "bold" }}>
-                  ₹{amount} • Weekly Payout
-                </Text>
-
-                <Text style={{ color: "#6B7280", marginTop: 5 }}>
-                  {item.date}
-                </Text>
-
-                <Text style={{ marginTop: 5 }}>{item.status}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
-
-      {/* DETAILS MODAL */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        >
-          <View
-            style={{
-              margin: 20,
-              padding: 20,
-              borderRadius: 16,
-              backgroundColor: "#fff",
-            }}
-          >
-            {/* HEADER */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                Payment Details
+            <View>
+              <Text style={styles.week}>{item.week}</Text>
+              <Text style={{ color: "orange", fontSize: 12 }}>
+                {item.status}
               </Text>
-
-              <Pressable onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#1F2933" />
-              </Pressable>
             </View>
 
-            {/* FULL DETAILS */}
-            <Text style={{ marginTop: 10 }}>
-              💰 Amount: ₹{selectedPayment?.amount}
-            </Text>
-            <Text>📅 Week Ending: {selectedPayment?.date}</Text>
-            <Text>📦 Deliveries: {selectedPayment?.deliveries?.length}</Text>
-            <Text>📍 Total Distance: {selectedPayment?.totalDistance} km</Text>
-            <Text>💳 Method: {selectedPayment?.method}</Text>
-            <Text>📌 Status: {selectedPayment?.status}</Text>
+            <Text style={styles.amount}>₹{item.total}</Text>
+          </TouchableOpacity>
+        )}
+      />
 
-            <Text style={{ marginTop: 10, fontWeight: "bold" }}>
-              Earnings Breakdown
-            </Text>
-            <Text>Rate: ₹{RATE_PER_KM}/km</Text>
-            <Text>Total: ₹{selectedPayment?.amount}</Text>
-            {/* CLOSE BUTTON */}
-            <Pressable
-              onPress={() => setModalVisible(false)}
-              style={{
-                marginTop: 15,
-                backgroundColor: "#2ECC71",
-                padding: 12,
-                borderRadius: 10,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>Close</Text>
-            </Pressable>
+      {/* MODAL */}
+      <Modal visible={!!selectedWeek} transparent animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.popup}>
+
+            <View style={styles.popupHeader}>
+              <Text style={styles.popupTitle}>
+                {selectedWeek?.week}
+              </Text>
+
+              <TouchableOpacity onPress={() => setSelectedWeek(null)}>
+                <Text style={styles.close}>❌</Text>
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={selectedWeek?.orders || []}
+              keyExtractor={(item: any) => item.id}
+              renderItem={({ item }: any) => (
+                <View style={styles.orderCard}>
+
+                  <Text style={styles.date}>{item.date}</Text>
+                  <Text style={styles.route}>{item.route}</Text>
+
+                  <View style={styles.row}>
+                    <Text>{item.distance}</Text>
+                    <Text style={styles.fee}>₹{item.fee}</Text>
+                  </View>
+
+                </View>
+              )}
+            />
           </View>
         </View>
       </Modal>
     </View>
   );
 }
+
+// ✅ STYLES (IMPORTANT - DO NOT DELETE)
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f5f5f5" },
+
+  header: {
+    backgroundColor: "#2ecc71",
+    padding: 20
+  },
+  headerText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold"
+  },
+
+  search: {
+    backgroundColor: "white",
+    margin: 10,
+    padding: 12,
+    borderRadius: 10,
+    elevation: 2
+  },
+
+  card: {
+    backgroundColor: "white",
+    marginHorizontal: 10,
+    marginVertical: 6,
+    padding: 15,
+    borderRadius: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    elevation: 2
+  },
+
+  week: {
+    fontWeight: "bold",
+    fontSize: 14
+  },
+
+  amount: {
+    fontWeight: "bold",
+    fontSize: 16
+  },
+
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+
+  popup: {
+    width: "90%",
+    maxHeight: "70%",
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 15
+  },
+
+  popupHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+
+  popupTitle: {
+    fontWeight: "bold",
+    fontSize: 16
+  },
+
+  close: {
+    fontSize: 18
+  },
+
+  orderCard: {
+    backgroundColor: "#f9f9f9",
+    padding: 12,
+    borderRadius: 10,
+    marginVertical: 6
+  },
+
+  date: {
+    fontSize: 12,
+    color: "gray",
+    marginBottom: 2
+  },
+
+  route: {
+    fontWeight: "600",
+    marginBottom: 5
+  },
+
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+
+  fee: {
+    fontWeight: "bold"
+  }
+});
+

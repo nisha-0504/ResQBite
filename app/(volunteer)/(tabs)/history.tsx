@@ -1,56 +1,43 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "expo-router";
 import { useState } from "react";
 import {
-  View,
+  Modal,
+  Pressable,
+  ScrollView,
   Text,
   TextInput,
-  Pressable,
-  Modal,
-  ScrollView,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { getData, KEYS } from "./utils/storage";
 
 export default function History() {
   const [search, setSearch] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [historyData, setHistoryData] = useState([]);
 
-  // ✅ SAMPLE DATA
-  const historyData = [
-    {
-      id: 1,
-      food: "Veg Meals",
-      quantity: 20,
-      pickup: "A2B Restaurant",
-      delivery: "Care NGO",
-      distance: 2,
-      date: "20 Mar, 6:00 PM",
-      status: "Delivered",
-      points: 50,
-      address: "123 Main Street",
-      notes: "Handled carefully",
-      vehicle: "Bike",
-    },
-    {
-      id: 2,
-      food: "Pizza Boxes",
-      quantity: 15,
-      pickup: "Dominos",
-      delivery: "Hope NGO",
-      distance: 3,
-      date: "19 Mar, 5:00 PM",
-      status: "Delivered",
-      points: 40,
-      address: "456 City Road",
-      notes: "Fragile boxes",
-      vehicle: "Scooter",
-    },
-  ];
+  // 🔥 LOAD REAL HISTORY
+  useFocusEffect(
+    useCallback(() => {
+      const loadHistory = async () => {
+        const data = (await getData(KEYS.HISTORY)) || [];
 
-  // ✅ SEARCH FILTER
+        // 🔥 LIFO (latest first)
+        const sorted = [...data].reverse();
+
+        setHistoryData(sorted);
+      };
+
+      loadHistory();
+    }, [])
+  );
+
+  // 🔍 SEARCH
   const filteredData = historyData.filter((item) =>
-    item.pickup.toLowerCase().includes(search.toLowerCase()) ||
-    item.delivery.toLowerCase().includes(search.toLowerCase()) ||
-    item.date.toLowerCase().includes(search.toLowerCase())
+    (item.restaurant || "").toLowerCase().includes(search.toLowerCase()) ||
+    (item.ngo || "").toLowerCase().includes(search.toLowerCase()) ||
+    (item.completedAt || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -72,7 +59,7 @@ export default function History() {
           </Text>
         </View>
 
-        {/* SEARCH BAR */}
+        {/* SEARCH */}
         <View style={{ padding: 20 }}>
           <View
             style={{
@@ -93,10 +80,17 @@ export default function History() {
             />
           </View>
 
-          {/* HISTORY LIST */}
-          {filteredData.map((item) => (
+          {/* EMPTY STATE */}
+          {filteredData.length === 0 && (
+            <Text style={{ textAlign: "center", marginTop: 20 }}>
+              No deliveries yet
+            </Text>
+          )}
+
+          {/* LIST */}
+          {filteredData.map((item, index) => (
             <Pressable
-              key={item.id}
+              key={index}
               onPress={() => {
                 setSelectedTask(item);
                 setModalVisible(true);
@@ -109,20 +103,23 @@ export default function History() {
                 elevation: 3,
               }}
             >
-              {/* MINIMAL CARD */}
               <Text style={{ fontWeight: "bold" }}>
-                {item.pickup} → {item.delivery}
+                {item.restaurant} → {item.ngo}
               </Text>
 
               <Text style={{ color: "#6B7280", marginTop: 5 }}>
-                Distance: {item.distance} km
+                {item.distance} km • ₹{item.earnings || 0}
+              </Text>
+
+              <Text style={{ fontSize: 12, color: "gray", marginTop: 5 }}>
+                {new Date(item.completedAt).toLocaleString()}
               </Text>
             </Pressable>
           ))}
         </View>
       </ScrollView>
 
-      {/* MODAL (FULL DETAILS) */}
+      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View
           style={{
@@ -156,20 +153,20 @@ export default function History() {
               </Pressable>
             </View>
 
-            {/* FULL DETAILS */}
+            {/* DETAILS */}
             <Text style={{ marginTop: 10 }}>
-              🍱 Food: {selectedTask?.food}
+              🍽 Pickup: {selectedTask?.restaurant}
             </Text>
-            <Text>📦 Quantity: {selectedTask?.quantity}</Text>
-            <Text>🍽 Pickup: {selectedTask?.pickup}</Text>
-            <Text>🏠 Delivery: {selectedTask?.delivery}</Text>
+            <Text>🏠 Delivery: {selectedTask?.ngo}</Text>
             <Text>📍 Distance: {selectedTask?.distance} km</Text>
-            <Text>📅 Date: {selectedTask?.date}</Text>
-            <Text>📌 Address: {selectedTask?.address}</Text>
-            <Text>📝 Notes: {selectedTask?.notes}</Text>
-            <Text>🚲 Vehicle: {selectedTask?.vehicle}</Text>
+            <Text>💰 Earnings: ₹{selectedTask?.earnings}</Text>
+            <Text>
+              📅 Date:{" "}
+              {selectedTask?.completedAt
+                ? new Date(selectedTask.completedAt).toLocaleString()
+                : ""}
+            </Text>
 
-            {/* CLOSE BUTTON */}
             <Pressable
               onPress={() => setModalVisible(false)}
               style={{
