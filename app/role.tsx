@@ -18,7 +18,7 @@ export default function Role() {
         style={styles.card}
         onPress={async () => {
             await AsyncStorage.setItem("role", "donor");
-            router.replace("/donor/dashboard");
+            router.replace("/donor/(tabs)");
         }}
       >
         <View style={styles.iconBoxOrange}>
