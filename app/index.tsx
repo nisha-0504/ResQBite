@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
 import { View } from "react-native";
 
 export default function Index() {
@@ -20,7 +20,7 @@ export default function Index() {
         router.replace("/(volunteer)/(tabs)/home");
 
       } else {
-        router.replace("\home");
+        router.replace("/home");
       }
     };
 

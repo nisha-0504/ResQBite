@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -49,7 +48,6 @@ export default function PaymentsScreen() {
               id: week,
               week,
               total: 0,
-              status: "Completed",
               orders: []
             };
           }
@@ -59,12 +57,14 @@ export default function PaymentsScreen() {
             route: `${task.restaurant} → ${task.ngo}`,
             distance: `${task.distance} km`,
             fee: task.earnings || 0,
-            date: new Date(task.completedAt).toISOString()
+            date: new Date(task.completedAt).toISOString(),
+            paid: task.paid ?? false, // 🔥 IMPORTANT
           };
 
           grouped[week].orders.push(order);
           grouped[week].total += order.fee;
         });
+
 
         // 🔥 SORT ORDERS INSIDE WEEK
         Object.values(grouped).forEach((week: any) => {
@@ -72,6 +72,10 @@ export default function PaymentsScreen() {
             (a: any, b: any) =>
               new Date(b.date).getTime() - new Date(a.date).getTime()
           );
+        });
+        Object.values(grouped).forEach((week: any) => {
+          const allPaid = week.orders.every((o: any) => o.paid);
+          week.status = allPaid ? "Paid" : "Unpaid";
         });
 
         setPayments(Object.values(grouped));
@@ -120,7 +124,13 @@ export default function PaymentsScreen() {
           >
             <View>
               <Text style={styles.week}>{item.week}</Text>
-              <Text style={{ color: "orange", fontSize: 12 }}>
+              <Text
+                style={{
+                  color: item.status === "Paid" ? "#2ECC71" : "red",
+                  fontSize: 12,
+                  fontWeight: "bold"
+                }}
+              >
                 {item.status}
               </Text>
             </View>
@@ -157,6 +167,15 @@ export default function PaymentsScreen() {
                   <View style={styles.row}>
                     <Text>{item.distance}</Text>
                     <Text style={styles.fee}>₹{item.fee}</Text>
+                    <Text
+                      style={{
+                        color: item.paid ? "#2ECC71" : "red",
+                        fontWeight: "bold",
+                        marginTop: 4
+                      }}
+                    >
+                      {item.paid ? "Paid" : "Unpaid"}
+                    </Text>
                   </View>
 
                 </View>

@@ -53,7 +53,8 @@ export default function CurrentTask() {
       const completedTask = {
         ...task,
         completedAt: new Date().toISOString(),
-        earnings: task?.distance ? task.distance * 20 : 50
+        earnings: 40,
+        paid: false, // 🔥 default unpaid
       };
 
       await saveData(KEYS.HISTORY, [completedTask, ...history]);
