@@ -18,7 +18,7 @@ export default function Role() {
         style={styles.card}
         onPress={async () => {
             await AsyncStorage.setItem("role", "donor");
-            router.replace("/donor/(tabs)");
+            router.replace("./donor/(tabs)");
         }}
       >
         <View style={styles.iconBoxOrange}>
@@ -40,7 +40,7 @@ export default function Role() {
         style={styles.card}
         onPress={async () => {
             await AsyncStorage.setItem("role", "ngo");
-            router.replace("/ngo/dashboard");
+            router.replace("./ngo/(tabs)");
         }}
       >
         <View style={styles.iconBoxGreen}>

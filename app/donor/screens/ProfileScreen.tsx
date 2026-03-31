@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import React from 'react';
 import {
   View,
@@ -76,8 +77,13 @@ export default function ProfileScreen() {
       </View>
 
       {/* LOGOUT */}
-      <TouchableOpacity style={styles.logout} onPress={handleLogout}>
-  <Text style={styles.logoutText}>Logout</Text>
+      
+<TouchableOpacity
+  style={styles.logout}
+  onPress={() => router.replace("/role")}  // ✅ IMPORTANT
+>
+  <MaterialIcons name="logout" size={18} color="red" />
+  <Text style={styles.logoutText}> Logout</Text>
 </TouchableOpacity>
 
     </ScrollView>
