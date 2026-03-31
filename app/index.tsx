@@ -19,11 +19,9 @@ export default function Index() {
       } else if (role === "ngo") {
         router.replace("/ngo/dashboard");
       } else if (role === "volunteer") {
-
         router.replace("/(volunteer)/(tabs)/home");
-
       } else {
-        router.replace("\home");
+        router.replace("/role");
       }
     };
 
