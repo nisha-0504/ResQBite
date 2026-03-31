@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -32,7 +32,26 @@ export default function History() {
       loadHistory();
     }, [])
   );
+  const styles = {
+    detailContainer: {
+      marginTop: 12,
+    },
 
+    detailRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+    },
+
+    key: {
+      fontWeight: "600",
+      color: "#374151",
+    },
+
+    value: {
+      color: "#6B7280",
+    },
+  };
   // 🔍 SEARCH
   const filteredData = historyData.filter((item) =>
     (item.restaurant || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -154,36 +173,55 @@ export default function History() {
             </View>
 
             {/* DETAILS */}
-            <Text style={{ marginTop: 10 }}>
-              🍽 Pickup: {selectedTask?.restaurant}
-            </Text>
-            <Text>🏠 Delivery: {selectedTask?.ngo}</Text>
-            <Text>📍 Distance: {selectedTask?.distance} km</Text>
-            <Text>💰 Earnings: ₹{selectedTask?.earnings}</Text>
-            <Text>
-              📅 Date:{" "}
-              {selectedTask?.completedAt
-                ? new Date(selectedTask.completedAt).toLocaleString()
-                : ""}
-            </Text>
+            <View style={styles.detailContainer}>
 
-            <Pressable
-              onPress={() => setModalVisible(false)}
-              style={{
-                marginTop: 15,
-                backgroundColor: "#2ECC71",
-                padding: 12,
-                borderRadius: 10,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                Close
-              </Text>
-            </Pressable>
-          </View>
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Pickup:</Text>
+                <Text style={styles.value}>{selectedTask?.restaurant}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Delivery:</Text>
+                <Text style={styles.value}>{selectedTask?.ngo}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Distance:</Text>
+                <Text style={styles.value}>{selectedTask?.distance} km</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Earnings:</Text>
+                <Text style={styles.value}>₹{selectedTask?.earnings || 0}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Date:</Text>
+                <Text style={styles.value}>
+                  {selectedTask?.completedAt
+                    ? new Date(selectedTask.completedAt).toLocaleString()
+                    : "-"}
+                </Text>
+              </View>
+            </View>
+
+          <Pressable
+            onPress={() => setModalVisible(false)}
+            style={{
+              marginTop: 15,
+              backgroundColor: "#2ECC71",
+              padding: 12,
+              borderRadius: 10,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+              Close
+            </Text>
+          </Pressable>
         </View>
-      </Modal>
     </View>
+      </Modal >
+    </View >
   );
 }

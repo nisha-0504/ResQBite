@@ -8,7 +8,10 @@ export default function Home() {
   const router = useRouter();
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [notifVisible, setNotifVisible] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     deliveries: 0,
     meals: 0,
@@ -26,6 +29,16 @@ export default function Home() {
   );
   useFocusEffect(
     useCallback(() => {
+      const loadUser = async () => {
+        const data = await getData("USER");
+        setUser(data);
+      };
+
+      loadUser();
+    }, [])
+  );
+  useFocusEffect(
+    useCallback(() => {
       const loadStats = async () => {
         const data = await getStats();
         setStats(data);
@@ -34,6 +47,13 @@ export default function Home() {
       loadStats();
     }, [])
   );
+  useEffect(() => {
+    const notifs = tasks.map((task) => ({
+      id: task.id,
+      text: `New task from ${task.restaurant}`,
+    }));
+    setNotifications(notifs);
+  }, [tasks]);
   useEffect(() => {
     saveData(KEYS.AVAILABLE, [
       {
@@ -72,11 +92,13 @@ export default function Home() {
     // 4. Navigate
     router.push("/(volunteer)/(tabs)/current_task");
   };
-  {tasks.length === 0 && (
+  {
+    tasks.length === 0 && (
       <Text style={{ textAlign: "center", marginTop: 20 }}>
         No available tasks
       </Text>
-  )}
+    )
+  }
 
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.priority !== b.priority) {
@@ -84,6 +106,26 @@ export default function Home() {
     }
     return a.distance - b.distance;
   });
+  const styles = {
+    detailContainer: {
+      marginTop: 12,
+    },
+
+    detailRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+    },
+
+    key: {
+      fontWeight: "600",
+      color: "#374151",
+    },
+
+    value: {
+      color: "#6B7280",
+    },
+  };
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -102,14 +144,16 @@ export default function Home() {
           >
             <View>
               <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
-                Hi, Raj 👋
+                Hi, {user?.name || "User"} 👋
               </Text>
               <Text style={{ color: "#E8F5E9", marginTop: 5 }}>
                 Ready to Help Today?
               </Text>
             </View>
 
-            <Ionicons name="notifications-outline" size={24} color="#fff" />
+            <Pressable onPress={() => setNotifVisible(true)}>
+              <Ionicons name="notifications-outline" size={24} color="#fff" />
+            </Pressable>
           </View>
         </View>
 
@@ -229,13 +273,46 @@ export default function Home() {
               </Pressable>
             </View>
 
-            <Text>🍽 Restaurant: {selectedTask?.restaurant}</Text>
-            <Text>🏠 NGO: {selectedTask?.ngo}</Text>
-            <Text>📍 Distance: {selectedTask?.distance} km</Text>
-            <Text>🍱 Quantity: {selectedTask?.quantity}</Text>
-            <Text>⏰ Time: {selectedTask?.time}</Text>
-            <Text>📝 Notes: {selectedTask?.notes}</Text>
-            <Text>🚲 Vehicle: {selectedTask?.vehicle}</Text>
+            <View style={styles.detailContainer}>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Restaurant:</Text>
+                <Text style={styles.value}>{selectedTask?.restaurant}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>NGO:</Text>
+                <Text style={styles.value}>{selectedTask?.ngo}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Distance:</Text>
+                <Text style={styles.value}>{selectedTask?.distance} km</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Quantity:</Text>
+                <Text style={styles.value}>{selectedTask?.quantity}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Time:</Text>
+                <Text style={styles.value}>{selectedTask?.time}</Text>
+              </View>
+
+              {selectedTask?.notes ? (
+                <View style={styles.detailRow}>
+                  <Text style={[styles.key, { width: 110 }]}>Notes:</Text>
+                  <Text style={styles.value}>{selectedTask?.notes}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Vehicle:</Text>
+                <Text style={styles.value}>{selectedTask?.vehicle || "-"}</Text>
+              </View>
+
+            </View>
             {/* ACCEPT */}
             <Pressable
               onPress={() => handleAccept(selectedTask)}
@@ -262,6 +339,69 @@ export default function Home() {
             >
               <Text style={{ color: "#6B7280" }}>Reject</Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <Modal visible={notifVisible} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          justifyContent: "center",
+          backgroundColor: "rgba(0,0,0,0.5)"
+        }}>
+
+          <View style={{
+            margin: 20,
+            padding: 20,
+            borderRadius: 16,
+            backgroundColor: "#fff"
+          }}>
+
+            {/* HEADER */}
+            <View style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                Notifications
+              </Text>
+
+              <Pressable onPress={() => setNotifVisible(false)}>
+                <Ionicons name="close" size={24} color="#1F2933" />
+              </Pressable>
+            </View>
+
+            {/* LIST */}
+            {notifications.length === 0 ? (
+              <Text style={{ marginTop: 20, color: "#6B7280" }}>
+                No notifications
+              </Text>
+            ) : (
+              notifications.map((item) => (
+                <View key={item.id} style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: 15,
+                  backgroundColor: "#F9FAFB",
+                  padding: 12,
+                  borderRadius: 10
+                }}>
+                  <Text>{item.text}</Text>
+
+                  <Pressable
+                    onPress={() =>
+                      setNotifications((prev) =>
+                        prev.filter((n) => n.id !== item.id)
+                      )
+                    }
+                  >
+                    <Ionicons name="close-circle" size={20} color="red" />
+                  </Pressable>
+                </View>
+              ))
+            )}
+
           </View>
         </View>
       </Modal>

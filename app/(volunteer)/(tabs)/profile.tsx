@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { getStats } from "./utils/storage";
+import { getStats, saveData } from "./utils/storage";
 
 const iconBox = {
   backgroundColor: "#E8F5E9",
@@ -31,18 +31,34 @@ const smallCard = {
   width: "30%",
   elevation: 3,
 };
+const styles = {
+  inputGroup: {
+    marginTop: 12,
+  },
+
+  label: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginBottom: 4,
+  },
+
+  inputBox: {
+    backgroundColor: "#F9FAFB",
+    padding: 12,
+    borderRadius: 10,
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+};
 
 const smallValue = { fontWeight: "bold" };
 const smallLabel = { fontSize: 12, color: "#6B7280" };
 
-const input = {
-  borderBottomWidth: 1,
-  marginTop: 10,
-};
 
 export default function Profile() {
   const router = useRouter();
-
+  const [logoutVisible, setLogoutVisible] = useState(false);
   const [user, setUser] = useState({
     name: "Raj",
     phone: "+91 9876543210",
@@ -77,7 +93,10 @@ export default function Profile() {
     }, [])
   );
 
-  const handleSave = () => setModalVisible(false);
+  const handleSave = async () => {
+    await saveData("USER", user);
+    setModalVisible(false);
+  };
   const handleLogout = () => router.replace("/login");
 
   return (
@@ -228,7 +247,7 @@ export default function Profile() {
         </Pressable>
 
         <Pressable
-          onPress={handleLogout}
+          onPress={() => setLogoutVisible(true)}
           style={{
             backgroundColor: "#fff",
             borderRadius: 16,
@@ -251,16 +270,32 @@ export default function Profile() {
 
             <Text style={{ fontSize: 18, fontWeight: "bold" }}>Edit Profile</Text>
 
-            {["name", "phone", "location", "vehicle", "email", "age", "gender", "address"].map((field) => (
-              <TextInput
-                key={field}
-                placeholder={field}
-                value={String(user[field])}
-                onChangeText={(text) =>
-                  setUser({ ...user, [field]: field === "age" ? Number(text) : text })
-                }
-                style={input}
-              />
+            {[
+              { key: "name", label: "Name" },
+              { key: "phone", label: "Phone" },
+              { key: "location", label: "Location" },
+              { key: "vehicle", label: "Vehicle" },
+              { key: "email", label: "Email" },
+              { key: "age", label: "Age" },
+              { key: "gender", label: "Gender" },
+              { key: "address", label: "Address" },
+            ].map((field) => (
+              <View key={field.key} style={styles.inputGroup}>
+
+                <Text style={styles.label}>{field.label}:</Text>
+
+                <TextInput
+                  value={String(user[field.key])}
+                  onChangeText={(text) =>
+                    setUser({
+                      ...user,
+                      [field.key]: field.key === "age" ? Number(text) : text,
+                    })
+                  }
+                  style={styles.inputBox}
+                />
+
+              </View>
             ))}
 
             <Pressable
@@ -278,7 +313,81 @@ export default function Profile() {
           </View>
         </View>
       </Modal>
+      <Modal visible={logoutVisible} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          justifyContent: "center",
+          backgroundColor: "rgba(0,0,0,0.5)"
+        }}>
 
+          <View style={{
+            margin: 20,
+            padding: 20,
+            borderRadius: 16,
+            backgroundColor: "#fff"
+          }}>
+
+            {/* TITLE */}
+            <Text style={{
+              fontSize: 18,
+              fontWeight: "bold",
+              marginBottom: 10
+            }}>
+              Confirm Logout
+            </Text>
+
+            {/* MESSAGE */}
+            <Text style={{ color: "#6B7280" }}>
+              Are you sure you want to logout?
+            </Text>
+
+            {/* BUTTONS */}
+            <View style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginTop: 20
+            }}>
+
+              {/* CANCEL */}
+              <Pressable
+                onPress={() => setLogoutVisible(false)}
+                style={{
+                  flex: 1,
+                  marginRight: 10,
+                  padding: 12,
+                  borderRadius: 10,
+                  alignItems: "center",
+                  backgroundColor: "#E5E7EB"
+                }}
+              >
+                <Text>Cancel</Text>
+              </Pressable>
+
+              {/* LOGOUT */}
+              <Pressable
+                onPress={() => {
+                  setLogoutVisible(false);
+                  handleLogout();
+                }}
+                style={{
+                  flex: 1,
+                  marginLeft: 10,
+                  padding: 12,
+                  borderRadius: 10,
+                  alignItems: "center",
+                  backgroundColor: "#EF4444"
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                  Logout
+                </Text>
+              </Pressable>
+
+            </View>
+
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

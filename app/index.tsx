@@ -20,7 +20,7 @@ export default function Index() {
         router.replace("/(volunteer)/(tabs)/home");
 
       } else {
-        router.replace("/home");
+        router.replace("/role");
       }
     };
 

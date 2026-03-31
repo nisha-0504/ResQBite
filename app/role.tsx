@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Role() {
   const router = useRouter();
@@ -62,7 +62,7 @@ export default function Role() {
         style={styles.card}
         onPress={async () => {
             await AsyncStorage.setItem("role", "volunteer");
-            router.replace("/volunteer/dashboard");
+            router.replace("/(volunteer)/(tabs)/home");
         }}
       >
         <View style={styles.iconBoxBlue}>
