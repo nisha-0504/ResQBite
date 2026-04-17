@@ -6,11 +6,23 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const handleLogout = async () => {
+  try {
+    // 🧹 Clear stored data (role, token, etc.)
+    await AsyncStorage.clear();
 
+    // 🔄 Navigate to role selection
+    router.replace('/login');
+  } catch (e) {
+    console.log('Logout error:', e);
+  }
+};
   return (
     <ScrollView style={styles.container}>
       
@@ -118,12 +130,13 @@ export default function ProfileScreen() {
 
       {/* Logout */}
       <TouchableOpacity
-  style={styles.logoutBtn}
-  onPress={() => router.replace("./role.tsx")}  // ✅ IMPORTANT
->
-  <MaterialIcons name="logout" size={18} color="red" />
-  <Text style={styles.logoutText}> Logout</Text>
-</TouchableOpacity>
+        style={styles.logoutBtn}
+        onPress={() => router.replace("/role")}  // ✅ IMPORTANT
+      >
+        <MaterialIcons name="logout" size={18} color="red" />
+        <Text style={styles.logoutText}> Logout</Text>
+      </TouchableOpacity>
+      
 
     </ScrollView>
   );

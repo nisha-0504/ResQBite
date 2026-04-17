@@ -45,10 +45,10 @@ export default function DashboardScreen() {
         </View>
 
         <Text style={styles.activeText}>Status: On the Way</Text>
-
-        <View style={styles.mapPlaceholder} />
-      </View>
-
+      <View style={styles.mapPlaceholder}>
+  <Text style={styles.trackText}>Track</Text>
+</View>
+</View>
       {/* Section Title */}
       <Text style={styles.sectionTitle}>Food Available Nearby</Text>
 
@@ -144,12 +144,18 @@ const styles = StyleSheet.create({
   mapPlaceholder: {
     width: 80,
     height: 40,
-    backgroundColor: "#ddd",
+    backgroundColor: "#2fb463",
     borderRadius: 10,
     alignSelf: "flex-end",
     marginTop: 10,
   },
-
+  trackText: {
+    color: "white",             // White font color
+    fontSize: 16,
+    fontWeight: "bold",
+    alignSelf:"center",
+    marginTop:10,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",

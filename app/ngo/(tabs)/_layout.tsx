@@ -11,7 +11,7 @@ export default function NgoTabsLayout() {
         tabBarStyle: {
           backgroundColor: "#fff",
           borderTopWidth: 0,
-          height: 60,
+          height: 90,
           paddingBottom: 8,
           paddingTop: 5,
           borderTopLeftRadius: 20,
@@ -19,7 +19,7 @@ export default function NgoTabsLayout() {
           elevation: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
         },
       }}
     >

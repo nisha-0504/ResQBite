@@ -62,7 +62,7 @@ export default function Role() {
         style={styles.card}
         onPress={async () => {
             await AsyncStorage.setItem("role", "volunteer");
-            router.replace("/volunteer/dashboard");
+            router.replace("./volunteer/(tabs)");
         }}
       >
         <View style={styles.iconBoxBlue}>
