@@ -1,5 +1,31 @@
-import { Redirect } from "expo-router";
+import { useEffect } from "react";
+import { View } from "react-native";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Index() {
-  return <Redirect href="/splash" />;
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkRole = async () => {
+
+      await AsyncStorage.clear(); // (remove later if not needed)
+
+      const role = await AsyncStorage.getItem("role");
+
+      if (role === "donor") {
+        router.replace("/donor/dashboard");
+      } else if (role === "ngo") {
+        router.replace("/ngo/dashboard");
+      } else if (role === "volunteer") {
+        router.replace("/volunteer/dashboard");
+      } else {
+        router.replace("/splash");
+      }
+    };
+
+    checkRole();
+  }, []);
+
+  return <View />;
 }

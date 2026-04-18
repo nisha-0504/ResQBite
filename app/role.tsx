@@ -1,25 +1,51 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Role() {
   const router = useRouter();
+  const { name, email, password } = useLocalSearchParams();
+
+  const handleRoleSelect = async (selectedRole: string) => {
+    try {
+      const response = await fetch(
+        "http://192.168.29.159:5000/api/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            role: selectedRole,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Signup successful 🎉");
+        router.replace("/login");
+      } else {
+        alert(data.error || "Signup failed");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server error");
+    }
+  };
 
   return (
     <View style={styles.container}>
-      
       <Text style={styles.title}>Choose Your Role</Text>
-      <Text style={styles.subtitle}>
-        How would you like to contribute?
-      </Text>
+      <Text style={styles.subtitle}>How would you like to contribute?</Text>
 
       {/* Donor */}
       <TouchableOpacity
         style={styles.card}
-        onPress={async () => {
-            await AsyncStorage.setItem("role", "donor");
-            router.replace("./donor/(tabs)");
-        }}
+        onPress={() => handleRoleSelect("donor")}
       >
         <View style={styles.iconBoxOrange}>
           <Text>🍴</Text>
@@ -27,9 +53,7 @@ export default function Role() {
 
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>Donor</Text>
-          <Text style={styles.cardDesc}>
-            Restaurants, Hotels, Households
-          </Text>
+          <Text style={styles.cardDesc}>Restaurants, Hotels, Households</Text>
         </View>
 
         <Text style={styles.arrow}>→</Text>
@@ -38,10 +62,7 @@ export default function Role() {
       {/* NGO */}
       <TouchableOpacity
         style={styles.card}
-        onPress={async () => {
-            await AsyncStorage.setItem("role", "ngo");
-            router.replace("./ngo/(tabs)");
-        }}
+        onPress={() => handleRoleSelect("ngo")}
       >
         <View style={styles.iconBoxGreen}>
           <Text>💚</Text>
@@ -49,9 +70,7 @@ export default function Role() {
 
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>NGO</Text>
-          <Text style={styles.cardDesc}>
-            Food distribution organizations
-          </Text>
+          <Text style={styles.cardDesc}>Food distribution organizations</Text>
         </View>
 
         <Text style={styles.arrow}>→</Text>
@@ -60,10 +79,7 @@ export default function Role() {
       {/* Volunteer */}
       <TouchableOpacity
         style={styles.card}
-        onPress={async () => {
-            await AsyncStorage.setItem("role", "volunteer");
-            router.replace("./volunteer/(tabs)");
-        }}
+        onPress={() => handleRoleSelect("volunteer")}
       >
         <View style={styles.iconBoxBlue}>
           <Text>🚚</Text>
@@ -71,9 +87,7 @@ export default function Role() {
 
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>Volunteer</Text>
-          <Text style={styles.cardDesc}>
-            Pickup and deliver food
-          </Text>
+          <Text style={styles.cardDesc}>Pickup and deliver food</Text>
         </View>
 
         <Text style={styles.arrow}>→</Text>
@@ -82,7 +96,6 @@ export default function Role() {
       <Text style={styles.footer}>
         You can change your role anytime from settings
       </Text>
-
     </View>
   );
 }
