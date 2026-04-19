@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import {View,Text,StyleSheet,TouchableOpacity,ScrollView,} from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -13,7 +7,6 @@ export default function RequestDetailsScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -46,9 +39,7 @@ export default function RequestDetailsScreen() {
           </View>
           <View>
             <Text style={styles.label}>Location</Text>
-            <Text style={styles.value}>
-              123 Main Street, 2 km away
-            </Text>
+            <Text style={styles.value}>123 Main Street, 2 km away</Text>
           </View>
         </View>
       </View>
@@ -97,10 +88,12 @@ export default function RequestDetailsScreen() {
         <Text style={styles.primaryText}>Claim This Food</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.secondaryBtn}>
+      <TouchableOpacity
+        style={styles.secondaryBtn}
+        onPress={() => router.push("/ngo/tracking")}
+      >
         <Text style={styles.secondaryText}>View on Map</Text>
       </TouchableOpacity>
-
     </ScrollView>
   );
 }

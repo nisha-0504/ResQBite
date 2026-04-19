@@ -1,5 +1,13 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const foodData = [
   {
@@ -19,9 +27,9 @@ const foodData = [
 ];
 
 export default function DashboardScreen() {
+  const router = useRouter();
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -45,10 +53,12 @@ export default function DashboardScreen() {
         </View>
 
         <Text style={styles.activeText}>Status: On the Way</Text>
-      <View style={styles.mapPlaceholder}>
-  <Text style={styles.trackText}>Track</Text>
-</View>
-</View>
+        <View style={styles.mapPlaceholder}>
+          <TouchableOpacity onPress={() => router.push("/ngo/tracking")}>
+            <Text style={styles.trackText}>Track</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       {/* Section Title */}
       <Text style={styles.sectionTitle}>Food Available Nearby</Text>
 
@@ -150,11 +160,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   trackText: {
-    color: "white",             // White font color
+    color: "white", // White font color
     fontSize: 16,
     fontWeight: "bold",
-    alignSelf:"center",
-    marginTop:10,
+    alignSelf: "center",
+    marginTop: 10,
   },
   sectionTitle: {
     fontSize: 18,

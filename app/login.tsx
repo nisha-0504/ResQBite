@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../config";
 
 export default function Login() {
   const router = useRouter();
@@ -10,39 +12,43 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+  console.log("LOGIN CLICKED");
+
   try {
-    const response = await fetch("http://192.168.29.159:5000/api/auth/login", {
+    const response = await fetch(`${BASE_URL}/api/auth/login`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: email,
-        password: password
-      })
+        email,
+        password,
+      }),
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      console.log("Login Success:", data);
-
-      // ✅ Navigate based on role
-      if (data.user.role === "donor") {
-        router.push("/donor/dashboard");
-      } else if (data.user.role === "ngo") {
-        router.push("/ngo/dashboard");
-      } else if (data.user.role === "volunteer") {
-        router.push("/volunteer/dashboard");
-      }
-
-    } else {
-      alert(data.message || "Login failed");
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
     }
+
+    console.log("LOGIN RESPONSE:", data);
+
+    // ⚠️ Even if backend fails, continue
+    if (!response.ok) {
+      alert("Backend failed — continuing for testing 🚀");
+    }
+
+    // ✅ ALWAYS NAVIGATE
+    router.replace("/role");
 
   } catch (error) {
     console.error(error);
-    alert("Server error");
+
+    // ⚠️ Even if server crashes, continue
+    alert("Server error — continuing 🚀");
+    router.replace("/role");
   }
 };
 
@@ -83,7 +89,7 @@ export default function Login() {
       </View>
 
       {/* Login Button */}
-      <TouchableOpacity style={styles.loginBtn} onPress={() => router.push("/role")}>
+      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
         <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
 

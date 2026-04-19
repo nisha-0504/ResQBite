@@ -1,39 +1,28 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Role() {
   const router = useRouter();
-  const { name, email, password } = useLocalSearchParams();
 
-  const handleRoleSelect = async (selectedRole: string) => {
+  const handleRoleSelect = async (selectedRole) => {
+    console.log("Selected role:", selectedRole);
+
     try {
-      const response = await fetch(
-        "http://192.168.29.159:5000/api/auth/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-            role: selectedRole,
-          }),
-        }
-      );
+      // (Optional) store selected role
+      await AsyncStorage.setItem("selectedRole", selectedRole);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Signup successful 🎉");
-        router.replace("/login");
+      // Navigate based on role
+      if (selectedRole === "donor") {
+        router.replace("/donor/(tabs)");
+      } else if (selectedRole === "ngo") {
+        router.replace("/ngo/(tabs)");
       } else {
-        alert(data.error || "Signup failed");
+        router.replace("/(volunteer)/(tabs)/home");
       }
     } catch (error) {
       console.error(error);
-      alert("Server error");
+      alert("Something went wrong");
     }
   };
 
@@ -53,7 +42,9 @@ export default function Role() {
 
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>Donor</Text>
-          <Text style={styles.cardDesc}>Restaurants, Hotels, Households</Text>
+          <Text style={styles.cardDesc}>
+            Restaurants, Hotels, Households
+          </Text>
         </View>
 
         <Text style={styles.arrow}>→</Text>
@@ -70,7 +61,9 @@ export default function Role() {
 
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>NGO</Text>
-          <Text style={styles.cardDesc}>Food distribution organizations</Text>
+          <Text style={styles.cardDesc}>
+            Food distribution organizations
+          </Text>
         </View>
 
         <Text style={styles.arrow}>→</Text>
@@ -87,7 +80,9 @@ export default function Role() {
 
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>Volunteer</Text>
-          <Text style={styles.cardDesc}>Pickup and deliver food</Text>
+          <Text style={styles.cardDesc}>
+            Pickup and deliver food
+          </Text>
         </View>
 
         <Text style={styles.arrow}>→</Text>

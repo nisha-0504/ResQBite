@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { getData, KEYS, removeData, saveData } from "./utils/storage";
+import { getData, KEYS, removeData, saveData } from "../../../utils/storage";
 
 export default function CurrentTask() {
   const [status, setStatus] = useState("accepted");
@@ -22,6 +22,7 @@ export default function CurrentTask() {
     useCallback(() => {
       const loadTask = async () => {
         const data = await getData(KEYS.ACTIVE);
+        console.log("LOADED TASK:", data);
         setTask(data);
         setStatus("accepted");
       };

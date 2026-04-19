@@ -8,8 +8,9 @@ import {
   Text,
   TextInput,
   View,
+  StyleSheet,
 } from "react-native";
-import { getData, KEYS } from "./utils/storage";
+import { getData, KEYS } from "../../../utils/storage";
 
 export default function History() {
   const [search, setSearch] = useState("");
@@ -32,26 +33,7 @@ export default function History() {
       loadHistory();
     }, [])
   );
-  const styles = {
-    detailContainer: {
-      marginTop: 12,
-    },
-
-    detailRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 10,
-    },
-
-    key: {
-      fontWeight: "600",
-      color: "#374151",
-    },
-
-    value: {
-      color: "#6B7280",
-    },
-  };
+  
   // 🔍 SEARCH
   const filteredData = historyData.filter((item) =>
     (item.restaurant || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -176,27 +158,27 @@ export default function History() {
             <View style={styles.detailContainer}>
 
               <View style={styles.detailRow}>
-                <Text style={[styles.key, { width: 110 }]}>Pickup:</Text>
+                <Text style={styles.key}>Pickup:</Text>
                 <Text style={styles.value}>{selectedTask?.restaurant}</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={[styles.key, { width: 110 }]}>Delivery:</Text>
+                <Text style={styles.key}>Delivery:</Text>
                 <Text style={styles.value}>{selectedTask?.ngo}</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={[styles.key, { width: 110 }]}>Distance:</Text>
+                <Text style={styles.key}>Distance:</Text>
                 <Text style={styles.value}>{selectedTask?.distance} km</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={[styles.key, { width: 110 }]}>Earnings:</Text>
+                <Text style={styles.key}>Earnings:</Text>
                 <Text style={styles.value}>₹{selectedTask?.earnings || 0}</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={[styles.key, { width: 110 }]}>Date:</Text>
+                <Text style={styles.key}>Date:</Text>
                 <Text style={styles.value}>
                   {selectedTask?.completedAt
                     ? new Date(selectedTask.completedAt).toLocaleString()
@@ -225,3 +207,26 @@ export default function History() {
     </View >
   );
 }
+
+const styles = StyleSheet.create({
+  detailContainer: {
+    marginTop: 12,
+  },
+
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  key: {
+    fontWeight: "bold",
+    color: "#374151",
+    width: 110,   // ✅ FIXED HERE
+  },
+
+  value: {
+    color: "#6B7280",
+    flex: 1,
+  },
+});

@@ -1,32 +1,21 @@
 import { useEffect } from "react";
-import { View } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkRole = async () => {
+    const timer = setTimeout(() => {
+      router.replace("/splash"); // ✅ go to splash first
+    }, 100);
 
-      await AsyncStorage.clear(); // (remove later if not needed)
-
-      const role = await AsyncStorage.getItem("role");
-
-
-      if (role === "donor") {
-        router.replace("/donor/dashboard");
-      } else if (role === "ngo") {
-        router.replace("/ngo/dashboard");
-      } else if (role === "volunteer") {
-        router.replace("/(volunteer)/(tabs)/home");
-      } else {
-        router.replace("/role");
-      }
-    };
-
-    checkRole();
+    return () => clearTimeout(timer);
   }, []);
 
-  return <View />;
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" />
+    </View>
+  );
 }

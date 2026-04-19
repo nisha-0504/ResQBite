@@ -12,7 +12,7 @@ import {
   View,
   StyleSheet, // Added this back - this was your main error!
 } from "react-native";
-import { getStats, saveData } from "./utils/storage";
+import { getStats, saveData } from "../../../utils/storage";
 
 interface User {
   name: string;

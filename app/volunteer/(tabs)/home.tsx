@@ -1,8 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, Text, View, StyleSheet } from "react-native";
-import { getData, getStats, KEYS, saveData } from "./utils/storage";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+} from "react-native";
+import { getData, getStats, KEYS, saveData } from "../../../utils/storage";
 interface DetailRowProps {
   label: string;
   value: string | number | undefined | null; // Allows for any data type coming from your Task
@@ -26,13 +33,15 @@ export default function Home() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
-  const [notifications, setNotifications] = useState<{id: number, text: string}[]>([]);
+  const [notifications, setNotifications] = useState<
+    { id: number; text: string }[]
+  >([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [user, setUser] = useState<User | null>(null); // Change this from 'null' to <User | null>(null)
   const [stats, setStats] = useState({
     deliveries: 0,
     meals: 0,
-    people: 0
+    people: 0,
   });
 
   // Load Tasks, User, and Stats when screen comes into focus
@@ -43,21 +52,19 @@ export default function Home() {
           const [taskData, userData, statsData] = await Promise.all([
             getData(KEYS.AVAILABLE),
             getData("USER"),
-            getStats()
+            getStats(),
           ]);
-          
+
           if (taskData) setTasks(taskData);
           if (userData) setUser(userData);
           if (statsData) setStats(statsData);
         } catch (error) {
           console.error("Error loading data:", error);
         }
-        
       };
 
       loadAllData();
-    }, [])
-    
+    }, []),
   );
 
   // Sync Notifications whenever tasks change
@@ -92,7 +99,7 @@ export default function Home() {
             quantity: 15,
             time: "5 PM",
             priority: 1,
-          }
+          },
         ]);
         // Refresh local state after seeding
         const freshData = await getData(KEYS.AVAILABLE);
@@ -102,26 +109,29 @@ export default function Home() {
     seedData();
   }, []);
 
-  const handleAccept = async (task: Task) => {
-  try {
-    // 1. Save the task as "ACTIVE" so the other screen can find it
-    await saveData(KEYS.ACTIVE, task);
+  const handleAccept = async (task) => {
+    try {
+      // ✅ SAVE TASK HERE
+      await saveData(KEYS.ACTIVE, task);
 
-    // 2. Remove it from the available list
-    const currentTasks: Task[] = await getData(KEYS.AVAILABLE) || [];
-    const updated = currentTasks.filter((t: Task) => t.id !== task.id);
-    await saveData(KEYS.AVAILABLE, updated);
-    setTasks(updated);
+      const check = await getData(KEYS.ACTIVE);
+      console.log("SAVED TASK:", check);
 
-    setModalVisible(false);
+      // ✅ REMOVE FROM AVAILABLE
+      const available = (await getData(KEYS.AVAILABLE)) ?? [];
+      const updated = available.filter((t) => t.id !== task.id);
 
-    // 3. Navigate to the current task screen
-    // Note: Ensure this path matches your folder structure exactly
-    router.push("/volunteer/(tabs)/current_task"); 
-  } catch (error) {
-    console.error("Error accepting task:", error);
-  }
-};
+      await saveData(KEYS.AVAILABLE, updated);
+
+      setTasks(updated);
+      setModalVisible(false);
+
+      // ✅ NAVIGATE
+      router.push("/(volunteer)/(tabs)/current_task");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.priority !== b.priority) return a.priority - b.priority;
@@ -133,7 +143,9 @@ export default function Home() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* HEADER */}
         <View style={uiStyles.header}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
             <View>
               <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
                 Hi, {user?.name || "Volunteer"} 👋
@@ -148,6 +160,8 @@ export default function Home() {
             </Pressable>
           </View>
         </View>
+
+        <View style={{ height: 60 }} />
 
         {/* STATS */}
         <View style={uiStyles.statsRow}>
@@ -173,13 +187,15 @@ export default function Home() {
           </Text>
 
           {sortedTasks.length === 0 ? (
-            <Text style={{ textAlign: "center", marginTop: 40, color: '#999' }}>
+            <Text style={{ textAlign: "center", marginTop: 40, color: "#999" }}>
               No available tasks at the moment.
             </Text>
           ) : (
             sortedTasks.map((task) => (
               <View key={task.id} style={uiStyles.taskCard}>
-                <Text style={{ fontWeight: "bold" }}>Food Pickup & Delivery</Text>
+                <Text style={{ fontWeight: "bold" }}>
+                  Food Pickup & Delivery
+                </Text>
                 <Text style={{ color: "#6B7280" }}>
                   {task.restaurant} → {task.ngo}
                 </Text>
@@ -205,7 +221,9 @@ export default function Home() {
         <View style={uiStyles.modalOverlay}>
           <View style={uiStyles.modalContent}>
             <View style={uiStyles.modalHeader}>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>Task Details</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                Task Details
+              </Text>
               <Pressable onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={24} color="#1F2933" />
               </Pressable>
@@ -214,18 +232,25 @@ export default function Home() {
             <View style={uiStyles.detailContainer}>
               <DetailRow label="Restaurant:" value={selectedTask?.restaurant} />
               <DetailRow label="NGO:" value={selectedTask?.ngo} />
-              <DetailRow label="Distance:" value={`${selectedTask?.distance} km`} />
+              <DetailRow
+                label="Distance:"
+                value={`${selectedTask?.distance} km`}
+              />
               <DetailRow label="Quantity:" value={selectedTask?.quantity} />
               <DetailRow label="Time:" value={selectedTask?.time} />
-              {selectedTask?.notes && <DetailRow label="Notes:" value={selectedTask?.notes} />}
+              {selectedTask?.notes && (
+                <DetailRow label="Notes:" value={selectedTask?.notes} />
+              )}
             </View>
 
-            <Pressable 
-  onPress={() => selectedTask && handleAccept(selectedTask)} 
-  style={uiStyles.acceptBtn}
->
-  <Text style={{ color: "#fff", fontWeight: "bold" }}>Accept Task</Text>
-</Pressable>
+            <Pressable
+              onPress={() => selectedTask && handleAccept(selectedTask)}
+              style={uiStyles.acceptBtn}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Accept Task
+              </Text>
+            </Pressable>
           </View>
         </View>
       </Modal>
@@ -235,19 +260,29 @@ export default function Home() {
         <View style={uiStyles.modalOverlay}>
           <View style={uiStyles.modalContent}>
             <View style={uiStyles.modalHeader}>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>Notifications</Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                Notifications
+              </Text>
               <Pressable onPress={() => setNotifVisible(false)}>
                 <Ionicons name="close" size={24} color="#1F2933" />
               </Pressable>
             </View>
 
             {notifications.length === 0 ? (
-              <Text style={{ marginTop: 20, color: "#6B7280" }}>No notifications</Text>
+              <Text style={{ marginTop: 20, color: "#6B7280" }}>
+                No notifications
+              </Text>
             ) : (
               notifications.map((item) => (
                 <View key={item.id} style={uiStyles.notifItem}>
                   <Text style={{ flex: 1 }}>{item.text}</Text>
-                  <Pressable onPress={() => setNotifications(prev => prev.filter(n => n.id !== item.id))}>
+                  <Pressable
+                    onPress={() =>
+                      setNotifications((prev) =>
+                        prev.filter((n) => n.id !== item.id),
+                      )
+                    }
+                  >
                     <Ionicons name="close-circle" size={20} color="red" />
                   </Pressable>
                 </View>
@@ -274,18 +309,20 @@ const DetailRow = ({ label, value }: DetailRowProps) => (
 const uiStyles = StyleSheet.create({
   header: {
     backgroundColor: "#2ECC71",
-    padding: 20,
     paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    height: 160,
   },
+
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginTop: -30,
+    marginTop: 0,
     paddingHorizontal: 10,
   },
+
   statsCard: {
     backgroundColor: "#fff",
     padding: 15,
@@ -298,6 +335,7 @@ const uiStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+
   taskCard: {
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -305,6 +343,7 @@ const uiStyles = StyleSheet.create({
     marginTop: 15,
     elevation: 3,
   },
+
   viewDetailsBtn: {
     marginTop: 10,
     backgroundColor: "#FF8C42",
@@ -312,26 +351,46 @@ const uiStyles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
   },
+
   modalContent: {
     margin: 20,
     padding: 20,
     borderRadius: 16,
     backgroundColor: "#fff",
   },
+
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  detailContainer: { marginTop: 12 },
-  detailRow: { flexDirection: "row", marginBottom: 10 },
-  detailKey: { fontWeight: "600", color: "#374151", width: 110 },
-  detailValue: { color: "#6B7280", flex: 1 },
+
+  detailContainer: {
+    marginTop: 12,
+  },
+
+  detailRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+
+  detailKey: {
+    fontWeight: "600",
+    color: "#374151",
+    width: 110,
+  },
+
+  detailValue: {
+    color: "#6B7280",
+    flex: 1,
+  },
+
   acceptBtn: {
     marginTop: 15,
     backgroundColor: "#2ECC71",
@@ -339,6 +398,7 @@ const uiStyles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+
   notifItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -347,5 +407,5 @@ const uiStyles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     padding: 12,
     borderRadius: 10,
-  }
+  },
 });

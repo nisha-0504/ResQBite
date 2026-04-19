@@ -86,14 +86,20 @@ export default function DonationDetailsScreen() {
               <Text style={{ color: '#2ECC71' }}>Call</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.trackBtn}>
+            <TouchableOpacity
+              style={styles.trackBtn}
+              onPress={() => router.push("/donor/tracking")}
+            >
               <Text style={{ color: 'white' }}>Track</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Track on Map */}
-        <TouchableOpacity style={styles.mapBtn}>
+        <TouchableOpacity
+          style={styles.mapBtn}
+          onPress={() => router.push("/donor/tracking")}
+        >
           <Text style={{ color: 'white', fontWeight: 'bold' }}>
             Track on Map
           </Text>

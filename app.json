@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "ResQBite",
+    "slug": "ResQBite",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "resqbite",
+    "plugins": [
+      "expo-maps",
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
