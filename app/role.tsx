@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function Role() {
   const router = useRouter();
 
-  const handleRoleSelect = async (selectedRole) => {
+  const handleRoleSelect = async (selectedRole:string) => {
     console.log("Selected role:", selectedRole);
 
     try {
@@ -18,7 +18,7 @@ export default function Role() {
       } else if (selectedRole === "ngo") {
         router.replace("/ngo/(tabs)");
       } else {
-        router.replace("/(volunteer)/(tabs)/home");
+        router.replace("/volunteer/(tabs)/home");
       }
     } catch (error) {
       console.error(error);
