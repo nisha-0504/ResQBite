@@ -109,7 +109,7 @@ export default function Home() {
     seedData();
   }, []);
 
-  const handleAccept = async (task) => {
+  const handleAccept = async (task:Task) => {
     try {
       // ✅ SAVE TASK HERE
       await saveData(KEYS.ACTIVE, task);
@@ -119,7 +119,7 @@ export default function Home() {
 
       // ✅ REMOVE FROM AVAILABLE
       const available = (await getData(KEYS.AVAILABLE)) ?? [];
-      const updated = available.filter((t) => t.id !== task.id);
+      const updated = available.filter((t:Task) => t.id !== task.id);
 
       await saveData(KEYS.AVAILABLE, updated);
 
@@ -127,7 +127,7 @@ export default function Home() {
       setModalVisible(false);
 
       // ✅ NAVIGATE
-      router.push("/(volunteer)/(tabs)/current_task");
+      router.push("/volunteer/(tabs)/current_task");
     } catch (error) {
       console.error(error);
     }
