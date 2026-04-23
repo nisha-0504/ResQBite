@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { getStats, saveData } from "./utils/storage";
+import { getStats, saveData } from "../../../utils/storage";
 
 const iconBox = {
   backgroundColor: "#E8F5E9",

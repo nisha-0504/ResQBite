@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { getData, KEYS } from "./utils/storage";
+import { getData, KEYS } from "../../../utils/storage";
 
 export default function History() {
   const [search, setSearch] = useState("");

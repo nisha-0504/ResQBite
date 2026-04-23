@@ -18,7 +18,7 @@ export default function Role() {
       } else if (selectedRole === "ngo") {
         router.replace("/ngo/(tabs)");
       } else {
-        router.replace("/volunteer/(tabs)/home");
+        router.replace("/(volunteer)/(tabs)/home");
       }
     } catch (error) {
       console.error(error);

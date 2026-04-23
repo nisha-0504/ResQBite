@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { getData, KEYS, removeData, saveData } from "./utils/storage";
+import { getData, KEYS, removeData, saveData } from "../../../utils/storage";
 
 export default function CurrentTask() {
   const [status, setStatus] = useState("accepted");
