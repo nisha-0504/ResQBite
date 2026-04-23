@@ -1,6 +1,13 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Signup() {
   const router = useRouter();
@@ -8,13 +15,48 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleSignup = async () => {
+    try {
+      const response = await fetch(
+        "http://192.168.29.159:5000/api/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            role: "donor",
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Signup successful 🎉");
+        router.push("/login");
+      } else {
+        alert(data.error || "Signup failed");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server error");
+    }
+  };
 
   return (
     <View style={styles.container}>
-      
       {/* Image */}
       <Image
-        source={{ uri: "https://images.unsplash.com/photo-1542810634-71277d95dcbb" }}
+        source={{
+          uri: "https://images.unsplash.com/photo-1542810634-71277d95dcbb",
+        }}
         style={styles.image}
       />
 
@@ -50,8 +92,35 @@ export default function Signup() {
         onChangeText={setPassword}
       />
 
+      <Text style={styles.label}>Confirm Password</Text>
+      <TextInput
+        placeholder="Confirm password"
+        secureTextEntry
+        style={styles.input}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+
       {/* Signup Button */}
-      <TouchableOpacity style={styles.signupBtn} onPress={() => router.push("/role")}>
+
+      <TouchableOpacity
+        style={styles.signupBtn}
+        onPress={() => {
+          if (password !== confirmPassword) {
+            alert("Incorrect Password Entered❌");
+            return;
+          }
+          if (!name || !email || !password || !confirmPassword) {
+            alert("Please fill all fields");
+            return;
+          }
+
+          router.push({
+            pathname: "/role",
+            params: { name, email, password },
+          });
+        }}
+      >
         <Text style={styles.signupText}>Signup</Text>
       </TouchableOpacity>
 
@@ -59,7 +128,6 @@ export default function Signup() {
       <Text style={styles.login} onPress={() => router.push("/login")}>
         Already have an account? Login
       </Text>
-
     </View>
   );
 }

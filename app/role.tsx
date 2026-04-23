@@ -1,25 +1,40 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Role() {
   const router = useRouter();
 
+  const handleRoleSelect = async (selectedRole:string) => {
+    console.log("Selected role:", selectedRole);
+
+    try {
+      // (Optional) store selected role
+      await AsyncStorage.setItem("selectedRole", selectedRole);
+
+      // Navigate based on role
+      if (selectedRole === "donor") {
+        router.replace("/donor/(tabs)");
+      } else if (selectedRole === "ngo") {
+        router.replace("/ngo/(tabs)");
+      } else {
+        router.replace("/volunteer/(tabs)/home");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    }
+  };
+
   return (
     <View style={styles.container}>
-      
       <Text style={styles.title}>Choose Your Role</Text>
-      <Text style={styles.subtitle}>
-        How would you like to contribute?
-      </Text>
+      <Text style={styles.subtitle}>How would you like to contribute?</Text>
 
       {/* Donor */}
       <TouchableOpacity
         style={styles.card}
-        onPress={async () => {
-            await AsyncStorage.setItem("role", "donor");
-            router.replace("/donor/dashboard");
-        }}
+        onPress={() => handleRoleSelect("donor")}
       >
         <View style={styles.iconBoxOrange}>
           <Text>🍴</Text>
@@ -38,10 +53,7 @@ export default function Role() {
       {/* NGO */}
       <TouchableOpacity
         style={styles.card}
-        onPress={async () => {
-            await AsyncStorage.setItem("role", "ngo");
-            router.replace("/ngo/dashboard");
-        }}
+        onPress={() => handleRoleSelect("ngo")}
       >
         <View style={styles.iconBoxGreen}>
           <Text>💚</Text>
@@ -60,10 +72,7 @@ export default function Role() {
       {/* Volunteer */}
       <TouchableOpacity
         style={styles.card}
-        onPress={async () => {
-            await AsyncStorage.setItem("role", "volunteer");
-            router.replace("/(volunteer)/(tabs)/home");
-        }}
+        onPress={() => handleRoleSelect("volunteer")}
       >
         <View style={styles.iconBoxBlue}>
           <Text>🚚</Text>
@@ -82,7 +91,6 @@ export default function Role() {
       <Text style={styles.footer}>
         You can change your role anytime from settings
       </Text>
-
     </View>
   );
 }

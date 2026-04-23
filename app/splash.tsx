@@ -1,23 +1,51 @@
-import { View, Text, StyleSheet } from "react-native";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { View, StyleSheet, Animated } from "react-native";
 import { useRouter } from "expo-router";
 
 export default function Splash() {
   const router = useRouter();
 
+  // 🎬 Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
   useEffect(() => {
+    // ✨ Run animations together
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 5,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // ⏳ Navigate after animation
     const timer = setTimeout(() => {
       router.replace("/login");
-    }, 2000);
+    }, 2200);
+
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>ResQBite</Text>
-      <Text style={styles.tagline}>
-        From Extra Plates to Empty Stomachs
-      </Text>
+      <Animated.Image
+        source={require("../assets/logo.png")}
+        style={[
+          styles.logo,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+        resizeMode="contain"
+      />
     </View>
   );
 }
@@ -25,17 +53,13 @@ export default function Splash() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#22C55E",
+    backgroundColor: "#16A34A",
     justifyContent: "center",
     alignItems: "center",
   },
+
   logo: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "white",
-  },
-  tagline: {
-    marginTop: 10,
-    color: "white",
+    width: 260,
+    height: 260,
   },
 });

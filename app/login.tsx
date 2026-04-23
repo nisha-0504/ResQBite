@@ -2,12 +2,55 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../config";
 
 export default function Login() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+  console.log("LOGIN CLICKED");
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+
+    console.log("LOGIN RESPONSE:", data);
+
+    // ⚠️ Even if backend fails, continue
+    if (!response.ok) {
+      alert("Backend failed — continuing for testing 🚀");
+    }
+
+    // ✅ ALWAYS NAVIGATE
+    router.replace("/role");
+
+  } catch (error) {
+    console.error(error);
+
+    // ⚠️ Even if server crashes, continue
+    alert("Server error — continuing 🚀");
+    router.replace("/role");
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -46,7 +89,7 @@ export default function Login() {
       </View>
 
       {/* Login Button */}
-      <TouchableOpacity style={styles.loginBtn} onPress={() => router.push("/role")}>
+      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
         <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
 
