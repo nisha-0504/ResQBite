@@ -21,9 +21,20 @@ export default function CurrentTask() {
   useFocusEffect(
     useCallback(() => {
       const loadTask = async () => {
-        const data = await getData(KEYS.ACTIVE);
-        setTask(data);
-        setStatus("accepted");
+        try {
+          const res = await fetch("http://10.0.2.2:5000/api/volunteer/current");
+          const data = await res.json();
+
+          setTask(data);
+
+          if (data?.status === "picked") {
+            setStatus("picked_up");
+          } else {
+            setStatus("accepted");
+          }
+        } catch (err) {
+          console.log(err);
+        }
       };
 
       loadTask();
@@ -34,33 +45,40 @@ export default function CurrentTask() {
   const cancelTask = async () => {
     if (!task) return;
 
-    const available = (await getData(KEYS.AVAILABLE)) ?? [];
+    try {
+      await fetch(`http://10.0.2.2:5000/api/volunteer/cancel/${task._id}`, {
+        method: "PUT",
+      });
 
-    await saveData(KEYS.AVAILABLE, [...available, task]);
-    await removeData(KEYS.ACTIVE);
-
-    setTask(null);
-    setShowCancelModal(false);
+      setTask(null);
+      setShowCancelModal(false);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // 🚀 DELIVERY FLOW
   const handleAction = async () => {
     if (status === "accepted") {
-      setStatus("picked_up");
+      try {
+        await fetch(`http://10.0.2.2:5000/api/volunteer/pickup/${task._id}`, {
+          method: "PUT",
+        });
+
+        setStatus("picked_up");
+      } catch (err) {
+        console.log(err);
+      }
     } else if (status === "picked_up") {
-      const history = (await getData(KEYS.HISTORY)) ?? [];
+      try {
+        await fetch(`http://10.0.2.2:5000/api/volunteer/complete/${task._id}`, {
+          method: "PUT",
+        });
 
-      const completedTask = {
-        ...task,
-        completedAt: new Date().toISOString(),
-        earnings: 40,
-        paid: false, // 🔥 default unpaid
-      };
-
-      await saveData(KEYS.HISTORY, [completedTask, ...history]);
-      await removeData(KEYS.ACTIVE);
-
-      setShowDeliveredPopup(true);
+        setShowDeliveredPopup(true);
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
