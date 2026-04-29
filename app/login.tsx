@@ -35,18 +35,15 @@ export default function Login() {
 
     console.log("LOGIN RESPONSE:", data);
 
-    // ⚠️ Even if backend fails, continue
     if (!response.ok) {
       alert("Backend failed — continuing for testing 🚀");
     }
 
-    // ✅ ALWAYS NAVIGATE
     router.replace("/role");
 
   } catch (error) {
     console.error(error);
 
-    // ⚠️ Even if server crashes, continue
     alert("Server error — continuing 🚀");
     router.replace("/role");
   }

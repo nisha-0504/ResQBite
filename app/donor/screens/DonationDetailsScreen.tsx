@@ -1,235 +1,135 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Image,
+  ActivityIndicator,
   TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-
+  Alert
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import API from "../../../services/api"; // adjust path
+type Donation = {
+  _id: string;
+  title: string;
+  quantity: string;
+  location: string;
+  status: string;
+  createdAt: string;
+};
 export default function DonationDetailsScreen() {
+  const { id } = useLocalSearchParams();
   const router = useRouter();
+const [donation, setDonation] = useState<Donation | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Fetch donation details
+  const fetchDonation = async () => {
+    try {
+      const res = await API.get(`/donor/donations/${id}`);
+      setDonation(res.data);
+    } catch (err) {
+      console.log((err as any).response?.data || (err as any).message);
+      Alert.alert("Error", "Failed to load donation");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDonation();
+  }, []);
+
+  // ✅ Delete donation
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete Donation",
+      "Are you sure you want to delete this donation?",
+      [
+        { text: "Cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await API.delete(`/donor/donations/${id}`);
+              Alert.alert("Deleted successfully");
+              router.back();
+            } catch (err) {
+              console.log((err as any).response?.data || (err as any).message);
+              Alert.alert("Cannot delete this donation");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  if (loading) {
+    return <ActivityIndicator style={{ marginTop: 50 }} />;
+  }
+
+  if (!donation) {
+    return (
+      <View style={styles.container}>
+        <Text>Donation not found</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      <Text style={styles.title}>{donation.title}</Text>
 
-      {/* IMAGE + BACK */}
-      <View>
-        <Image
-        source={{
-  uri: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'
-}}
-          style={styles.image}
-        />
+      <Text style={styles.label}>Quantity:</Text>
+      <Text style={styles.value}>{donation.quantity}</Text>
 
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={20} />
+      <Text style={styles.label}>Location:</Text>
+      <Text style={styles.value}>{donation.location}</Text>
+
+      <Text style={styles.label}>Status:</Text>
+      <Text style={styles.value}>{donation.status}</Text>
+
+      <Text style={styles.label}>Created At:</Text>
+      <Text style={styles.value}>
+        {new Date(donation.createdAt).toLocaleString()}
+      </Text>
+
+      {/* ✅ Delete Button only if pending */}
+      {donation.status === "pending" && (
+        <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+          <Text style={styles.deleteText}>Delete Donation</Text>
         </TouchableOpacity>
-      </View>
-
-      {/* CONTENT */}
-      <View style={styles.content}>
-
-        {/* Title */}
-        <View style={styles.row}>
-          <Text style={styles.title}>Veg Meals</Text>
-          <View style={styles.status}>
-            <Text style={styles.statusText}>Pending</Text>
-          </View>
-        </View>
-
-        <Text style={styles.qty}>40 packets</Text>
-
-        {/* Pickup Time */}
-        <View style={styles.card}>
-          <Ionicons name="time-outline" size={18} color="#2ECC71" />
-          <View style={{ marginLeft: 10 }}>
-            <Text style={styles.label}>Pickup Time</Text>
-            <Text style={styles.value}>9:00 PM Today</Text>
-          </View>
-        </View>
-
-        {/* Location */}
-        <View style={styles.card}>
-          <Ionicons name="location-outline" size={18} color="#2ECC71" />
-          <View style={{ marginLeft: 10 }}>
-            <Text style={styles.label}>Pickup Location</Text>
-            <Text style={styles.value}>
-              123 Main Street, Food Plaza
-            </Text>
-          </View>
-        </View>
-
-        {/* Volunteer */}
-        <View style={styles.volunteerCard}>
-          <Text style={styles.sectionTitle}>Assigned Volunteer</Text>
-
-          <View style={styles.volunteerRow}>
-            <View style={styles.avatar}>
-              <Text style={{ color: 'white' }}>R</Text>
-            </View>
-
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={{ fontWeight: 'bold' }}>Raj Kumar</Text>
-              <Text style={{ color: '#6B7280' }}>⭐ 4.8 Rating</Text>
-            </View>
-          </View>
-
-          <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.callBtn}>
-              <Text style={{ color: '#2ECC71' }}>Call</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.trackBtn}
-              onPress={() => router.push("/donor/tracking")}
-            >
-              <Text style={{ color: 'white' }}>Track</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Track on Map */}
-        <TouchableOpacity
-          style={styles.mapBtn}
-          onPress={() => router.push("/donor/tracking")}
-        >
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>
-            Track on Map
-          </Text>
-        </TouchableOpacity>
-
-      </View>
-    </ScrollView>
+      )}
+    </View>
   );
 }
 
-/* 🎨 Styles */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
-
-  image: {
-    width: '100%',
-    height: 200,
+  container: {
+    padding: 20
   },
-
-  backBtn: {
-    position: 'absolute',
-    top: 40,
-    left: 15,
-    backgroundColor: 'white',
-    padding: 8,
-    borderRadius: 20,
-  },
-
-  content: {
-    padding: 16,
-  },
-
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20
   },
-
-  status: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-
-  statusText: {
-    color: '#CA8A04',
-  },
-
-  qty: {
-    color: '#6B7280',
-    marginTop: 5,
-  },
-
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#F9FAFB',
-    padding: 12,
-    borderRadius: 12,
-    marginTop: 12,
-  },
-
   label: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontWeight: "bold",
+    marginTop: 10
   },
-
   value: {
-    fontWeight: 'bold',
+    marginBottom: 5
   },
-
-  volunteerCard: {
-    backgroundColor: '#ECFDF5',
+  deleteBtn: {
+    marginTop: 30,
+    backgroundColor: "red",
     padding: 15,
-    borderRadius: 12,
-    marginTop: 15,
+    borderRadius: 8
   },
-
-  sectionTitle: {
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-
-  volunteerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#2ECC71',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  btnRow: {
-    flexDirection: 'row',
-    marginTop: 12,
-    gap: 10,
-  },
-
-  callBtn: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#2ECC71',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-
-  trackBtn: {
-    flex: 1,
-    backgroundColor: '#2ECC71',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-
-  mapBtn: {
-    backgroundColor: '#F58634',
-    marginTop: 20,
-    padding: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
+  deleteText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold"
+  }
 });

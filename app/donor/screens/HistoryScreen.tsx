@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,51 +6,46 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import API from '../../../services/api'; // adjust path
 
 export default function HistoryScreen() {
-  const data = [
-    {
-      id: 1,
-      title: 'Rice & Dal',
-      qty: '30 packets',
-      date: 'March 14, 2026',
-      status: 'Completed',
-    },
-    {
-      id: 2,
-      title: 'Fresh Vegetables',
-      qty: '15 kg',
-      date: 'March 13, 2026',
-      status: 'Completed',
-    },
-    {
-      id: 3,
-      title: 'Veg Meals',
-      qty: '40 packets',
-      date: 'March 15, 2026',
-      status: 'Pending',
-    },
-    {
-      id: 4,
-      title: 'Bread',
-      qty: '20 loaves',
-      date: 'March 12, 2026',
-      status: 'Cancelled',
-    },
-  ];
+  const [data, setData] = useState<any[]>([]);
+
+  // ✅ Fetch donation history
+  const fetchHistory = async () => {
+    try {
+      const res = await API.get('/donor/donations');
+
+      // Filter only past donations
+      const history = res.data.filter(
+        (item: any) =>
+          item.status === 'completed' ||
+          item.status === 'rejected'
+      );
+
+      setData(history);
+    } catch (err: unknown) {
+      const error = err as any;
+      console.log(error.response?.data || error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerText}>               Donation History</Text>
+        <Text style={styles.headerText}>Donation History</Text>
       </View>
 
       {/* List */}
       <View style={styles.list}>
         {data.map((item) => (
-          <HistoryCard key={item.id} item={item} />
+          <HistoryCard key={item._id} item={item} />
         ))}
       </View>
 
@@ -63,19 +58,19 @@ function HistoryCard({ item }: any) {
 
   const getStatusUI = () => {
     switch (item.status) {
-      case 'Completed':
+      case 'completed':
         return {
           icon: 'checkmark-circle' as const,
           bg: '#DCFCE7',
           color: '#16A34A',
         };
-      case 'Pending':
+      case 'pending':
         return {
           icon: 'time' as const,
           bg: '#FEF3C7',
           color: '#CA8A04',
         };
-      case 'Cancelled':
+      case 'rejected':
         return {
           icon: 'close-circle' as const,
           bg: '#FEE2E2',
@@ -103,8 +98,10 @@ function HistoryCard({ item }: any) {
       {/* Content */}
       <View style={styles.content}>
         <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.qty}>{item.qty}</Text>
-        <Text style={styles.date}>{item.date}</Text>
+        <Text style={styles.qty}>{item.quantity}</Text>
+        <Text style={styles.date}>
+          {new Date(item.createdAt).toLocaleDateString()}
+        </Text>
       </View>
 
       {/* Status Badge */}
@@ -117,72 +114,58 @@ function HistoryCard({ item }: any) {
     </View>
   );
 }
-
-/* 🎨 Styles */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F3F4F6',
-  },
-
-  header: {
-    backgroundColor: '#2ECC71',
-    padding: 30,
-    marginTop:30,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-
-  headerText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-
-  list: {
-    padding: 16,
-  },
-
-  card: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 12,
-    alignItems: 'center',
-  },
-
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  content: {
-    flex: 1,
-    marginLeft: 10,
-  },
-
-  title: {
-    fontWeight: 'bold',
-  },
-
-  qty: {
-    color: '#6B7280',
-    marginTop: 2,
-  },
-
-  date: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginTop: 2,
-  },
-
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-});
+   container: 
+   { flex: 1,
+     backgroundColor: '#F3F4F6', 
+    }, 
+   header:
+    { backgroundColor: '#2ECC71', 
+      padding: 30, 
+      marginTop:30,
+       borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10, 
+    }, 
+    headerText: 
+    { color: 'white', 
+      fontSize: 20, 
+      fontWeight: 'bold',
+   }, 
+   list: 
+   { padding: 16,
+    }, 
+    card:
+    { flexDirection: 'row',
+       backgroundColor: 'white', 
+       padding: 12, 
+       borderRadius: 12,
+        marginBottom: 12,
+         alignItems: 'center', 
+    }, 
+    iconBox: 
+    { width: 40, 
+      height: 40,
+      borderRadius: 20, 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+    }, 
+    content: 
+    { flex: 1, 
+      marginLeft: 10, 
+    }, 
+    title: 
+    { fontWeight: 'bold', 
+    }, 
+    qty: 
+    { color: '#6B7280', 
+      marginTop: 2, 
+    }, 
+    date: 
+    { fontSize: 12, 
+      color: '#9CA3AF', 
+      marginTop: 2, 
+    }, 
+    badge: 
+    { paddingHorizontal: 10, 
+      paddingVertical: 4, 
+      borderRadius: 20, }, });

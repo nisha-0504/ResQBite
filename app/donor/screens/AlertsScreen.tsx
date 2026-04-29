@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,36 +7,61 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import API from '../../../services/api'; // adjust path
 
 export default function AlertsScreen() {
-  const [alerts, setAlerts] = useState([
-    {
-      id: 1,
-      type: 'ngo',
-      title: 'NGO Assigned',
-      message: 'Your donation has been assigned to an NGO.',
-      time: '2 mins ago',
-      unread: true,
-    },
-    {
-      id: 2,
-      type: 'volunteer',
-      title: 'Volunteer Assigned',
-      message: 'Volunteer is on the way.',
-      time: '10 mins ago',
-      unread: true,
-    },
-    {
-      id: 3,
-      type: 'completed',
-      title: 'Donation Completed',
-      message: 'Food delivered successfully.',
-      time: '1 hour ago',
-      unread: false,
-    },
-  ]);
+  const [alerts, setAlerts] = useState<any[]>([]);
 
-  const markAsRead = (id: number) => {
+  // ✅ Fetch donations and convert to alerts
+  const fetchAlerts = async () => {
+    try {
+      const res = await API.get('/donor/donations');
+
+      const generatedAlerts = res.data.map((item: any) => {
+        let type = 'default';
+        let title = '';
+        let message = '';
+
+        if (item.status === 'accepted') {
+          type = 'ngo';
+          title = 'NGO Assigned';
+          message = 'Your donation has been accepted by an NGO.';
+        } else if (item.status === 'picked') {
+          type = 'volunteer';
+          title = 'Volunteer Assigned';
+          message = 'Volunteer is on the way.';
+        } else if (item.status === 'completed') {
+          type = 'completed';
+          title = 'Donation Completed';
+          message = 'Food delivered successfully.';
+        } else {
+          type = 'default';
+          title = 'Donation Created';
+          message = 'Waiting for NGO to accept.';
+        }
+
+        return {
+          id: item._id,
+          type,
+          title,
+          message,
+          time: new Date(item.createdAt).toLocaleString(),
+          unread: true,
+        };
+      });
+
+      setAlerts(generatedAlerts);
+    } catch (error) {
+      const err = error as { response?: { data?: unknown }; message?: string };
+      console.log(err.response?.data || err.message || String(error));
+    }
+  };
+
+  useEffect(() => {
+    fetchAlerts();
+  }, []);
+
+  const markAsRead = (id: string) => {
     setAlerts((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, unread: false } : item
@@ -44,16 +69,14 @@ export default function AlertsScreen() {
     );
   };
 
-  const deleteAlert = (id: number) => {
+  const deleteAlert = (id: string) => {
     setAlerts((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
     <View style={styles.container}>
-
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerText}>                Notifications</Text>
+        <Text style={styles.headerText}>Notifications</Text>
       </View>
 
       <ScrollView style={styles.list}>
@@ -66,59 +89,48 @@ export default function AlertsScreen() {
           />
         ))}
       </ScrollView>
-
     </View>
   );
 }
 
 /* 🔥 Alert Card */
 function AlertCard({ item, onPress, onDelete }: any) {
-
   const getIcon = () => {
-  switch (item.type) {
-    case 'ngo':
-      return { name: 'business' as const, color: '#3B82F6', bg: '#DBEAFE' };
-    case 'volunteer':
-      return { name: 'person' as const, color: '#F59E0B', bg: '#FEF3C7' };
-    case 'completed':
-      return { name: 'checkmark-done' as const, color: '#22C55E', bg: '#DCFCE7' };
-    default:
-      return { name: 'notifications' as const, color: '#6B7280', bg: '#E5E7EB' };
-  }
-};
+    switch (item.type) {
+      case 'ngo':
+        return { name: 'business' as const, color: '#3B82F6', bg: '#DBEAFE' };
+      case 'volunteer':
+        return { name: 'person' as const, color: '#F59E0B', bg: '#FEF3C7' };
+      case 'completed':
+        return { name: 'checkmark-done' as const, color: '#22C55E', bg: '#DCFCE7' };
+      default:
+        return { name: 'notifications' as const, color: '#6B7280', bg: '#E5E7EB' };
+    }
+  };
 
   const icon = getIcon();
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[
-        styles.card,
-        item.unread && styles.unread,
-      ]}
+      style={[styles.card, item.unread && styles.unread]}
     >
-
-      {/* Icon */}
       <View style={[styles.iconBox, { backgroundColor: icon.bg }]}>
         <Ionicons name={icon.name} size={18} color={icon.color} />
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.message}>{item.message}</Text>
         <Text style={styles.time}>{item.time}</Text>
       </View>
 
-      {/* Delete button */}
       <TouchableOpacity onPress={onDelete}>
         <Ionicons name="trash-outline" size={18} color="#EF4444" />
       </TouchableOpacity>
-
     </TouchableOpacity>
   );
 }
-
 /* 🎨 Styles */
 const styles = StyleSheet.create({
   container: {

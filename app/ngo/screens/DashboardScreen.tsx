@@ -22,7 +22,7 @@ const foodData = [
     name: "Hotel Green Leaf",
     meals: "50 meals",
     distance: "3.5 km",
-    image: "https://images.unsplash.com/photo-1594007654729-407eedc4fe24",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
   },
 ];
 
