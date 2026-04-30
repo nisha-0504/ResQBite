@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { getData, KEYS, removeData, saveData } from "../../../utils/storage";
 
 export default function CurrentTask() {
   const [status, setStatus] = useState("accepted");
@@ -22,14 +21,14 @@ export default function CurrentTask() {
     useCallback(() => {
       const loadTask = async () => {
         try {
-          const res = await fetch("http://10.0.2.2:5000/api/volunteer/current");
+          const res = await fetch("http://192.168.0.101:5000/api/volunteer/current");
           const data = await res.json();
 
           setTask(data);
 
           if (data?.status === "picked") {
             setStatus("picked_up");
-          } else {
+          } else if (data?.status === "accepted") {
             setStatus("accepted");
           }
         } catch (err) {
@@ -46,7 +45,7 @@ export default function CurrentTask() {
     if (!task) return;
 
     try {
-      await fetch(`http://10.0.2.2:5000/api/volunteer/cancel/${task._id}`, {
+      await fetch(`http://192.168.0.101:5000/api/volunteer/cancel/${task._id}`, {
         method: "PUT",
       });
 
@@ -61,7 +60,7 @@ export default function CurrentTask() {
   const handleAction = async () => {
     if (status === "accepted") {
       try {
-        await fetch(`http://10.0.2.2:5000/api/volunteer/pickup/${task._id}`, {
+        await fetch(`http://192.168.0.101:5000/api/volunteer/pickup/${task._id}`, {
           method: "PUT",
         });
 
@@ -71,7 +70,7 @@ export default function CurrentTask() {
       }
     } else if (status === "picked_up") {
       try {
-        await fetch(`http://10.0.2.2:5000/api/volunteer/complete/${task._id}`, {
+        await fetch(`http://192.168.0.101:5000/api/volunteer/complete/${task._id}`, {
           method: "PUT",
         });
 

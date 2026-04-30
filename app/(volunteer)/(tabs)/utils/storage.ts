@@ -7,6 +7,14 @@ export const KEYS = {
   HISTORY: "historyTasks"
 };
 
+// utils/userStore.ts
+export let currentUser = {
+  name: "Raj",
+};
+
+export const setUserName = (name: string) => {
+  currentUser.name = name;
+};
 // SAVE
 export const saveData = async (key: string, data: any) => {
   await AsyncStorage.setItem(key, JSON.stringify(data));

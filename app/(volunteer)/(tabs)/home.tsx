@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useState } from "react";
 import {
   Modal,
@@ -9,139 +10,126 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-import { getData, getStats, KEYS, saveData } from "../../../utils/storage";
+
 interface DetailRowProps {
   label: string;
-  value: string | number | undefined | null; // Allows for any data type coming from your Task
+  value: string | number | undefined | null;
 }
+
 interface User {
   name: string;
 }
+
 interface Task {
-  id: number;
   restaurant: string;
   ngo: string;
   distance: number;
   quantity: number;
   time: string;
-  priority: number;
   notes?: string;
-  vehicle?: string;
+  _id: string;
+  earnings?: number; // ➕ ADDED
 }
+
 export default function Home() {
   const router = useRouter();
+
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [notifVisible, setNotifVisible] = useState(false);
   const [notifications, setNotifications] = useState<
-    { id: number; text: string }[]
+    { id: string; text: string }[]
   >([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [user, setUser] = useState<User | null>(null); // Change this from 'null' to <User | null>(null)
+  const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState({
     deliveries: 0,
     meals: 0,
-    people: 0,
+    earnings: 0, // ➕ ADDED
   });
+  const [loadingTaskId, setLoadingTaskId] = useState<string | null>(null); // ➕ ADDED
+  const [acceptedTaskId, setAcceptedTaskId] = useState<string | null>(null); // ➕ ADDED
 
-  // Load Tasks, User, and Stats when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       const loadAllData = async () => {
         try {
-          const [taskData, userData, statsData] = await Promise.all([
-            getData(KEYS.AVAILABLE),
-            getData("USER"),
-            getStats(),
-          ]);
+          const res = await fetch(
+            "http://192.168.0.101:5000/api/volunteer/available"
+          );
+          const data = await res.json();
+          setTasks(data || []);
 
-          if (taskData) setTasks(taskData);
-          if (userData) setUser(userData);
-          if (statsData) setStats(statsData);
+          const name = await AsyncStorage.getItem("userName");
+          if (name && name.trim() !== "") {
+            setUser({ name });
+          }
+
+          const res2 = await fetch(
+            "http://192.168.0.101:5000/api/volunteer/history"
+          );
+          const history = await res2.json();
+
+          const deliveries = history.length;
+          const meals = history.reduce(
+            (sum: number, item: any) => sum + (item.quantity || 0),
+            0
+          );
+          const earnings = history.reduce(
+            (sum: number, item: any) => sum + (item.earnings || 0),
+            0
+          ); // ➕ ADDED
+
+          setStats({ deliveries, meals, earnings }); // ✅ UPDATED
         } catch (error) {
-          console.error("Error loading data:", error);
+          console.error(error);
         }
       };
 
       loadAllData();
-    }, []),
+    }, [])
   );
 
-  // Sync Notifications whenever tasks change
   useEffect(() => {
     const notifs = tasks.map((task) => ({
-      id: task.id,
+      id: task._id,
       text: `New task from ${task.restaurant}`,
     }));
     setNotifications(notifs);
   }, [tasks]);
 
-  // Initial Seed Data (Only if empty)
-  useEffect(() => {
-    const seedData = async () => {
-      const existing = await getData(KEYS.AVAILABLE);
-      if (!existing || existing.length === 0) {
-        await saveData(KEYS.AVAILABLE, [
-          {
-            id: 1,
-            restaurant: "A2B",
-            ngo: "Care Center",
-            distance: 2,
-            quantity: 20,
-            time: "6 PM",
-            priority: 2,
-          },
-          {
-            id: 2,
-            restaurant: "Dominos",
-            ngo: "Food Shelter",
-            distance: 3,
-            quantity: 15,
-            time: "5 PM",
-            priority: 1,
-          },
-        ]);
-        // Refresh local state after seeding
-        const freshData = await getData(KEYS.AVAILABLE);
-        setTasks(freshData);
-      }
-    };
-    seedData();
-  }, []);
-
-  const handleAccept = async (task:Task) => {
+  const handleAccept = async (task: Task) => {
     try {
-      // ✅ SAVE TASK HERE
-      await saveData(KEYS.ACTIVE, task);
+      setLoadingTaskId(task._id); // ➕ ADDED
 
-      const check = await getData(KEYS.ACTIVE);
-      console.log("SAVED TASK:", check);
+      await fetch(
+        `http://192.168.0.101:5000/api/volunteer/pickup/${task._id}`,
+        {
+          method: "PUT",
+        }
+      );
 
-      // ✅ REMOVE FROM AVAILABLE
-      const available = (await getData(KEYS.AVAILABLE)) ?? [];
-      const updated = available.filter((t:Task) => t.id !== task.id);
-
-      await saveData(KEYS.AVAILABLE, updated);
-
-      setTasks(updated);
+      setAcceptedTaskId(task._id); // ➕ ADDED
       setModalVisible(false);
 
-      // ✅ NAVIGATE
-      router.push("/(volunteer)/(tabs)/current_task");
+      setTimeout(() => {
+        router.push("/(volunteer)/(tabs)/current_task");
+      }, 800); // ➕ ADDED (small delay for UX)
+
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingTaskId(null); // ➕ ADDED
     }
   };
 
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.priority !== b.priority) return a.priority - b.priority;
-    return a.distance - b.distance;
-  });
+  const sortedTasks = [...tasks].sort(
+    (a, b) => (a.distance || 0) - (b.distance || 0)
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
         <View style={uiStyles.header}>
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
@@ -163,12 +151,11 @@ export default function Home() {
 
         <View style={{ height: 60 }} />
 
-        {/* STATS */}
         <View style={uiStyles.statsRow}>
           {[
             { icon: "bicycle", value: stats.deliveries, label: "Deliveries" },
             { icon: "trending-up", value: stats.meals, label: "Meals" },
-            { icon: "people", value: stats.people, label: "People" },
+            { icon: "cash", value: `₹${stats.earnings}`, label: "Earnings" }, // ➕ ADDED
           ].map((item, index) => (
             <View key={index} style={uiStyles.statsCard}>
               <Ionicons name={item.icon as any} size={22} color="#2ECC71" />
@@ -180,7 +167,6 @@ export default function Home() {
           ))}
         </View>
 
-        {/* CONTENT */}
         <View style={{ padding: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1F2933" }}>
             Available Tasks
@@ -192,14 +178,16 @@ export default function Home() {
             </Text>
           ) : (
             sortedTasks.map((task) => (
-              <View key={task.id} style={uiStyles.taskCard}>
+              <View key={task._id} style={uiStyles.taskCard}>
                 <Text style={{ fontWeight: "bold" }}>
                   Food Pickup & Delivery
                 </Text>
                 <Text style={{ color: "#6B7280" }}>
                   {task.restaurant} → {task.ngo}
                 </Text>
-                <Text>Distance: {task.distance} km</Text>
+                <Text>
+                  {task.distance} km • ₹{task.earnings || 0}  {task.time} {/* ✅ UPDATED */}
+                </Text>
 
                 <Pressable
                   onPress={() => {
@@ -208,7 +196,13 @@ export default function Home() {
                   }}
                   style={uiStyles.viewDetailsBtn}
                 >
-                  <Text style={{ color: "#fff" }}>View Details</Text>
+                  <Text style={{ color: "#fff" }}>
+                    {loadingTaskId === task._id
+                      ? "Loading..." // ➕ ADDED
+                      : acceptedTaskId === task._id
+                      ? "Accepted ✅" // ➕ ADDED
+                      : "View Details"}
+                  </Text>
                 </Pressable>
               </View>
             ))
@@ -216,7 +210,6 @@ export default function Home() {
         </View>
       </ScrollView>
 
-      {/* MODAL (POPUP) */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={uiStyles.modalOverlay}>
           <View style={uiStyles.modalContent}>
@@ -248,14 +241,17 @@ export default function Home() {
               style={uiStyles.acceptBtn}
             >
               <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                Accept Task
+                {loadingTaskId === selectedTask?._id
+                  ? "Loading..." // ➕ ADDED
+                  : acceptedTaskId === selectedTask?._id
+                  ? "Accepted ✅" // ➕ ADDED
+                  : "Accept Task"}
               </Text>
             </Pressable>
           </View>
         </View>
       </Modal>
 
-      {/* NOTIFICATIONS MODAL */}
       <Modal visible={notifVisible} transparent animationType="fade">
         <View style={uiStyles.modalOverlay}>
           <View style={uiStyles.modalContent}>
@@ -279,7 +275,7 @@ export default function Home() {
                   <Pressable
                     onPress={() =>
                       setNotifications((prev) =>
-                        prev.filter((n) => n.id !== item.id),
+                        prev.filter((n) => n.id !== item.id)
                       )
                     }
                   >
@@ -295,12 +291,10 @@ export default function Home() {
   );
 }
 
-// Helper Component for Modal Rows
 const DetailRow = ({ label, value }: DetailRowProps) => (
   <View style={uiStyles.detailRow}>
     <Text style={uiStyles.detailKey}>{label}</Text>
     <Text style={uiStyles.detailValue}>
-      {/* The 'toString()' ensures TypeScript is happy even if value is a number */}
       {value !== undefined && value !== null ? value.toString() : "-"}
     </Text>
   </View>
@@ -315,14 +309,12 @@ const uiStyles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 0,
     paddingHorizontal: 10,
   },
-
   statsCard: {
     backgroundColor: "#fff",
     padding: 15,
@@ -335,7 +327,6 @@ const uiStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-
   taskCard: {
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -343,7 +334,6 @@ const uiStyles = StyleSheet.create({
     marginTop: 15,
     elevation: 3,
   },
-
   viewDetailsBtn: {
     marginTop: 10,
     backgroundColor: "#FF8C42",
@@ -351,46 +341,38 @@ const uiStyles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
   },
-
   modalContent: {
     margin: 20,
     padding: 20,
     borderRadius: 16,
     backgroundColor: "#fff",
   },
-
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-
   detailContainer: {
     marginTop: 12,
   },
-
   detailRow: {
     flexDirection: "row",
     marginBottom: 10,
   },
-
   detailKey: {
     fontWeight: "600",
     color: "#374151",
     width: 110,
   },
-
   detailValue: {
     color: "#6B7280",
     flex: 1,
   },
-
   acceptBtn: {
     marginTop: 15,
     backgroundColor: "#2ECC71",
@@ -398,7 +380,6 @@ const uiStyles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-
   notifItem: {
     flexDirection: "row",
     justifyContent: "space-between",

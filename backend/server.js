@@ -5,8 +5,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
-// (you'll add this later)
-// const volunteerRoutes = require("./routes/volunteerRoutes");
+const volunteerRoutes = require("./routes/volunteerRoutes"); // ✅ MOVE HERE
 
 const app = express();
 
@@ -16,21 +15,19 @@ app.use(express.json());
 
 // routes
 app.use("/api/auth", authRoutes);
-// app.use("/api/volunteer", volunteerRoutes); // later
+app.use("/api/volunteer", volunteerRoutes); // ✅ MOVE HERE
 
 // test route
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// ✅ CONNECT DATABASE (IMPORTANT)
+// database
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-// server start
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// server start (ALWAYS LAST)
+app.listen(5000, "0.0.0.0", () => {
+  console.log("🔥 Server running on port 5000");
 });
-const volunteerRoutes = require("./routes/volunteerRoutes");
-app.use("/api/volunteer", volunteerRoutes);

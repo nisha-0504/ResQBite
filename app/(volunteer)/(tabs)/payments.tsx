@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { getData, KEYS } from "../../../utils/storage";
 
 // 🧠 Helper: get week range
 const getWeekRange = (dateStr: string) => {
@@ -34,51 +33,66 @@ export default function PaymentsScreen() {
   useFocusEffect(
     useCallback(() => {
       const loadPayments = async () => {
-        const history = ((await getData(KEYS.HISTORY)) || []).sort(
-          (a, b) => new Date(b.completedAt) - new Date(a.completedAt)
-        );
+        try {
+          const res = await fetch("http://192.168.0.101:5000/api/volunteer/history");
+          const data = await res.json();
 
-        const grouped: any = {};
+          console.log("PAYMENTS DATA:", data);
 
-        history.forEach((task: any, index: number) => {
-          const week = getWeekRange(task.completedAt);
-
-          if (!grouped[week]) {
-            grouped[week] = {
-              id: week,
-              week,
-              total: 0,
-              orders: []
-            };
+          if (!data || data.length === 0) {
+            setPayments([]);
+            return;
           }
 
-          const order = {
-            id: index.toString(),
-            route: `${task.restaurant} → ${task.ngo}`,
-            distance: `${task.distance} km`,
-            fee: task.earnings || 0,
-            date: new Date(task.completedAt).toISOString(),
-            paid: task.paid ?? false, // 🔥 IMPORTANT
-          };
-
-          grouped[week].orders.push(order);
-          grouped[week].total += order.fee;
-        });
-
-
-        // 🔥 SORT ORDERS INSIDE WEEK
-        Object.values(grouped).forEach((week: any) => {
-          week.orders.sort(
+          // 🔥 SORT BY DATE
+          const history = data.sort(
             (a: any, b: any) =>
-              new Date(b.date).getTime() - new Date(a.date).getTime()
+              new Date(b.completedAt || 0).getTime() -
+              new Date(a.completedAt || 0).getTime()
           );
-        });
-        Object.values(grouped).forEach((week: any) => {
-          const allPaid = week.orders.every((o: any) => o.paid);
-          week.status = allPaid ? "Paid" : "Unpaid";
-        });
 
-        setPayments(Object.values(grouped));
+          const grouped: any = {};
+
+          history.forEach((task: any, index: number) => {
+            const week = getWeekRange(task.completedAt || new Date().toISOString());
+
+            if (!grouped[week]) {
+              grouped[week] = {
+                id: week,
+                week,
+                total: 0,
+                orders: []
+              };
+            }
+
+            const order = {
+              id: index.toString(),
+              route: `${task.restaurant} → ${task.ngo}`,
+              distance: `${task.distance} km`,
+              fee: task.earnings || 0,
+              date: new Date(task.completedAt || Date.now()).toLocaleString("en-GB"), paid: task.paid ?? false,
+            };
+
+            grouped[week].orders.push(order);
+            grouped[week].total += order.fee;
+          });
+
+          // 🔥 SORT ORDERS + STATUS
+          Object.values(grouped).forEach((week: any) => {
+            week.orders.sort(
+              (a: any, b: any) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+            const allPaid = week.orders.every((o: any) => o.paid);
+            week.status = allPaid ? "Paid" : "Unpaid";
+          });
+
+          setPayments(Object.values(grouped));
+
+        } catch (err) {
+          console.error("PAYMENTS ERROR:", err);
+        }
       };
 
       loadPayments();
@@ -86,9 +100,21 @@ export default function PaymentsScreen() {
   );
 
   // 🔍 SEARCH
-  const filteredPayments = payments.filter((item: any) =>
-    item.week.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredPayments = payments.filter((item: any) => {
+    const query = search.toLowerCase();
+
+    // 1️⃣ Match week range (Apr 26 → May 02)
+    if (item.week.toLowerCase().includes(query)) return true;
+
+    // 2️⃣ Match inside orders (date OR route)
+    return item.orders.some((order: any) =>
+      new Date(order.date)
+        .toLocaleString()
+        .toLowerCase()
+        .includes(query) ||
+      order.route.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <View style={styles.container}>
@@ -151,7 +177,7 @@ export default function PaymentsScreen() {
               </Text>
 
               <TouchableOpacity onPress={() => setSelectedWeek(null)}>
-                <Text style={styles.close}>❌</Text>
+                <Text style={styles.close}>✕</Text>
               </TouchableOpacity>
             </View>
 
@@ -161,26 +187,46 @@ export default function PaymentsScreen() {
               renderItem={({ item }: any) => (
                 <View style={styles.orderCard}>
 
-                  <Text style={styles.date}>{item.date}</Text>
+                  {/* ROUTE */}
                   <Text style={styles.route}>{item.route}</Text>
 
+                  {/* DISTANCE + FEE */}
                   <View style={styles.row}>
                     <Text>{item.distance}</Text>
                     <Text style={styles.fee}>₹{item.fee}</Text>
-                    <Text
-                      style={{
-                        color: item.paid ? "#2ECC71" : "red",
-                        fontWeight: "bold",
-                        marginTop: 4
-                      }}
-                    >
-                      {item.paid ? "Paid" : "Unpaid"}
-                    </Text>
                   </View>
+
+                  {/* DATE */}
+                  <Text style={styles.date}>{item.date}</Text>
+
+                  {/* STATUS */}
+                  <Text
+                    style={{
+                      color: item.paid ? "#2ECC71" : "red",
+                      fontWeight: "bold",
+                      marginTop: 5
+                    }}
+                  >
+                    {item.paid ? "Paid" : "Unpaid"}
+                  </Text>
 
                 </View>
               )}
             />
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#2ecc71",
+                padding: 12,
+                borderRadius: 10,
+                marginTop: 10,
+                alignItems: "center"
+              }}
+              onPress={() => setSelectedWeek(null)}
+            >
+              <Text style={{ color: "white", fontWeight: "bold" }}>
+                Close
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -259,7 +305,9 @@ const styles = StyleSheet.create({
   },
 
   close: {
-    fontSize: 18
+    fontSize: 18,
+    color: "#333",   // 👈 makes it clean, not red
+    fontWeight: "bold"
   },
 
   orderCard: {

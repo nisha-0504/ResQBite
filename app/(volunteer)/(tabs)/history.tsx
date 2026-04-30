@@ -9,7 +9,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { getData, KEYS } from "../../../utils/storage";
 
 export default function History() {
   const [search, setSearch] = useState("");
@@ -21,12 +20,21 @@ export default function History() {
   useFocusEffect(
     useCallback(() => {
       const loadHistory = async () => {
-        const data = (await getData(KEYS.HISTORY)) || [];
+        try {
+          const res = await fetch("http://192.168.0.101:5000/api/volunteer/history");
+          const data = await res.json();
 
-        // 🔥 LIFO (latest first)
-        const sorted = [...data].reverse();
+          // latest first
+          const sorted = [...data].sort(
+            (a, b) =>
+              new Date(b.completedAt).getTime() -
+              new Date(a.completedAt).getTime()
+          );
 
-        setHistoryData(sorted);
+          setHistoryData(sorted);
+        } catch (err) {
+          console.error("Failed to fetch history:", err);
+        }
       };
 
       loadHistory();
@@ -131,7 +139,7 @@ export default function History() {
               </Text>
 
               <Text style={{ fontSize: 12, color: "gray", marginTop: 5 }}>
-                {new Date(item.completedAt).toLocaleString()}
+                {new Date(item.completedAt).toLocaleString("en-GB")}
               </Text>
             </Pressable>
           ))}
@@ -205,22 +213,22 @@ export default function History() {
               </View>
             </View>
 
-          <Pressable
-            onPress={() => setModalVisible(false)}
-            style={{
-              marginTop: 15,
-              backgroundColor: "#2ECC71",
-              padding: 12,
-              borderRadius: 10,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>
-              Close
-            </Text>
-          </Pressable>
+            <Pressable
+              onPress={() => setModalVisible(false)}
+              style={{
+                marginTop: 15,
+                backgroundColor: "#2ECC71",
+                padding: 12,
+                borderRadius: 10,
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Close
+              </Text>
+            </Pressable>
+          </View>
         </View>
-    </View>
       </Modal >
     </View >
   );

@@ -1,18 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useState } from "react";
 import {
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
+  View,
   Text,
   TextInput,
-  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  Modal,
+  Pressable
 } from "react-native";
-import { getStats, saveData } from "../../../utils/storage";
-
 const iconBox = {
   backgroundColor: "#E8F5E9",
   padding: 10,
@@ -81,21 +82,42 @@ export default function Profile() {
   useFocusEffect(
     useCallback(() => {
       const loadStats = async () => {
-        const stats = await getStats();
-        setUser((prev) => ({
-          ...prev,
-          deliveries: stats.deliveries,
-          meals: stats.meals,
-          people: stats.people,
-        }));
+        try {
+          const res = await fetch("http://192.168.0.101:5000/api/volunteer/history");
+          const data = await res.json();
+
+          const deliveries = data.length;
+
+          const meals = data.reduce(
+            (sum, item) => sum + (item.quantity || 0),
+            0
+          );
+
+          const people = Math.floor(meals / 2); // simple assumption
+
+          setUser((prev) => ({
+            ...prev,
+            deliveries,
+            meals,
+            people,
+          }));
+        } catch (err) {
+          console.error("Failed to load stats:", err);
+        }
       };
+
       loadStats();
     }, [])
   );
 
   const handleSave = async () => {
-    await saveData("USER", user);
-    setModalVisible(false);
+    try {
+      await AsyncStorage.setItem("userName", user.name.trim());
+      console.log("Saved:", user.name);
+      setModalVisible(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
   const handleLogout = () => router.replace("/login");
 
@@ -117,10 +139,20 @@ export default function Profile() {
             Profile
           </Text>
 
-          <Image
-            source={{ uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png" }}
-            style={{ width: 80, height: 80, borderRadius: 40, marginTop: 10 }}
-          />
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: "#E5E7EB",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontSize: 28, color: "#6B7280" }}>
+              {user.name?.[0] || "U"}
+            </Text>
+          </View>
 
           <Text style={{ color: "#fff", fontSize: 18, marginTop: 10 }}>
             {user.name}
@@ -231,6 +263,7 @@ export default function Profile() {
           Actions
         </Text>
 
+        {/* EDIT PROFILE */}
         <Pressable
           onPress={() => setModalVisible(true)}
           style={{
@@ -241,11 +274,15 @@ export default function Profile() {
             flexDirection: "row",
             alignItems: "center",
             elevation: 3,
-          }}>
+          }}
+        >
           <Ionicons name="create-outline" size={20} color="#2ECC71" />
-          <Text style={{ marginLeft: 10 }}>Edit Profile</Text>
+          <Text style={{ marginLeft: 10, fontSize: 16 }}>
+            Edit Profile
+          </Text>
         </Pressable>
 
+        {/* LOGOUT */}
         <Pressable
           onPress={() => setLogoutVisible(true)}
           style={{
@@ -256,61 +293,87 @@ export default function Profile() {
             flexDirection: "row",
             alignItems: "center",
             elevation: 3,
-          }}>
+          }}
+        >
           <Ionicons name="log-out-outline" size={20} color="red" />
-          <Text style={{ marginLeft: 10, color: "red" }}>Logout</Text>
+          <Text style={{ marginLeft: 10, color: "red" }}>
+            Logout
+          </Text>
         </Pressable>
-
       </ScrollView>
 
       {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={{ flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <View style={{ margin: 20, padding: 20, borderRadius: 16, backgroundColor: "#fff" }}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1, justifyContent: "center" }}
+          >
+            <ScrollView
+              contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={{ margin: 20, padding: 20, borderRadius: 16, backgroundColor: "#fff" }}>
 
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>Edit Profile</Text>
+                <Text style={{ fontSize: 18, fontWeight: "bold" }}>Edit Profile</Text>
 
-            {[
-              { key: "name", label: "Name" },
-              { key: "phone", label: "Phone" },
-              { key: "location", label: "Location" },
-              { key: "vehicle", label: "Vehicle" },
-              { key: "email", label: "Email" },
-              { key: "age", label: "Age" },
-              { key: "gender", label: "Gender" },
-              { key: "address", label: "Address" },
-            ].map((field) => (
-              <View key={field.key} style={styles.inputGroup}>
+                {[
+                  { key: "name", label: "Name" },
+                  { key: "phone", label: "Phone" },
+                  { key: "location", label: "Location" },
+                  { key: "vehicle", label: "Vehicle" },
+                  { key: "email", label: "Email" },
+                  { key: "age", label: "Age" },
+                  { key: "gender", label: "Gender" },
+                  { key: "address", label: "Address" },
+                ].map((field) => (
+                  <View key={field.key} style={styles.inputGroup}>
 
-                <Text style={styles.label}>{field.label}:</Text>
+                    <Text style={styles.label}>{field.label}:</Text>
 
-                <TextInput
-                  value={String(user[field.key])}
-                  onChangeText={(text) =>
-                    setUser({
-                      ...user,
-                      [field.key]: field.key === "age" ? Number(text) : text,
-                    })
-                  }
-                  style={styles.inputBox}
-                />
+                    <TextInput
+                      value={String(user[field.key])}
+                      onChangeText={(text) =>
+                        setUser({
+                          ...user,
+                          [field.key]: field.key === "age" ? Number(text) : text,
+                        })
+                      }
+                      style={styles.inputBox}
+                    />
+
+                  </View>
+                ))}
+
+                <Pressable
+                  onPress={handleSave}
+                  style={{
+                    marginTop: 15,
+                    backgroundColor: "#2ECC71",
+                    padding: 12,
+                    borderRadius: 10,
+                    alignItems: "center",
+                  }}>
+                  <Text style={{ color: "#fff" }}>Save</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setModalVisible(false)}
+                  style={{
+                    marginTop: 10,
+                    backgroundColor: "#E5E7EB",
+                    padding: 12,
+                    borderRadius: 10,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#111827", fontWeight: "500" }}>
+                    Close
+                  </Text>
+                </Pressable>
 
               </View>
-            ))}
-
-            <Pressable
-              onPress={handleSave}
-              style={{
-                marginTop: 15,
-                backgroundColor: "#2ECC71",
-                padding: 12,
-                borderRadius: 10,
-                alignItems: "center",
-              }}>
-              <Text style={{ color: "#fff" }}>Save</Text>
-            </Pressable>
-
-          </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
       <Modal visible={logoutVisible} transparent animationType="fade">
@@ -388,6 +451,6 @@ export default function Profile() {
           </View>
         </View>
       </Modal>
-    </View>
+    </View >
   );
 }
