@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import { ViewStyle } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useState } from "react";
 import {
@@ -22,9 +23,9 @@ const iconBox = {
 };
 
 const label = { color: "#6B7280" };
-const value = { fontWeight: "bold" };
+const value = { fontWeight: "bold" as const };
 
-const smallCard = {
+const smallCard: ViewStyle = {
   backgroundColor: "#fff",
   padding: 12,
   borderRadius: 12,
@@ -53,7 +54,10 @@ const styles = {
   },
 };
 
-const smallValue = { fontWeight: "bold" };
+const smallValue = {
+  fontSize: 14,
+  fontWeight: "bold" as const,
+};
 const smallLabel = { fontSize: 12, color: "#6B7280" };
 
 
@@ -75,6 +79,9 @@ export default function Profile() {
     people: 0,
     rating: 4.8,
     joined: "Jan 2026",
+    vehicleNumber: "KA021999", // ➕ ADDED
+    birthday: "12-01-1996", // ➕ ADDED
+    earnings: 0, // ➕ ADDED
   });
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -89,9 +96,14 @@ export default function Profile() {
           const deliveries = data.length;
 
           const meals = data.reduce(
-            (sum, item) => sum + (item.quantity || 0),
+            (sum: number, item: any) => sum + (item.quantity || 0),
             0
           );
+
+          const earnings = data.reduce(
+            (sum: number, item: any) => sum + (item.earnings || 0),
+            0
+          ); // ➕ ADDED
 
           const people = Math.floor(meals / 2); // simple assumption
 
@@ -99,7 +111,7 @@ export default function Profile() {
             ...prev,
             deliveries,
             meals,
-            people,
+            earnings,
           }));
         } catch (err) {
           console.error("Failed to load stats:", err);
@@ -130,33 +142,63 @@ export default function Profile() {
         <View style={{
           backgroundColor: "#2ECC71",
           padding: 20,
-          paddingTop: 50,
+          paddingTop: 40,
+          minHeight: 140,
           borderBottomLeftRadius: 30,
           borderBottomRightRadius: 30,
-          alignItems: "center",
+          alignItems: "flex-start",
         }}>
-          <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
-            Profile
-          </Text>
 
           <View
             style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: "#E5E7EB",
-              justifyContent: "center",
+              flexDirection: "row",
               alignItems: "center",
+              justifyContent: "flex-start",
+              paddingHorizontal: 15, // ✅ keeps it centered
+              borderBottomLeftRadius: 30,
+              borderBottomRightRadius: 30,
+              marginTop: 10,
             }}
           >
-            <Text style={{ fontSize: 28, color: "#6B7280" }}>
-              {user.name?.[0] || "U"}
-            </Text>
-          </View>
+            {/* Profile Circle */}
+            <View
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: "#E5E7EB",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontSize: 30, color: "#6B7280" }}>
+                {user.name?.[0] || "U"}
+              </Text>
+            </View>
 
-          <Text style={{ color: "#fff", fontSize: 18, marginTop: 10 }}>
-            {user.name}
-          </Text>
+            {/* Name + small text */}
+            <View style={{ marginLeft: 12 }}>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 30,
+                  fontWeight: "600",
+                }}
+              >
+                {user.name}
+              </Text>
+
+              <Text
+                style={{
+                  color: "#E5E7EB",
+                  fontSize: 13,
+                  marginTop: 2,
+                }}
+              >
+                Volunteer
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* DETAILS */}
@@ -164,7 +206,8 @@ export default function Profile() {
           backgroundColor: "#fff",
           borderRadius: 20,
           padding: 15,
-          marginTop: 10,
+          marginTop: 15,
+          marginHorizontal: 10,
           elevation: 3,
         }}>
 
@@ -215,7 +258,7 @@ export default function Profile() {
         </View>
 
         {/* SMALL STATS */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 15 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 15, marginHorizontal: 10 }}>
           <View style={smallCard}>
             <Text style={smallValue}>⭐ {user.rating}</Text>
             <Text style={smallLabel}>Rating</Text>
@@ -235,31 +278,41 @@ export default function Profile() {
         </View>
 
         {/* IMPACT */}
-        <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20, marginHorizontal: 10 }}>
           Your Impact ⭐
         </Text>
 
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10, marginHorizontal: 10 }}>
           {[
             { label: "Deliveries", value: user.deliveries },
             { label: "Meals", value: user.meals },
-            { label: "People", value: user.people },
-          ].map((item, index) => (
-            <View key={index} style={{
-              backgroundColor: "#2ECC71",
-              padding: 15,
-              borderRadius: 16,
-              alignItems: "center",
-              width: "30%",
-            }}>
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>{item.value}</Text>
-              <Text style={{ color: "#E5E7EB" }}>{item.label}</Text>
-            </View>
-          ))}
+            { label: "Earnings", value: `₹${user.earnings}` },].map((item, index) => (
+              <View key={index} style={{
+                backgroundColor: "#2ECC71",
+                padding: 15,
+                borderRadius: 16,
+                alignItems: "center",
+                width: "30%",
+              }}>
+                <Ionicons
+                  name={
+                    item.label === "Deliveries"
+                      ? "bicycle-outline"
+                      : item.label === "Meals"
+                        ? "restaurant-outline"
+                        : "cash-outline"
+                  }
+                  size={18}
+                  color="#fff"
+                /> // ➕ ADDED
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>{item.value}</Text>
+                <Text style={{ color: "#fff" }}>{item.label}</Text>
+              </View>
+            ))}
         </View>
 
         {/* ACTIONS */}
-        <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20 }}>
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 20, marginHorizontal: 10 }}>
           Actions
         </Text>
 
@@ -271,6 +324,7 @@ export default function Profile() {
             borderRadius: 16,
             padding: 15,
             marginTop: 10,
+            marginHorizontal: 8,
             flexDirection: "row",
             alignItems: "center",
             elevation: 3,
@@ -290,13 +344,14 @@ export default function Profile() {
             borderRadius: 16,
             padding: 15,
             marginTop: 10,
+            marginHorizontal: 8,
             flexDirection: "row",
             alignItems: "center",
             elevation: 3,
           }}
         >
           <Ionicons name="log-out-outline" size={20} color="red" />
-          <Text style={{ marginLeft: 10, color: "red" }}>
+          <Text style={{ marginLeft: 10, fontSize: 16, color: "red" }}>
             Logout
           </Text>
         </Pressable>
@@ -319,12 +374,14 @@ export default function Profile() {
 
                 {[
                   { key: "name", label: "Name" },
+                  { key: "birthday", label: "Birthday (e.g. DD-MM-YYY)" },
                   { key: "phone", label: "Phone" },
                   { key: "location", label: "Location" },
-                  { key: "vehicle", label: "Vehicle" },
+                  { key: "vehicle", label: "Vehicle (e.g. Bike, Car)" },
+                  { key: "vehicleNumber", label: "Vehicle Number" },
                   { key: "email", label: "Email" },
                   { key: "age", label: "Age" },
-                  { key: "gender", label: "Gender" },
+                  { key: "gender", label: "Gender (e.g. Female, Male, Others)" },
                   { key: "address", label: "Address" },
                 ].map((field) => (
                   <View key={field.key} style={styles.inputGroup}>
@@ -332,14 +389,14 @@ export default function Profile() {
                     <Text style={styles.label}>{field.label}:</Text>
 
                     <TextInput
-                      value={String(user[field.key])}
-                      onChangeText={(text) =>
+                      value={String(user[field.key as keyof typeof user])} onChangeText={(text) =>
                         setUser({
                           ...user,
-                          [field.key]: field.key === "age" ? Number(text) : text,
+                          [field.key as keyof typeof user]:
+                            field.key === "age" ? Number(text) : text,
                         })
                       }
-                      style={styles.inputBox}
+                    style={styles.inputBox}
                     />
 
                   </View>

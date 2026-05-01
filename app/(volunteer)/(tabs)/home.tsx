@@ -28,7 +28,8 @@ interface Task {
   time: string;
   notes?: string;
   _id: string;
-  earnings?: number; // ➕ ADDED
+  earnings?: number;
+  urgency?: string;
 }
 
 export default function Home() {
@@ -45,10 +46,11 @@ export default function Home() {
   const [stats, setStats] = useState({
     deliveries: 0,
     meals: 0,
-    earnings: 0, // ➕ ADDED
+    earnings: 0,
   });
-  const [loadingTaskId, setLoadingTaskId] = useState<string | null>(null); // ➕ ADDED
-  const [acceptedTaskId, setAcceptedTaskId] = useState<string | null>(null); // ➕ ADDED
+
+  // ❌ REMOVED loadingTaskId
+  // ❌ REMOVED acceptedTaskId
 
   useFocusEffect(
     useCallback(() => {
@@ -78,9 +80,9 @@ export default function Home() {
           const earnings = history.reduce(
             (sum: number, item: any) => sum + (item.earnings || 0),
             0
-          ); // ➕ ADDED
+          );
 
-          setStats({ deliveries, meals, earnings }); // ✅ UPDATED
+          setStats({ deliveries, meals, earnings });
         } catch (error) {
           console.error(error);
         }
@@ -100,8 +102,6 @@ export default function Home() {
 
   const handleAccept = async (task: Task) => {
     try {
-      setLoadingTaskId(task._id); // ➕ ADDED
-
       await fetch(
         `http://192.168.0.101:5000/api/volunteer/pickup/${task._id}`,
         {
@@ -109,17 +109,11 @@ export default function Home() {
         }
       );
 
-      setAcceptedTaskId(task._id); // ➕ ADDED
       setModalVisible(false);
-
-      setTimeout(() => {
-        router.push("/(volunteer)/(tabs)/current_task");
-      }, 800); // ➕ ADDED (small delay for UX)
-
+      setTasks((prev) => prev.filter((t) => t._id !== task._id));
+      router.push("/(volunteer)/(tabs)/current_task");
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoadingTaskId(null); // ➕ ADDED
     }
   };
 
@@ -135,10 +129,10 @@ export default function Home() {
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
             <View>
-              <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
-                Hi, {user?.name || "Volunteer"} 👋
+              <Text style={{ fontSize: 30, fontWeight: "bold", color: "#fff" }}>
+                Welcome, {user?.name || "Volunteer"} 👋
               </Text>
-              <Text style={{ color: "#E8F5E9", marginTop: 5 }}>
+              <Text style={{ color: "#E8F5E9", marginTop: 8 }}>
                 Ready to Help Today?
               </Text>
             </View>
@@ -149,20 +143,42 @@ export default function Home() {
           </View>
         </View>
 
-        <View style={{ height: 60 }} />
-
-        <View style={uiStyles.statsRow}>
+        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 30, marginBottom: 10 }}>
           {[
             { icon: "bicycle", value: stats.deliveries, label: "Deliveries" },
             { icon: "trending-up", value: stats.meals, label: "Meals" },
-            { icon: "cash", value: `₹${stats.earnings}`, label: "Earnings" }, // ➕ ADDED
+            {
+              icon: "cash",
+              value: `₹${stats.earnings}`,
+              label: "Earnings Today",
+            },
           ].map((item, index) => (
-            <View key={index} style={uiStyles.statsCard}>
-              <Ionicons name={item.icon as any} size={22} color="#2ECC71" />
-              <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 5 }}>
+            <View
+              key={index}
+              style={{
+                backgroundColor: "#fff",
+                paddingVertical: 14,
+                paddingHorizontal: 10,
+                borderRadius: 16,
+                width: 118,
+                alignItems: "center",
+                elevation: 5,
+              }}
+            >
+              <Ionicons
+                name={
+                  item.label === "Deliveries"
+                    ? "bicycle-outline"
+                    : item.label === "Meals"
+                      ? "restaurant-outline"
+                      : "cash-outline"
+                }
+                size={22}
+                color="#2ECC71"
+              />              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 {item.value}
               </Text>
-              <Text style={{ color: "#6B7280" }}>{item.label}</Text>
+              <Text>{item.label}</Text>
             </View>
           ))}
         </View>
@@ -185,8 +201,13 @@ export default function Home() {
                 <Text style={{ color: "#6B7280" }}>
                   {task.restaurant} → {task.ngo}
                 </Text>
+
                 <Text>
-                  {task.distance} km • ₹{task.earnings || 0}  {task.time} {/* ✅ UPDATED */}
+                  {(task?.distance ?? 0)} km • ₹{task?.earnings ?? 0} {task?.time || ""}
+                </Text>
+
+                <Text>
+                  {task.urgency === "urgent" ? "Urgent" : "Normal"}
                 </Text>
 
                 <Pressable
@@ -197,11 +218,7 @@ export default function Home() {
                   style={uiStyles.viewDetailsBtn}
                 >
                   <Text style={{ color: "#fff" }}>
-                    {loadingTaskId === task._id
-                      ? "Loading..." // ➕ ADDED
-                      : acceptedTaskId === task._id
-                      ? "Accepted ✅" // ➕ ADDED
-                      : "View Details"}
+                    View Details {/* ✅ UPDATED */}
                   </Text>
                 </Pressable>
               </View>
@@ -209,6 +226,8 @@ export default function Home() {
           )}
         </View>
       </ScrollView>
+
+      {/* MODALS unchanged */}
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={uiStyles.modalOverlay}>
@@ -231,6 +250,14 @@ export default function Home() {
               />
               <DetailRow label="Quantity:" value={selectedTask?.quantity} />
               <DetailRow label="Time:" value={selectedTask?.time} />
+              <DetailRow
+                label="Earnings:"
+                value={`₹${selectedTask?.earnings || 0}`} // ➕ ADDED
+              />
+              <DetailRow
+                label="Pickup Deadline:"
+                value={selectedTask?.time} // ➕ ADDED
+              />
               {selectedTask?.notes && (
                 <DetailRow label="Notes:" value={selectedTask?.notes} />
               )}
@@ -241,11 +268,7 @@ export default function Home() {
               style={uiStyles.acceptBtn}
             >
               <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                {loadingTaskId === selectedTask?._id
-                  ? "Loading..." // ➕ ADDED
-                  : acceptedTaskId === selectedTask?._id
-                  ? "Accepted ✅" // ➕ ADDED
-                  : "Accept Task"}
+                Accept Task
               </Text>
             </Pressable>
           </View>
@@ -271,7 +294,7 @@ export default function Home() {
             ) : (
               notifications.map((item) => (
                 <View key={item.id} style={uiStyles.notifItem}>
-                  <Text style={{ flex: 1 }}>{item.text}</Text>
+                  <Text style={{ flex: 1 }}>{item?.text || ""}</Text>
                   <Pressable
                     onPress={() =>
                       setNotifications((prev) =>
@@ -306,6 +329,7 @@ const uiStyles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
     paddingBottom: 25,
+    minHeight: 140, // ➕ ADDED
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },

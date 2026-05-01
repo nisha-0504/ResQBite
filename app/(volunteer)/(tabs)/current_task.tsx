@@ -1,5 +1,5 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import {
   Linking,
   Modal,
@@ -16,7 +16,6 @@ export default function CurrentTask() {
   const [showDeliveredPopup, setShowDeliveredPopup] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  // 🔥 LOAD TASK
   useFocusEffect(
     useCallback(() => {
       const loadTask = async () => {
@@ -39,8 +38,12 @@ export default function CurrentTask() {
       loadTask();
     }, [])
   );
+  useEffect(() => {
+    if (!showDeliveredPopup) {
+      setTask(null);
+    }
+  }, [showDeliveredPopup]);
 
-  // ❌ CANCEL TASK (FIXED)
   const cancelTask = async () => {
     if (!task) return;
 
@@ -56,7 +59,6 @@ export default function CurrentTask() {
     }
   };
 
-  // 🚀 DELIVERY FLOW
   const handleAction = async () => {
     if (status === "accepted") {
       try {
@@ -81,7 +83,6 @@ export default function CurrentTask() {
     }
   };
 
-  // 📍 MAP
   const openMaps = () => {
     if (!task) return;
 
@@ -95,14 +96,12 @@ export default function CurrentTask() {
     Linking.openURL(url);
   };
 
-  // TEXT
   const getButtonText = () => {
     if (status === "accepted") return "Mark Picked Up";
     if (status === "picked_up") return "Mark Delivered";
     return "";
   };
 
-  // 🧠 EMPTY STATE
   if (!task) {
     return (
       <View style={styles.center}>
@@ -110,25 +109,42 @@ export default function CurrentTask() {
       </View>
     );
   }
+  const handleCall = async (type: "restaurant" | "ngo") => {
+    const phone =
+      type === "restaurant"
+        ? "tel:9876543210"
+        : "tel:9123456780";
+
+    const supported = await Linking.canOpenURL(phone); // ✅ ADDED
+
+    if (supported) {
+      await Linking.openURL(phone); // ✅ UPDATED
+    } else {
+      console.log("Dialer not supported"); // ✅ ADDED
+    }
+
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
 
-        {/* HEADER */}
         <View style={styles.header}>
           <Text style={styles.headerText}>Current Delivery</Text>
         </View>
 
-        {/* MAP */}
+        {/* ❌ REMOVED ETA CARD */}
+
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Navigation</Text>
           <TouchableOpacity style={styles.button} onPress={openMaps}>
-            <Text style={styles.buttonText}>Start Navigation</Text>
+            <Text style={styles.buttonText}>
+              Start Navigation (7 km • 18 min)
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* 🔥 ROUTE (FIXED UI) */}
+        {/* 🔥 ROUTE */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Route</Text>
 
@@ -141,19 +157,38 @@ export default function CurrentTask() {
 
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>Pickup</Text>
-              <Text style={styles.place}>{task.restaurant}</Text>
+              <Text style={styles.place}>{task?.restaurant || "N/A"}</Text>
 
               <Text style={[styles.label, { marginTop: 16 }]}>Drop</Text>
-              <Text style={styles.place}>{task.ngo}</Text>
+              <Text style={styles.place}>{task?.ngo || "N/A"}</Text>
             </View>
           </View>
         </View>
 
-        {/* 🔥 STATUS (FIXED UI) */}
+        {/* ➕ ADDED CALL BUTTONS */}
+        <View style={styles.card}>
+          <TouchableOpacity
+            style={{ flexDirection: "row", alignItems: "center" }}
+            onPress={() => handleCall("restaurant")} // ✅ ADDED
+          >
+            <Text style={{ marginRight: 10 }}>📞</Text>
+            <Text>Call Restaurant</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{ flexDirection: "row", alignItems: "center", marginTop: 12 }}
+            onPress={() => handleCall("ngo")} // ✅ ADDED
+          >
+            <Text style={{ marginRight: 10 }}>📞</Text>
+            <Text>Call NGO</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ❌ REMOVED SAFETY NOTE */}
+
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Order Status</Text>
 
-          {/* STEP 1 */}
           <View style={styles.stepRow}>
             <View style={[styles.circle, styles.done]} />
             <View style={styles.stepText}>
@@ -163,7 +198,6 @@ export default function CurrentTask() {
 
           <View style={styles.verticalLine} />
 
-          {/* STEP 2 */}
           <View style={styles.stepRow}>
             <View style={[styles.circle, status === "picked_up" && styles.done]} />
             <View style={styles.stepText}>
@@ -173,7 +207,6 @@ export default function CurrentTask() {
 
           <View style={styles.verticalLine} />
 
-          {/* STEP 3 */}
           <View style={styles.stepRow}>
             <View style={styles.circle} />
             <View style={styles.stepText}>
@@ -184,10 +217,15 @@ export default function CurrentTask() {
 
       </ScrollView>
 
-      {/* ACTION BUTTONS */}
       <View style={styles.bottom}>
-        <TouchableOpacity style={styles.primaryBtn} onPress={handleAction}>
-          <Text style={styles.primaryText}>{getButtonText()}</Text>
+        <TouchableOpacity
+          style={styles.primaryBtn}
+          onPress={handleAction}
+          disabled={!task}   // ✅ ADD THIS LINE
+        >
+          {getButtonText() ? (
+            <Text style={styles.primaryText}>{getButtonText()}</Text>
+          ) : null}
         </TouchableOpacity>
 
         {status === "accepted" && (
@@ -200,27 +238,29 @@ export default function CurrentTask() {
         )}
       </View>
 
-      {/* DELIVERY POPUP */}
       <Modal visible={showDeliveredPopup} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.popup}>
-            <Text style={{ fontWeight: "bold", marginBottom: 10 }}>
-              ✅ Order Delivered
+            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 12 }}>
+              Delivery Completed!
+            </Text>
+
+            <Text style={{ marginBottom: 20, fontSize: 16 }}>
+              You earned <Text>₹60</Text>
             </Text>
 
             <TouchableOpacity
-              style={styles.button}
+              style={[styles.button, { width: "50%", paddingVertical: 14 }]} // ✅ UPDATED
               onPress={() => {
                 setShowDeliveredPopup(false);
-                setTask(null);
               }}
             >
-              <Text style={styles.buttonText}>Close</Text>
+              <Text style={[styles.buttonText, { fontSize: 18 }]}>Close</Text> // ✅ UPDATED
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-      {/* ❌ CANCEL CONFIRMATION MODAL */}
+
       <Modal visible={showCancelModal} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.popup}>
@@ -254,7 +294,7 @@ export default function CurrentTask() {
   );
 }
 
-// 🎨 STYLES
+// STYLES UNCHANGED
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F5" },
 
@@ -289,17 +329,6 @@ const styles = StyleSheet.create({
 
   buttonText: { color: "white", fontWeight: "bold" },
 
-  cancel: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "red",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center"
-  },
-
-  cancelText: { color: "red", fontWeight: "bold" },
-
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   overlay: {
@@ -317,25 +346,13 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
 
-  routeContainer: {
-    width: 30,
-    alignItems: "center",
-    marginRight: 10
-  },
-
   dotGreen: { width: 10, height: 10, borderRadius: 5, backgroundColor: "green" },
   dotRed: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red" },
 
   line: { width: 2, flex: 1, backgroundColor: "#ccc" },
 
-  placeTitle: { fontSize: 12, color: "gray" },
   place: { fontSize: 16, fontWeight: "bold" },
 
-  statusRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 6
-  },
   stepRow: {
     flexDirection: "row",
     alignItems: "center"
