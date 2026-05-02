@@ -6,9 +6,15 @@ const User = require("../models/User");
 // SIGNUP
 router.post("/signup", async (req, res) => {
   try {
-    console.log(req.body); //comment it afterwards
-
     const { name, email, password, role } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -56,6 +62,19 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+//GOOGLE LOGIN
+router.post("/google", async (req, res) => {
+  const { name, email, googleId } = req.body;
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({ name, email, googleId });
+  }
+
+  res.json(user);
 });
 
 module.exports = router;
