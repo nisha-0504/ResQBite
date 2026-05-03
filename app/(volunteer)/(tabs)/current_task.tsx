@@ -1,5 +1,7 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../../../config";
 import {
   Linking,
   Modal,
@@ -20,8 +22,24 @@ export default function CurrentTask() {
     useCallback(() => {
       const loadTask = async () => {
         try {
-          const res = await fetch("http://192.168.0.101:5000/api/volunteer/current");
-          const data = await res.json();
+          const storedUser = await AsyncStorage.getItem("user");
+
+          if (!storedUser) {
+            console.log("No user found");
+            return;
+          }
+
+          const user = JSON.parse(storedUser);
+          const res = await fetch(`${BASE_URL}/api/volunteer/current`, {
+            headers: {
+              "Content-Type": "application/json",
+              "user-id": user._id || user.id, // ➕ ADD
+            },
+          }); const data = await res.json();
+          if (!data) {
+            setTask(null);
+            return;
+          }
 
           setTask(data);
 

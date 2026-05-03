@@ -1,14 +1,14 @@
 const express = require("express");
 const router = express.Router();
-
+const auth = require("../middleware/authMiddleware"); // ➕ ADD
 
 const ctrl = require("../controllers/volunteerController");
-router.get("/current", ctrl.getCurrentTask);
-router.get("/history", ctrl.getHistory);
-router.get("/available", ctrl.getAvailableTask);
+router.get("/current", auth, ctrl.getCurrentTask);       // ✅ FIXED
+router.get("/history", auth, ctrl.getHistory);           // ✅ FIXED
+router.get("/available", auth, ctrl.getAvailableTasks);  // ✅ FIXED
 
-router.put("/pickup/:id", ctrl.pickupTask);
-router.put("/complete/:id", ctrl.completeTask);
-router.put("/cancel/:id", ctrl.cancelTask);
+router.put("/pickup/:id", auth, ctrl.pickupTask);        // ✅ FIXED
+router.put("/complete/:id", auth, ctrl.completeTask);    // ✅ FIXED
+router.put("/cancel/:id", auth, ctrl.cancelTask);        // ✅ FIXED
 
 module.exports = router;

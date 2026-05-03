@@ -64,25 +64,7 @@ const smallLabel = { fontSize: 12, color: "#6B7280" };
 export default function Profile() {
   const router = useRouter();
   const [logoutVisible, setLogoutVisible] = useState(false);
-  const [user, setUser] = useState({
-    name: "Raj",
-    phone: "+91 9876543210",
-    email: "raj@gmail.com",
-    age: 21,
-    gender: "Male",
-    address: "Bangalore, Karnataka",
-    verified: true,
-    location: "Bangalore",
-    vehicle: "Bike",
-    deliveries: 0,
-    meals: 0,
-    people: 0,
-    rating: 4.8,
-    joined: "Jan 2026",
-    vehicleNumber: "KA021999", // ➕ ADDED
-    birthday: "12-01-1996", // ➕ ADDED
-    earnings: 0, // ➕ ADDED
-  });
+  const [user, setUser] = useState<any>(null);
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -94,7 +76,16 @@ export default function Profile() {
           const data = await res.json();
 
           const deliveries = data.length;
+          const storedUser = await AsyncStorage.getItem("user");
 
+          if (storedUser) {
+            const parsed = JSON.parse(storedUser);
+
+            setUser((prev: any) => ({
+              ...prev,
+              ...parsed, // 👈 real user from login
+            }));
+          }
           const meals = data.reduce(
             (sum: number, item: any) => sum + (item.quantity || 0),
             0
@@ -107,8 +98,8 @@ export default function Profile() {
 
           const people = Math.floor(meals / 2); // simple assumption
 
-          setUser((prev) => ({
-            ...prev,
+          setUser((prev: any) => ({
+            ...(prev || {}),
             deliveries,
             meals,
             earnings,
@@ -124,7 +115,7 @@ export default function Profile() {
 
   const handleSave = async () => {
     try {
-      await AsyncStorage.setItem("userName", user.name.trim());
+      await AsyncStorage.setItem("user", JSON.stringify(user));
       console.log("Saved:", user.name);
       setModalVisible(false);
     } catch (err) {
@@ -172,7 +163,7 @@ export default function Profile() {
               }}
             >
               <Text style={{ fontSize: 30, color: "#6B7280" }}>
-                {user.name?.[0] || "U"}
+                {user?.name?.[0] || "U"}
               </Text>
             </View>
 
@@ -185,7 +176,7 @@ export default function Profile() {
                   fontWeight: "600",
                 }}
               >
-                {user.name}
+                {user?.name || "Volunteer"}
               </Text>
 
               <Text
@@ -218,8 +209,7 @@ export default function Profile() {
             </View>
             <View>
               <Text style={label}>Name</Text>
-              <Text style={value}>{user.name}</Text>
-            </View>
+              <Text style={value}>{user?.name || "Volunteer"}</Text>            </View>
           </View>
 
           {/* PHONE */}
@@ -229,7 +219,7 @@ export default function Profile() {
             </View>
             <View>
               <Text style={label}>Phone</Text>
-              <Text style={value}>{user.phone}</Text>
+              <Text style={value}>{user?.phone || "Not added"}</Text>
             </View>
           </View>
 
@@ -240,7 +230,7 @@ export default function Profile() {
             </View>
             <View>
               <Text style={label}>Location</Text>
-              <Text style={value}>{user.location}</Text>
+              <Text style={value}>{user?.location || "Not added"}</Text>
             </View>
           </View>
 
@@ -251,7 +241,7 @@ export default function Profile() {
             </View>
             <View>
               <Text style={label}>Vehicle</Text>
-              <Text style={value}>{user.vehicle}</Text>
+              <Text style={value}>{user?.vehicle || "Not added"}</Text>
             </View>
           </View>
 
@@ -260,18 +250,18 @@ export default function Profile() {
         {/* SMALL STATS */}
         <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 15, marginHorizontal: 10 }}>
           <View style={smallCard}>
-            <Text style={smallValue}>⭐ {user.rating}</Text>
+            <Text style={smallValue}>⭐ {user?.rating || 0}</Text>
             <Text style={smallLabel}>Rating</Text>
           </View>
 
           <View style={smallCard}>
-            <Text style={smallValue}>📅 {user.joined}</Text>
+            <Text style={smallValue}>📅 {user?.joined || "-"}</Text>
             <Text style={smallLabel}>Joined</Text>
           </View>
 
           <View style={smallCard}>
             <Text style={[smallValue, { color: "#2ECC71" }]}>
-              {user.verified ? "Verified" : "Pending"}
+              {user?.verified ? "Verified" : "Pending"}
             </Text>
             <Text style={smallLabel}>Status</Text>
           </View>
@@ -284,9 +274,9 @@ export default function Profile() {
 
         <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10, marginHorizontal: 10 }}>
           {[
-            { label: "Deliveries", value: user.deliveries },
-            { label: "Meals", value: user.meals },
-            { label: "Earnings", value: `₹${user.earnings}` },].map((item, index) => (
+            { label: "Deliveries", value: user?.deliveries || 0 },
+            { label: "Meals", value: user?.meals || 0 },
+            { label: "Earnings", value: `₹${user?.earnings || 0}` },].map((item, index) => (
               <View key={index} style={{
                 backgroundColor: "#2ECC71",
                 padding: 15,
@@ -389,14 +379,15 @@ export default function Profile() {
                     <Text style={styles.label}>{field.label}:</Text>
 
                     <TextInput
-                      value={String(user[field.key as keyof typeof user])} onChangeText={(text) =>
-                        setUser({
-                          ...user,
+                      value={String(user?.[field.key as keyof typeof user] || "")}
+                      onChangeText={(text) =>
+                        setUser((prev: any) => ({
+                          ...(prev || {}), // ✅ prevents crash
                           [field.key as keyof typeof user]:
                             field.key === "age" ? Number(text) : text,
-                        })
+                        }))
                       }
-                    style={styles.inputBox}
+                      style={styles.inputBox}
                     />
 
                   </View>

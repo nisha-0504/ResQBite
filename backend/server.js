@@ -5,7 +5,6 @@ const authRoutes = require("./routes/authRoutes");
 
 require("dotenv").config();
 
-const authRoutes = require("./routes/authRoutes");
 const volunteerRoutes = require("./routes/volunteerRoutes"); // ✅ MOVE HERE
 const connectDB = require("./config/db");
 
@@ -17,8 +16,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/auth", authRoutes);
-
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/volunteer", volunteerRoutes); // ✅ MOVE HERE
@@ -29,9 +26,6 @@ app.get("/", (req, res) => {
 });
 
 // database
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
 
 // server start (ALWAYS LAST)
 app.listen(5000, "0.0.0.0", () => {

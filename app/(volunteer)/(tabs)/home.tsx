@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../../../config";
 import { useCallback, useEffect, useState } from "react";
 import {
   Modal,
@@ -56,21 +57,39 @@ export default function Home() {
     useCallback(() => {
       const loadAllData = async () => {
         try {
-          const res = await fetch(
-            "http://192.168.0.101:5000/api/volunteer/available"
-          );
-          const data = await res.json();
-          setTasks(data || []);
+          const storedUser = await AsyncStorage.getItem("user"); // ➕ ADDED
 
-          const name = await AsyncStorage.getItem("userName");
-          if (name && name.trim() !== "") {
-            setUser({ name });
+          if (!storedUser) {
+            console.log("No user found");
+            return;
           }
 
-          const res2 = await fetch(
-            "http://192.168.0.101:5000/api/volunteer/history"
-          );
-          const history = await res2.json();
+          const user = JSON.parse(storedUser); // ➕ FIXED
+          fetch(`${BASE_URL}/api/volunteer/available`, {
+            headers: {
+              "user-id": user._id || user.id,
+            },
+          });
+
+          setUser({
+            name: user.name,
+          });
+          const resTasks = await fetch(`${BASE_URL}/api/volunteer/available`, {
+            headers: {
+              "user-id": user._id || user.id,
+            },
+          });
+
+          const tasksData = await resTasks.json();
+          setTasks(tasksData || []);
+
+          const resHistory = await fetch(`${BASE_URL}/api/volunteer/history`, {
+            headers: {
+              "user-id": user._id || user.id,
+            },
+          });
+
+          const history = await resHistory.json();
 
           const deliveries = history.length;
           const meals = history.reduce(
@@ -102,10 +121,19 @@ export default function Home() {
 
   const handleAccept = async (task: Task) => {
     try {
+      const storedUser = await AsyncStorage.getItem("user"); // ➕ ADD
+      if (!storedUser) return;
+
+      const user = JSON.parse(storedUser); // ➕ ADD
+
       await fetch(
-        `http://192.168.0.101:5000/api/volunteer/pickup/${task._id}`,
+        `${BASE_URL}/api/volunteer/pickup/${task._id}`, // ✅ use BASE_URL
         {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "user-id": user._id || user.id, // ➕ IMPORTANT
+          },
         }
       );
 

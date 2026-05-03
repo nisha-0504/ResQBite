@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ScrollView,
   View,
@@ -12,7 +13,6 @@ import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { BASE_URL } from "../config";
 import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -26,24 +26,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-  });
 
-  useEffect(() => {
-    console.log("Google response:", response);
-
-    if (response?.type === "success") {
-      const auth = response.authentication;
-
-      if (!auth?.accessToken) {
-        setError("Google authentication failed");
-        return;
-      }
-
-      handleGoogleLogin(auth.accessToken);
-    }
-  }, [response]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -61,13 +44,14 @@ export default function Login() {
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.message || "Invalid credentials");
         return;
       }
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
 
       router.replace("/role");
     } catch (err) {
@@ -79,42 +63,6 @@ export default function Login() {
   };
 
   // Google login backend flow
-  const handleGoogleLogin = async (token: string) => {
-    try {
-      // get user info from Google
-      const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const user = await res.json();
-
-      // send to backend
-      const backendRes = await fetch(`${BASE_URL}/api/auth/google`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: user.name,
-          email: user.email,
-          googleId: user.id,
-        }),
-      });
-
-      const data = await backendRes.json();
-
-      if (!backendRes.ok) {
-        setError(data.message || "Google login failed");
-        return;
-      }
-
-      router.replace("/role");
-    } catch (err) {
-      console.error(err);
-      setError("Google login failed");
-    }
-  };
-
   return (
     <ScrollView
       style={{ flex: 1 }}
@@ -182,13 +130,6 @@ export default function Login() {
       </TouchableOpacity>
 
       {/* safer trigger */}
-      <TouchableOpacity
-        style={styles.googleBtn}
-        onPress={() => promptAsync()}
-        disabled={!request}
-      >
-        <Text style={styles.googleText}>Continue with Google</Text>
-      </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/signup")}>
         <Text style={styles.signup}>Signup</Text>

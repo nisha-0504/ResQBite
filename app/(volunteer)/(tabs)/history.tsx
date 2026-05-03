@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../../../config"; 
 import { useCallback, useState } from "react";
 import {
   Modal,
@@ -21,8 +23,17 @@ export default function History() {
     useCallback(() => {
       const loadHistory = async () => {
         try {
-          const res = await fetch("http://192.168.0.101:5000/api/volunteer/history");
-          const data = await res.json();
+          const storedUser = await AsyncStorage.getItem("user"); // ➕ ADD
+          if (!storedUser) return;
+
+          const user = JSON.parse(storedUser); // ➕ ADD
+
+          const res = await fetch(`${BASE_URL}/api/volunteer/history`, {
+            headers: {
+              "Content-Type": "application/json",
+              "user-id": user._id || user.id, // ➕ IMPORTANT
+            },
+          }); const data = await res.json();
 
           const sorted = [...data].sort(
             (a, b) =>
