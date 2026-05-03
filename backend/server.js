@@ -1,17 +1,23 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require("./routes/authRoutes");
 
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
 const volunteerRoutes = require("./routes/volunteerRoutes"); // ✅ MOVE HERE
+const connectDB = require("./config/db");
+
+connectDB(); // CONNECT DATABASE
 
 const app = express();
 
 // middleware
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/auth", authRoutes);
 
 // routes
 app.use("/api/auth", authRoutes);
