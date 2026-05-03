@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,19 +10,42 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API from "../../../services/api"; // ✅ added
+
+type User = {
+  name: string;
+  email: string;
+  role: string;
+};
+
 export default function ProfileScreen() {
   const router = useRouter();
-  const handleLogout = async () => {
-  try {
-    // 🧹 Clear stored data (role, token, etc.)
-    await AsyncStorage.clear();
+  const [user, setUser] = useState<User | null>(null);
 
-    // 🔄 Navigate to role selection
-    router.replace('/login');
-  } catch (e) {
-    console.log('Logout error:', e);
-  }
-};
+  // ✅ Fetch profile from backend
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await API.get("/auth/profile");
+        setUser(res.data);
+      } catch (err: any) {
+        console.log("PROFILE ERROR:", err?.response?.data || err.message);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // ✅ Logout
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear();
+      router.replace('/login');
+    } catch (e) {
+      console.log('Logout error:', e);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
 
@@ -30,29 +53,45 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>R</Text>
+            {/* ✅ Dynamic initial */}
+            <Text style={styles.avatarText}>
+              {user?.name?.charAt(0) || "U"}
+            </Text>
           </View>
 
-          {/* Edit Icon */}
           <TouchableOpacity style={styles.editIcon}>
             <Ionicons name="pencil" size={14} color="white" />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.name}>Restaurant ABC</Text>
-        <Text style={styles.role}>Donor</Text>
+        {/* ✅ Dynamic name */}
+        <Text style={styles.name}>
+          {user?.name || "Loading..."}
+        </Text>
+
+        {/* ✅ Dynamic role */}
+        <Text style={styles.role}>
+          {user?.role || "User"}
+        </Text>
       </View>
 
       {/* CONTACT INFO */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Contact Information</Text>
 
-        <InfoRow icon="mail" title="Email" value="restaurant@abc.com" />
+        {/* ✅ Dynamic email */}
+        <InfoRow
+          icon="mail"
+          title="Email"
+          value={user?.email || "Loading..."}
+        />
+
+        {/* (Keep these static if not in backend yet) */}
         <InfoRow icon="call" title="Phone" value="+91 98765 43210" />
         <InfoRow icon="location" title="Location" value="123 Main Street, Food Plaza" />
       </View>
 
-      {/* IMPACT */}
+      {/* IMPACT (unchanged) */}
       <View style={styles.impactCard}>
         <Text style={styles.impactTitle}>Your Impact</Text>
 
@@ -63,7 +102,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* BADGES */}
+      {/* BADGES (unchanged) */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Badges</Text>
 
@@ -77,14 +116,10 @@ export default function ProfileScreen() {
       </View>
 
       {/* LOGOUT */}
-      
-<TouchableOpacity
-  style={styles.logout}
-  onPress={() => router.replace("/role")}  // ✅ IMPORTANT
->
-  <MaterialIcons name="logout" size={18} color="red" />
-  <Text style={styles.logoutText}> Logout</Text>
-</TouchableOpacity>
+      <TouchableOpacity style={styles.logout} onPress={handleLogout}>
+        <MaterialIcons name="logout" size={18} color="red" />
+        <Text style={styles.logoutText}> Logout</Text>
+      </TouchableOpacity>
 
     </ScrollView>
   );
@@ -124,14 +159,12 @@ function Badge({ emoji }: any) {
   );
 }
 
-/* 🎨 Styles */
-
+/* 🎨 Styles — EXACT SAME */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
   },
-
   header: {
     backgroundColor: '#2ECC71',
     alignItems: 'center',
@@ -139,11 +172,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
   },
-
-  avatarContainer: {
-    position: 'relative',
-  },
-
+  avatarContainer: { position: 'relative' },
   avatar: {
     width: 90,
     height: 90,
@@ -152,13 +181,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   avatarText: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#2ECC71',
   },
-
   editIcon: {
     position: 'absolute',
     bottom: 0,
@@ -167,37 +194,31 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 20,
   },
-
   name: {
     marginTop: 10,
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
-
   role: {
     color: 'white',
     marginTop: 4,
   },
-
   card: {
     backgroundColor: 'white',
     margin: 16,
     padding: 16,
     borderRadius: 16,
   },
-
   cardTitle: {
     fontWeight: 'bold',
     marginBottom: 12,
   },
-
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-
   iconCircle: {
     width: 36,
     height: 36,
@@ -207,60 +228,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
   },
-
   infoTitle: {
     fontSize: 12,
     color: '#6B7280',
   },
-
   infoValue: {
     fontWeight: '500',
   },
-
   impactCard: {
     backgroundColor: '#2ECC71',
     marginHorizontal: 16,
     padding: 16,
     borderRadius: 16,
   },
-
   impactTitle: {
     color: 'white',
     fontWeight: 'bold',
     marginBottom: 10,
   },
-
   impactRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
-
   impactItem: {
     alignItems: 'center',
   },
-
   impactValue: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
   },
-
   impactLabel: {
     color: 'white',
     fontSize: 12,
   },
-
   badgesRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-
   badge: {
     backgroundColor: '#F3F4F6',
     padding: 12,
     borderRadius: 12,
   },
-
   logout: {
     margin: 16,
     borderWidth: 1,
@@ -269,7 +279,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-
   logoutText: {
     color: '#EF4444',
     fontWeight: 'bold',

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from 'expo-router';
 import {
     ScrollView,
@@ -7,9 +7,27 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import API from "../../../services/api";
 
 export default function DonorDashboard() {
   const router = useRouter();
+
+  const [donations, setDonations] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchDonations = async () => {
+      try {
+        const res = await API.get("/donor/donations");
+        console.log("DONATIONS:", res.data);
+        setDonations(res.data);
+      } catch (err: any) {
+        console.log(err.response?.data || err.message);
+      }
+    };
+
+    fetchDonations();
+  }, []);
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -18,13 +36,13 @@ export default function DonorDashboard() {
         <Text style={styles.subtitle}>Save Food • Feed People</Text>
 
         <TouchableOpacity
-  style={styles.button}
-  onPress={() => router.push('./(tabs)/donate')}
->
-  <Text style={{ color: 'white', fontWeight: 'bold' }}>
-    Donate Food
-  </Text>
-</TouchableOpacity>
+          style={styles.button}
+          onPress={() => router.push('./(tabs)/donate')}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>
+            Donate Food
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Stats */}
@@ -38,21 +56,31 @@ export default function DonorDashboard() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Active Donations</Text>
 
-        <DonationCard
-          title="Veg Meals"
-          qty="40 packets"
-          time="9:00 PM"
-          status="Waiting for NGO"
-          statusColor="#FACC15"
-        />
-
-        <DonationCard
-          title="Fresh Fruits"
-          qty="25 kg"
-          time="8:30 PM"
-          status="Volunteer Assigned"
-          statusColor="#22C55E"
-        />
+        {donations.length === 0 ? (
+          <Text style={{ color: "gray" }}>No donations yet</Text>
+        ) : (
+          donations.map((item) => (
+            <DonationCard
+              key={item._id}
+              id={item._id}
+              title={item.title}
+              qty={item.quantity}
+              time={
+                item.pickupTime
+                  ? new Date(item.pickupTime).toLocaleTimeString()
+                  : "N/A"
+              }
+              status={item.status || "Pending"}
+              statusColor={
+                item.status === "Completed"
+                  ? "#22C55E"
+                  : item.status === "Accepted"
+                  ? "#3B82F6"
+                  : "#FACC15"
+              }
+            />
+          ))
+        )}
       </View>
     </ScrollView>
   );
@@ -69,8 +97,9 @@ function StatCard({ value, label }: any) {
 }
 
 /* 🔹 Donation Card */
-function DonationCard({ title, qty, time, status, statusColor }: any) {
-    const router = useRouter();
+function DonationCard({ id, title, qty, time, status, statusColor }: any){
+  const router = useRouter();
+
   return (
     <View style={styles.donationCard}>
       <View style={styles.row}>
@@ -85,11 +114,15 @@ function DonationCard({ title, qty, time, status, statusColor }: any) {
       <Text style={styles.time}>Pickup at {time}</Text>
 
       <TouchableOpacity
-  style={styles.detailsBtn}
-  onPress={() => router.push('/donation-details')}
->
-  <Text style={styles.detailsText}>View Details</Text>
-</TouchableOpacity>
+        style={styles.detailsBtn}
+onPress={() =>
+  router.push({
+    pathname: "/donation-details",
+    params: { id:id },
+  })
+}      >
+        <Text style={styles.detailsText}>View Details</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -126,11 +159,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     alignItems: "center",
-  },
-
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
   },
 
   statsContainer: {

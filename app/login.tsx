@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { BASE_URL } from "../config";
 import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -26,24 +25,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-  });
-
-  useEffect(() => {
-    console.log("Google response:", response);
-
-    if (response?.type === "success") {
-      const auth = response.authentication;
-
-      if (!auth?.accessToken) {
-        setError("Google authentication failed");
-        return;
-      }
-
-      handleGoogleLogin(auth.accessToken);
-    }
-  }, [response]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -54,7 +35,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/api/auth/login`, {
+      const res = await fetch("http://192.168.1.4:5000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -89,7 +70,7 @@ export default function Login() {
       const user = await res.json();
 
       // send to backend
-      const backendRes = await fetch(`${BASE_URL}/api/auth/google`, {
+      const backendRes = await fetch("http://192.168.1.4:5000/api/auth/google", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -184,8 +165,7 @@ export default function Login() {
       {/* safer trigger */}
       <TouchableOpacity
         style={styles.googleBtn}
-        onPress={() => promptAsync()}
-        disabled={!request}
+        
       >
         <Text style={styles.googleText}>Continue with Google</Text>
       </TouchableOpacity>

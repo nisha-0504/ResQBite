@@ -1,80 +1,123 @@
-const bcrypt=require("bcryptjs");
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
 
-// SIGNUP
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const authMiddleware = require("../middleware/authMiddleware");
+// 🔐 Generate Token
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user._id, role: user.role },
+    "secret", // must match authMiddleware
+    { expiresIn: "1d" }
+  );
+};
+
+// 📝 SIGNUP
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+    console.log("SIGNUP BODY:", req.body);
 
+    const { name, email, password, role } = req.body;
+
+    // Check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create user
     const user = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role
+      name,
+      email,
+      password: hashedPassword,
+      role,
     });
 
     await user.save();
 
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+    // Generate token
+    const token = generateToken(user);
 
-// LOGIN
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-        return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-        return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    res.status(200).json({
-      message: "Login successful",
+    res.status(201).json({
+      message: "User registered successfully",
+      token, // 🔥 IMPORTANT
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
+
   } catch (error) {
+    console.error("SIGNUP ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-//GOOGLE LOGIN
-router.post("/google", async (req, res) => {
-  const { name, email, googleId } = req.body;
+// 🔑 LOGIN
+router.post("/login", async (req, res) => {
+  try {
+    console.log("LOGIN BODY:", req.body);
 
-  let user = await User.findOne({ email });
+    const { email, password } = req.body;
 
-  if (!user) {
-    user = await User.create({ name, email, googleId });
+    // Find user
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Generate token
+    const token = generateToken(user);
+
+    res.status(200).json({
+      message: "Login successful",
+      token, // 🔥 THIS FIXES YOUR ISSUE
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+    res.status(500).json({ error: error.message });
   }
-
-  res.json(user);
 });
 
 module.exports = router;
+
+// ✅ PROFILE ROUTE
+router.get("/profile", authMiddleware, async (req, res) => {
+  try {
+    console.log("USER ID FROM TOKEN:", req.user.id);
+
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+
+  } catch (err) {
+    console.log("PROFILE ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});

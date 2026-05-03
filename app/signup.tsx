@@ -47,7 +47,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/signup`, {
+      const response = await fetch("http://192.168.1.4:5000/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

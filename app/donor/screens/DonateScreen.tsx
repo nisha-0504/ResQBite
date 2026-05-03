@@ -11,13 +11,13 @@ import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import API from "../../../services/api";
 export default function DonateScreen() {
   const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [location, setLocation] = useState("");
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<string[]>([]);
   const router = useRouter();
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
@@ -25,8 +25,7 @@ export default function DonateScreen() {
   const [pickupDate, setPickupDate] = useState(new Date());
   const [showPickupDate, setShowPickupDate] = useState(false);
   const [showPickupTime, setShowPickupTime] = useState(false);
-
-  const onPickupDateChange = (event, selectedDate) => {
+  const onPickupDateChange = (event: any, selectedDate?: Date) => {
     setShowPickupDate(false);
     if (selectedDate) {
       setPickupDate(selectedDate);
@@ -34,7 +33,7 @@ export default function DonateScreen() {
     }
   };
 
-  const onPickupTimeChange = (event, selectedTime) => {
+  const onPickupTimeChange = (event: any, selectedTime?: Date) => {
     setShowPickupTime(false);
     if (selectedTime) {
       const updated = new Date(pickupDate);
@@ -44,7 +43,7 @@ export default function DonateScreen() {
     }
   };
 
-  const onChangeDate = (event, selectedDate) => {
+  const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDate(false);
 
     if (selectedDate) {
@@ -53,7 +52,7 @@ export default function DonateScreen() {
     }
   };
 
-  const onChangeTime = (event, selectedTime) => {
+  const onChangeTime = (event: any, selectedTime?: Date) => {
     setShowTime(false);
     if (selectedTime) {
       const updated = new Date(expiryDate);
@@ -101,10 +100,60 @@ export default function DonateScreen() {
     }
   };
 
-  const removeImage = (indexToRemove) => {
+  const removeImage = (indexToRemove:number) => {
     setImages((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
+  const handleSubmit = async () => {
+  try {
+    if (!foodName || !quantity || !location) {
+      alert("Please fill all required fields");
+      return;
+    }
 
+    let uploadedImages = [];
+
+    // 🔥 Upload all images to Cloudinary
+    for (let uri of images) {
+      const data = new FormData();
+
+      data.append("file", {
+        uri,
+        type: "image/jpeg",
+        name: "upload.jpg",
+      } as any);
+
+      data.append("upload_preset", "resqbite_upload");
+
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dhvjgmkif/image/upload",
+        {
+          method: "POST",
+          body: data,
+        }
+      );
+
+      const file = await res.json();
+      uploadedImages.push(file.secure_url);
+    }
+
+    // 🔥 Send to backend
+    await API.post("/donor/donations", {
+      title: foodName,
+      quantity,
+      location,
+      pickupTime: pickupDate,
+      expiryTime: expiryDate,
+      images: uploadedImages,
+    });
+
+    alert("Donation created successfully!");
+
+    router.replace("/donor/(tabs)");
+  } catch (err: any) {
+    console.log(err.response?.data || err.message);
+    alert("Error creating donation");
+  }
+};
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -236,7 +285,7 @@ export default function DonateScreen() {
         {/* Submit Button */}
         <TouchableOpacity
           style={styles.submitBtn}
-          onPress={() => router.replace("/donor/(tabs)")}
+          onPress={handleSubmit}
         >
           <Text style={{ color: "white", fontWeight: "bold" }}>
             Submit Donation
