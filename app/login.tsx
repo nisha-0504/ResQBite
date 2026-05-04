@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { BASE_URL } from "../config";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
+import API from "../services/api"; 
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -27,6 +28,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
+
     if (!email || !password) {
       setError("Please enter email and password");
       return;
@@ -35,7 +37,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://192.168.1.4:5000/api/auth/login", {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,40 +65,32 @@ export default function Login() {
 
   // Google login backend flow
   const handleGoogleLogin = async (token: string) => {
-    try {
-      // get user info from Google
-      const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+  try {
+    // Google API (fetch is fine)
+    const res = await fetch(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
         headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const user = await res.json();
-
-      // send to backend
-      const backendRes = await fetch("http://192.168.1.4:5000/api/auth/google", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: user.name,
-          email: user.email,
-          googleId: user.id,
-        }),
-      });
-
-      const data = await backendRes.json();
-
-      if (!backendRes.ok) {
-        setError(data.message || "Google login failed");
-        return;
       }
+    );
 
-      router.replace("/role");
-    } catch (err) {
-      console.error(err);
-      setError("Google login failed");
-    }
-  };
+    const user = await res.json();
+
+    // Backend (use axios)
+    const backendRes = await API.post("/auth/google", {
+      name: user.name,
+      email: user.email,
+      googleId: user.id,
+    });
+
+    const data = backendRes.data;
+
+    console.log("Backend response:", data);
+
+  } catch (err: any) {
+    console.log("ERROR:", err.response?.data || err.message);
+  }
+};
 
   return (
     <ScrollView

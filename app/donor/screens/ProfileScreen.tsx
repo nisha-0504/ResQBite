@@ -1,16 +1,11 @@
-<<<<<<< HEAD
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useEffect, useState } from 'react';
-=======
-import React, { useEffect, useState } from "react";
->>>>>>> origin/nishh
 import {
   View,
   Text,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
-<<<<<<< HEAD
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,35 +13,31 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from "../../../services/api"; // ✅ added
 
-=======
-  Alert,
-} from "react-native";
-import API from "../../../services/api"; // adjust path if needed
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
->>>>>>> origin/nishh
 type User = {
   name: string;
   email: string;
   role: string;
 };
-<<<<<<< HEAD
+
 
 export default function ProfileScreen() {
   const router = useRouter();
+
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
   // ✅ Fetch profile from backend
-  useEffect(() => {
-    const fetchProfile = async () => {
+  const fetchProfile = async () => {
       try {
         const res = await API.get("/auth/profile");
         setUser(res.data);
       } catch (err: any) {
         console.log("PROFILE ERROR:", err?.response?.data || err.message);
+      } finally {
+        setLoading(false);
       }
     };
-
+  useEffect(() => {
     fetchProfile();
   }, []);
 
@@ -54,56 +45,12 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     try {
       await AsyncStorage.clear();
-      router.replace('/login');
+      router.replace("/login");
     } catch (e) {
-      console.log('Logout error:', e);
+      console.log("Logout error:", e);
     }
   };
 
-  return (
-    <ScrollView style={styles.container}>
-=======
-export default function ProfileScreen() {
-  const [loading, setLoading] = useState(true);
-const [user, setUser] = useState<User | null>(null);
-  const router = useRouter();
->>>>>>> origin/nishh
-
-  // ✅ Fetch profile data
-  const fetchProfile = async () => {
-    try {
-      const res = await API.get("/auth/profile");
-      setUser(res.data);
-    } catch (err: unknown) {
-      let errorMessage = "Failed to load profile";
-
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === "object" && err !== null && "response" in err) {
-        const response = (err as { response?: { data?: any } }).response;
-        errorMessage = response?.data ? String(response.data) : JSON.stringify(err);
-      } else {
-        errorMessage = String(err);
-      }
-
-      console.log(errorMessage);
-      Alert.alert("Error", "Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  // ✅ Logout
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem("token");
-    router.replace("/login"); // adjust if needed
-  };
-
-  // ✅ Loading state
   if (loading) {
     return <ActivityIndicator style={{ marginTop: 50 }} />;
   }
@@ -118,35 +65,30 @@ const [user, setUser] = useState<User | null>(null);
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-<<<<<<< HEAD
-        <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
-            {/* ✅ Dynamic initial */}
-            <Text style={styles.avatarText}>
-              {user?.name?.charAt(0) || "U"}
-            </Text>
-          </View>
+<Text style={styles.title}>My Profile</Text>
 
-          <TouchableOpacity style={styles.editIcon}>
-            <Ionicons name="pencil" size={14} color="white" />
-          </TouchableOpacity>
-        </View>
+<View style={styles.avatarContainer}>
+  <View style={styles.avatar}>
+    <Text style={styles.avatarText}>
+      {user?.name?.charAt(0) || "U"}
+    </Text>
+  </View>
 
-        {/* ✅ Dynamic name */}
-        <Text style={styles.name}>
-          {user?.name || "Loading..."}
-        </Text>
+  <TouchableOpacity style={styles.editIcon}>
+    <Ionicons name="pencil" size={14} color="white" />
+  </TouchableOpacity>
+</View>
 
-        {/* ✅ Dynamic role */}
-        <Text style={styles.role}>
-          {user?.role || "User"}
-        </Text>
-=======
-        <Text style={styles.title}>My Profile</Text>
->>>>>>> origin/nishh
+<Text style={styles.name}>
+  {user?.name || "Loading..."}
+</Text>
+
+<Text style={styles.role}>
+  {user?.role || "User"}
+</Text>
       </View>
 
       {/* Profile Info */}
@@ -154,8 +96,7 @@ const [user, setUser] = useState<User | null>(null);
         <Text style={styles.label}>Name</Text>
         <Text style={styles.value}>{user?.name}</Text>
 
-<<<<<<< HEAD
-        {/* ✅ Dynamic email */}
+        {/*  Dynamic email */}
         <InfoRow
           icon="mail"
           title="Email"
@@ -231,28 +172,11 @@ function Badge({ emoji }: any) {
   return (
     <View style={styles.badge}>
       <Text style={{ fontSize: 18 }}>{emoji}</Text>
-=======
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user?.email}</Text>
-
-        <Text style={styles.label}>Role</Text>
-        <Text style={styles.value}>{user?.role}</Text>
-      </View>
-
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
->>>>>>> origin/nishh
     </View>
   );
 }
 
-<<<<<<< HEAD
-/* 🎨 Styles — EXACT SAME */
-=======
 /* 🎨 Styles */
->>>>>>> origin/nishh
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -260,7 +184,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-<<<<<<< HEAD
     backgroundColor: '#2ECC71',
     alignItems: 'center',
     paddingVertical: 40,
@@ -287,135 +210,120 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: '#F58634',
     padding: 6,
-=======
-    backgroundColor: "#2ECC71",
-    padding: 20,
->>>>>>> origin/nishh
     borderRadius: 20,
     marginTop: 30,
   },
-<<<<<<< HEAD
-  name: {
-    marginTop: 10,
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  role: {
-    color: 'white',
-    marginTop: 4,
-=======
-
-  title: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
->>>>>>> origin/nishh
-  },
+name: {
+  marginTop: 10,
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: 'white',
+},
+role: {
+  color: 'white',
+  marginTop: 4,
+},
+title: {
+  color: "white",
+  fontSize: 20,
+  fontWeight: "bold",
+},
   card: {
-<<<<<<< HEAD
-    backgroundColor: 'white',
-    margin: 16,
-    padding: 16,
-    borderRadius: 16,
-  },
-  cardTitle: {
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#ECFDF5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  infoTitle: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  infoValue: {
-    fontWeight: '500',
-  },
-  impactCard: {
-    backgroundColor: '#2ECC71',
-    marginHorizontal: 16,
-    padding: 16,
-    borderRadius: 16,
-  },
-  impactTitle: {
-    color: 'white',
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  impactRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  impactItem: {
-    alignItems: 'center',
-  },
-  impactValue: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  impactLabel: {
-    color: 'white',
-    fontSize: 12,
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  badge: {
-    backgroundColor: '#F3F4F6',
-    padding: 12,
-    borderRadius: 12,
-  },
-  logout: {
-    margin: 16,
-    borderWidth: 1,
-    borderColor: '#EF4444',
-    padding: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-=======
-    backgroundColor: "white",
-    marginTop: 30,
-    padding: 20,
-    borderRadius: 12,
-  },
+backgroundColor: 'white',
+margin: 16,
+padding: 16,
+borderRadius: 16,
+},
+cardTitle: {
+  fontWeight: 'bold',
+  marginBottom: 12,
+},
+infoRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 12,
+},
+iconCircle: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: '#ECFDF5',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 10,
+},
+infoTitle: {
+  fontSize: 12,
+  color: '#6B7280',
+},
+infoValue: {
+  fontWeight: '500',
+},
+impactCard: {
+  backgroundColor: '#2ECC71',
+  marginHorizontal: 16,
+  padding: 16,
+  borderRadius: 16,
+},
+impactTitle: {
+  color: 'white',
+  fontWeight: 'bold',
+  marginBottom: 10,
+},
+impactRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-around',
+},
+impactItem: {
+  alignItems: 'center',
+},
+impactValue: {
+  color: 'white',
+  fontSize: 18,
+  fontWeight: 'bold',
+},
+impactLabel: {
+  color: 'white',
+  fontSize: 12,
+},
+badgesRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+},
+badge: {
+  backgroundColor: '#F3F4F6',
+  padding: 12,
+  borderRadius: 12,
+},
+logout: {
+  margin: 16,
+  borderWidth: 1,
+  borderColor: '#EF4444',
+  padding: 14,
+  borderRadius: 12,
+  alignItems: 'center',
+},
 
-  label: {
-    fontSize: 12,
-    color: "gray",
-    marginTop: 10,
-  },
-
-  value: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 3,
-  },
-
-  logoutBtn: {
-    marginTop: 40,
-    backgroundColor: "#EF4444",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
->>>>>>> origin/nishh
-  },
-  logoutText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-});
+// ➕ Add these from incoming
+label: {
+  fontSize: 12,
+  color: "gray",
+  marginTop: 10,
+},
+value: {
+  fontSize: 16,
+  fontWeight: "bold",
+  marginTop: 3,
+},
+logoutBtn: {
+  marginTop: 40,
+  backgroundColor: "#EF4444",
+  padding: 15,
+  borderRadius: 10,
+  alignItems: "center",
+},
+logoutText: {
+  color: "red",
+  fontWeight: "bold",
+},
+    })

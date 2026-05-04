@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API = axios.create({
-  baseURL: "http://192.168.1.4:5000/api",
+  baseURL: `${process.env.EXPO_PUBLIC_BASE_URL}/api`,
 });
 
 // 🔥 Attach token automatically
@@ -14,7 +14,7 @@ API.interceptors.request.use(async (req) => {
     req.headers.Authorization = `Bearer ${token}`;
   }
 
-  return req; // ✅ VERY IMPORTANT
+  return req; 
 });
 
 export default API;

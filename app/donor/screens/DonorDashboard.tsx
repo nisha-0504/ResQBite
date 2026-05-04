@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-<<<<<<< HEAD
-import { useRouter } from 'expo-router';
-=======
 import { useRouter } from "expo-router";
->>>>>>> origin/nishh
 import {
   ScrollView,
   StyleSheet,
@@ -11,31 +7,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-<<<<<<< HEAD
-import API from "../../../services/api";
-
-export default function DonorDashboard() {
-  const router = useRouter();
-
-  const [donations, setDonations] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        const res = await API.get("/donor/donations");
-        console.log("DONATIONS:", res.data);
-        setDonations(res.data);
-      } catch (err: any) {
-        console.log(err.response?.data || err.message);
-      }
-    };
-
-=======
 import API from "../../../services/api"; // adjust path
 
 export default function DonorDashboard() {
   const router = useRouter();
-const [donations, setDonations] = useState<any[]>([]);
+  const [donations, setDonations] = useState<any[]>([]);
   // ✅ Fetch donations
   const fetchDonations = async () => {
     try {
@@ -47,7 +23,6 @@ const [donations, setDonations] = useState<any[]>([]);
   };
 
   useEffect(() => {
->>>>>>> origin/nishh
     fetchDonations();
   }, []);
 
@@ -60,15 +35,9 @@ const [donations, setDonations] = useState<any[]>([]);
 
         <TouchableOpacity
           style={styles.button}
-<<<<<<< HEAD
-          onPress={() => router.push('./(tabs)/donate')}
-        >
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>
-=======
           onPress={() => router.push("./(tabs)/donate")}
         >
           <Text style={{ color: "white", fontWeight: "bold" }}>
->>>>>>> origin/nishh
             Donate Food
           </Text>
         </TouchableOpacity>
@@ -84,8 +53,6 @@ const [donations, setDonations] = useState<any[]>([]);
       {/* Active Donations */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Active Donations</Text>
-
-<<<<<<< HEAD
         {donations.length === 0 ? (
           <Text style={{ color: "gray" }}>No donations yet</Text>
         ) : (
@@ -98,39 +65,21 @@ const [donations, setDonations] = useState<any[]>([]);
               time={
                 item.pickupTime
                   ? new Date(item.pickupTime).toLocaleTimeString()
-                  : "N/A"
+                  : new Date(item.createdAt).toLocaleTimeString()
               }
               status={item.status || "Pending"}
-              statusColor={
-                item.status === "Completed"
-                  ? "#22C55E"
-                  : item.status === "Accepted"
-                  ? "#3B82F6"
-                  : "#FACC15"
-              }
+              statusColor={getStatusColor(item.status)}
             />
           ))
-        )}
-=======
-        {donations.map((item) => (
-          <DonationCard
-            key={item._id}
-            id={item._id}
-            title={item.title}
-            qty={item.quantity}
-            time={new Date(item.createdAt).toLocaleTimeString()}
-            status={item.status}
-            statusColor={getStatusColor(item.status)}
-          />
-        ))}
->>>>>>> origin/nishh
+        )}{" "}
+        origin/nishh
       </View>
     </ScrollView>
   );
 }
 
 /* 🔹 Status Color Helper */
-const getStatusColor = (status:any) => {
+const getStatusColor = (status: any) => {
   switch (status) {
     case "pending":
       return "#FACC15";
@@ -148,7 +97,7 @@ const getStatusColor = (status:any) => {
 };
 
 /* 🔹 Stat Card */
-function StatCard({ value, label }:any) {
+function StatCard({ value, label }: any) {
   return (
     <View style={styles.card}>
       <Text style={styles.cardValue}>{value}</Text>
@@ -158,11 +107,7 @@ function StatCard({ value, label }:any) {
 }
 
 /* 🔹 Donation Card */
-<<<<<<< HEAD
-function DonationCard({ id, title, qty, time, status, statusColor }: any){
-=======
 function DonationCard({ id, title, qty, time, status, statusColor }: any) {
->>>>>>> origin/nishh
   const router = useRouter();
 
   return (
@@ -180,17 +125,13 @@ function DonationCard({ id, title, qty, time, status, statusColor }: any) {
 
       <TouchableOpacity
         style={styles.detailsBtn}
-<<<<<<< HEAD
-onPress={() =>
-  router.push({
-    pathname: "/donation-details",
-    params: { id:id },
-  })
-}      >
-=======
-        onPress={() => router.push(`/donation-details?id=${id}`)}
+        onPress={() =>
+          router.push({
+            pathname: "/donation-details",
+            params: { id: id },
+          })
+        }
       >
->>>>>>> origin/nishh
         <Text style={styles.detailsText}>View Details</Text>
       </TouchableOpacity>
     </View>

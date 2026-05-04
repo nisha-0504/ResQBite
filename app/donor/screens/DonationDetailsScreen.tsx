@@ -78,7 +78,6 @@ const [donation, setDonation] = useState<Donation | null>(null);
   }
 
   return (
-<<<<<<< HEAD
   <View style={styles.container}>
     
     {/* Card */}
@@ -152,50 +151,8 @@ const styles = StyleSheet.create({
   label: {
     color: "#6B7280",
     fontWeight: "500",
-=======
-    <View style={styles.container}>
-      <Text style={styles.title}>{donation.title}</Text>
-
-      <Text style={styles.label}>Quantity:</Text>
-      <Text style={styles.value}>{donation.quantity}</Text>
-
-      <Text style={styles.label}>Location:</Text>
-      <Text style={styles.value}>{donation.location}</Text>
-
-      <Text style={styles.label}>Status:</Text>
-      <Text style={styles.value}>{donation.status}</Text>
-
-      <Text style={styles.label}>Created At:</Text>
-      <Text style={styles.value}>
-        {new Date(donation.createdAt).toLocaleString()}
-      </Text>
-
-      {/* ✅ Delete Button only if pending */}
-      {donation.status === "pending" && (
-        <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-          <Text style={styles.deleteText}>Delete Donation</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 20
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20
-  },
-  label: {
-    fontWeight: "bold",
-    marginTop: 10
->>>>>>> origin/nishh
   },
   value: {
-<<<<<<< HEAD
     fontWeight: "bold",
   },
 
@@ -209,20 +166,8 @@ const styles = StyleSheet.create({
 
   deleteText: {
     color: "#fff",
+    textAlign: "center",
     fontWeight: "bold",
-=======
     marginBottom: 5
   },
-  deleteBtn: {
-    marginTop: 30,
-    backgroundColor: "red",
-    padding: 15,
-    borderRadius: 8
->>>>>>> origin/nishh
-  },
-  deleteText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold"
-  }
 });
