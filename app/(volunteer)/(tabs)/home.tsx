@@ -1,7 +1,37 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState, ComponentProps } from "react";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../../../config";
+import { useCallback, useEffect, useState, ComponentProps } from "react";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+} from "react-native";
+
+interface DetailRowProps {
+  label: string;
+  value: string | number | undefined | null;
+}
+
+interface User {
+  name: string;
+}
+
+interface Task {
+  restaurant: string;
+  ngo: string;
+  distance: number;
+  quantity: number;
+  time: string;
+  notes?: string;
+  _id: string;
+  earnings?: number;
+  urgency?: string;
+}
 
 // This extracts valid names from Ionicons to stop the "underlined name" error
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -30,249 +60,410 @@ interface Task {
 
 export default function Home() {
   const router = useRouter();
+
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  
+  const [notifVisible, setNotifVisible] = useState(false);
+  const [notifications, setNotifications] = useState<
+    { id: string; text: string }[]
+  >([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState({
     deliveries: 0,
     meals: 0,
-    people: 0,
+    earnings: 0,
   });
 
-  const [notifVisible, setNotifVisible] = useState(false);
-  const [notifications, setNotifications] = useState<
-    { id: number; text: string }[]
-  >([]);
-  const [user, setUser] = useState<User | null>(null);
+  //  REMOVED loadingTaskId
+  //  REMOVED acceptedTaskId
 
-  // Added the 'icon' property to every task to match the interface
-  const tasks: Task[] = [
-    {
-      id: 1,
-      restaurant: "A2B",
-      ngo: "Care Center",
-      distance: 2,
-      quantity: 20,
-      time: "6 PM",
-      priority: 2,
-      icon: "fast-food", 
-      notes: "Handle carefully",
-      vehicle: "Bike",
-    },
-    {
-      id: 2,
-      restaurant: "Green Leaf",
-      ngo: "Hope NGO",
-      distance: 5,
-      quantity: 40,
-      time: "7 PM",
-      priority: 1,
-      icon: "leaf",
-      notes: "Urgent",
-      vehicle: "Bike",
-    },
-    {
-      id: 3,
-      restaurant: "Dominos",
-      ngo: "Food Shelter",
-      distance: 3,
-      quantity: 15,
-      time: "5 PM",
-      priority: 3,
-      icon: "pizza",
-      notes: "Fragile",
-      vehicle: "Scooter",
-    },
-  ];
+  useFocusEffect(
+    useCallback(() => {
+      const loadAllData = async () => {
+        try {
+          const storedUser = await AsyncStorage.getItem("user"); //  ADDED
 
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.priority !== b.priority) {
-      return a.priority - b.priority;
+          if (!storedUser) {
+            console.log("No user found");
+            return;
+          }
+
+          const user = JSON.parse(storedUser); //  FIXED
+          fetch(`${BASE_URL}/api/volunteer/available`, {
+            headers: {
+              "user-id": user._id || user.id,
+            },
+          });
+
+          setUser({
+            name: user.name,
+          });
+          const resTasks = await fetch(`${BASE_URL}/api/volunteer/available`, {
+            headers: {
+              "user-id": user._id || user.id,
+            },
+          });
+
+          const tasksData = await resTasks.json();
+          setTasks(tasksData || []);
+
+          const resHistory = await fetch(`${BASE_URL}/api/volunteer/history`, {
+            headers: {
+              "user-id": user._id || user.id,
+            },
+          });
+
+          const history = await resHistory.json();
+
+          const deliveries = history.length;
+          const meals = history.reduce(
+            (sum: number, item: any) => sum + (item.quantity || 0),
+            0
+          );
+          const earnings = history.reduce(
+            (sum: number, item: any) => sum + (item.earnings || 0),
+            0
+          );
+
+          setStats({ deliveries, meals, earnings });
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      loadAllData();
+    }, [])
+  );
+
+  useEffect(() => {
+    const notifs = tasks.map((task) => ({
+      id: task._id,
+      text: `New task from ${task.restaurant}`,
+    }));
+    setNotifications(notifs);
+  }, [tasks]);
+
+  const handleAccept = async (task: Task) => {
+    try {
+      const storedUser = await AsyncStorage.getItem("user"); //  ADD
+      if (!storedUser) return;
+
+      const user = JSON.parse(storedUser); //  ADD
+
+      await fetch(
+        `${BASE_URL}/api/volunteer/pickup/${task._id}`, //  use BASE_URL
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "user-id": user._id || user.id, //  IMPORTANT
+          },
+        }
+      );
+
+      setModalVisible(false);
+      setTasks((prev) => prev.filter((t) => t._id !== task._id));
+      router.push("/(volunteer)/(tabs)/current_task");
+    } catch (error) {
+      console.error(error);
     }
-    return a.distance - b.distance;
-  });
+  };
+
+  const sortedTasks = [...tasks].sort(
+    (a, b) => (a.distance || 0) - (b.distance || 0)
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
-        <View
-          style={{
-            backgroundColor: "#2ECC71",
-            padding: 20,
-            paddingTop: 60,
-            borderBottomLeftRadius: 30,
-            borderBottomRightRadius: 30,
-          }}
-        >
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View style={uiStyles.header}>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
             <View>
-              <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
-                Hi, Raj 👋
+              <Text style={{ fontSize: 30, fontWeight: "bold", color: "#fff" }}>
+                Welcome, {user?.name || "Volunteer"} 👋
               </Text>
-              <Text style={{ color: "#E8F5E9", marginTop: 5 }}>
+              <Text style={{ color: "#E8F5E9", marginTop: 8 }}>
                 Ready to Help Today?
               </Text>
             </View>
-            <Ionicons name="notifications-outline" size={24} color="#fff" />
+
+            <Pressable onPress={() => setNotifVisible(true)}>
+              <Ionicons name="notifications-outline" size={24} color="#fff" />
+            </Pressable>
           </View>
         </View>
 
-        {/* STATS */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            marginTop: 20,
-            paddingHorizontal: 10,
-          }}
-        >
-          {([
-            { icon: "bicycle", value: "45", label: "Deliveries" },
-            { icon: "trending-up", value: "680", label: "Meals" },
-            { icon: "ribbon", value: "1250", label: "Points" },
-          ] as { icon: IconName; value: string; label: string }[]).map((item, index) => (
+        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 30, marginBottom: 10 }}>
+          {[
+            { icon: "bicycle", value: stats.deliveries, label: "Deliveries" },
+            { icon: "trending-up", value: stats.meals, label: "Meals" },
+            {
+              icon: "cash",
+              value: `₹${stats.earnings}`,
+              label: "Earnings Today",
+            },
+          ].map((item, index) => (
             <View
               key={index}
               style={{
                 backgroundColor: "#fff",
-                padding: 15,
+                paddingVertical: 14,
+                paddingHorizontal: 10,
                 borderRadius: 16,
+                width: 118,
                 alignItems: "center",
-                width: 100,
                 elevation: 5,
               }}
             >
-              <Ionicons name={item.icon} size={22} color="#2ECC71" />
-              <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 5 }}>
+              <Ionicons
+                name={
+                  item.label === "Deliveries"
+                    ? "bicycle-outline"
+                    : item.label === "Meals"
+                      ? "restaurant-outline"
+                      : "cash-outline"
+                }
+                size={22}
+                color="#2ECC71"
+              />              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 {item.value}
               </Text>
-              <Text style={{ color: "#6B7280" }}>{item.label}</Text>
+              <Text>{item.label}</Text>
             </View>
           ))}
         </View>
 
-        {/* CONTENT */}
         <View style={{ padding: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1F2933" }}>
-            Available Task
+            Available Tasks
           </Text>
 
-          {sortedTasks.map((task) => (
-            <View
-              key={task.id}
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 20,
-                padding: 16,
-                marginTop: 15,
-                elevation: 5,
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                 <Ionicons name={task.icon} size={20} color="#2ECC71" />
-                 <Text style={{ fontWeight: "bold" }}>Food Pickup & Delivery</Text>
+          {sortedTasks.length === 0 ? (
+            <Text style={{ textAlign: "center", marginTop: 40, color: "#999" }}>
+              No available tasks at the moment.
+            </Text>
+          ) : (
+            sortedTasks.map((task) => (
+              <View key={task._id} style={uiStyles.taskCard}>
+                <Text style={{ fontWeight: "bold" }}>
+                  Food Pickup & Delivery
+                </Text>
+                <Text style={{ color: "#6B7280" }}>
+                  {task.restaurant} → {task.ngo}
+                </Text>
+
+                <Text>
+                  {(task?.distance ?? 0)} km • ₹{task?.earnings ?? 0} {task?.time || ""}
+                </Text>
+
+                <Text>
+                  {task.urgency === "urgent" ? "Urgent" : "Normal"}
+                </Text>
+
+                <Pressable
+                  onPress={() => {
+                    setSelectedTask(task);
+                    setModalVisible(true);
+                  }}
+                  style={uiStyles.viewDetailsBtn}
+                >
+                  <Text style={{ color: "#fff" }}>
+                    View Details {/*  UPDATED */}
+                  </Text>
+                </Pressable>
               </View>
-
-              <Text style={{ color: "#6B7280", marginTop: 4 }}>
-                {task.restaurant} → {task.ngo}
-              </Text>
-
-              <Text>Distance: {task.distance} km</Text>
-
-              <Pressable
-                onPress={() => {
-                  setSelectedTask(task);
-                  setModalVisible(true);
-                }}
-                style={{
-                  marginTop: 10,
-                  backgroundColor: "#FF8C42",
-                  padding: 10,
-                  borderRadius: 10,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#fff" }}>View Details</Text>
-              </Pressable>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </ScrollView>
 
-      {/* MODAL */}
+      {/* MODALS unchanged */}
+
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        >
-          <View
-            style={{
-              margin: 20,
-              padding: 20,
-              borderRadius: 16,
-              backgroundColor: "#fff",
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 15
-              }}
-            >
+        <View style={uiStyles.modalOverlay}>
+          <View style={uiStyles.modalContent}>
+            <View style={uiStyles.modalHeader}>
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 Task Details
               </Text>
-              <Pressable onPress={() => setModalVisible(false)} style={{ padding: 5 }}>
+              <Pressable onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={24} color="#1F2933" />
               </Pressable>
             </View>
 
-            <Text>🍽 Restaurant: {selectedTask?.restaurant}</Text>
-            <Text>🏠 NGO: {selectedTask?.ngo}</Text>
-            <Text>📍 Distance: {selectedTask?.distance} km</Text>
-            <Text>🍱 Quantity: {selectedTask?.quantity}</Text>
-            <Text>⏰ Time: {selectedTask?.time}</Text>
-            <Text>📝 Notes: {selectedTask?.notes}</Text>
-            <Text>🚲 Vehicle: {selectedTask?.vehicle}</Text>
+            <View style={uiStyles.detailContainer}>
+              <DetailRow label="Restaurant:" value={selectedTask?.restaurant} />
+              <DetailRow label="NGO:" value={selectedTask?.ngo} />
+              <DetailRow
+                label="Distance:"
+                value={`${selectedTask?.distance} km`}
+              />
+              <DetailRow label="Quantity:" value={selectedTask?.quantity} />
+              <DetailRow label="Time:" value={selectedTask?.time} />
+              <DetailRow
+                label="Earnings:"
+                value={`₹${selectedTask?.earnings || 0}`} // ➕ ADDED
+              />
+              <DetailRow
+                label="Pickup Deadline:"
+                value={selectedTask?.time} // ➕ ADDED
+              />
+              {selectedTask?.notes && (
+                <DetailRow label="Notes:" value={selectedTask?.notes} />
+              )}
+            </View>
 
             <Pressable
-  onPress={() => {
-    if (selectedTask) {
-      setModalVisible(false);
-      // Pass the ID as a query parameter
-      router.push({
-        pathname: "/active",
-        params: { taskId: selectedTask.id }
-      });
-    }
-  }}
-  style={{
-    marginTop: 15,
-    backgroundColor: "#2ECC71",
-    padding: 12,
-    borderRadius: 10,
-    alignItems: "center",
-  }}
->
-  <Text style={{ color: "#fff", fontWeight: "bold" }}>
-    Accept Task
-  </Text>
-</Pressable>
-            <Pressable
-              onPress={() => setModalVisible(false)}
-              style={{ marginTop: 10, alignItems: "center" }}
+              onPress={() => selectedTask && handleAccept(selectedTask)}
+              style={uiStyles.acceptBtn}
             >
-              <Text style={{ color: "#6B7280" }}>Reject</Text>
+              <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                Accept Task
+              </Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={notifVisible} transparent animationType="fade">
+        <View style={uiStyles.modalOverlay}>
+          <View style={uiStyles.modalContent}>
+            <View style={uiStyles.modalHeader}>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                Notifications
+              </Text>
+              <Pressable onPress={() => setNotifVisible(false)}>
+                <Ionicons name="close" size={24} color="#1F2933" />
+              </Pressable>
+            </View>
+
+            {notifications.length === 0 ? (
+              <Text style={{ marginTop: 20, color: "#6B7280" }}>
+                No notifications
+              </Text>
+            ) : (
+              notifications.map((item) => (
+                <View key={item.id} style={uiStyles.notifItem}>
+                  <Text style={{ flex: 1 }}>{item?.text || ""}</Text>
+                  <Pressable
+                    onPress={() =>
+                      setNotifications((prev) =>
+                        prev.filter((n) => n.id !== item.id)
+                      )
+                    }
+                  >
+                    <Ionicons name="close-circle" size={20} color="red" />
+                  </Pressable>
+                </View>
+              ))
+            )}
           </View>
         </View>
       </Modal>
     </View>
   );
 }
+
+const DetailRow = ({ label, value }: DetailRowProps) => (
+  <View style={uiStyles.detailRow}>
+    <Text style={uiStyles.detailKey}>{label}</Text>
+    <Text style={uiStyles.detailValue}>
+      {value !== undefined && value !== null ? value.toString() : "-"}
+    </Text>
+  </View>
+);
+
+const uiStyles = StyleSheet.create({
+  header: {
+    backgroundColor: "#2ECC71",
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    minHeight: 140, // ➕ ADDED
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 0,
+    paddingHorizontal: 10,
+  },
+  statsCard: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 16,
+    alignItems: "center",
+    width: 100,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  taskCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 16,
+    marginTop: 15,
+    elevation: 3,
+  },
+  viewDetailsBtn: {
+    marginTop: 10,
+    backgroundColor: "#FF8C42",
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    margin: 20,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: "#fff",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  detailContainer: {
+    marginTop: 12,
+  },
+  detailRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  detailKey: {
+    fontWeight: "600",
+    color: "#374151",
+    width: 110,
+  },
+  detailValue: {
+    color: "#6B7280",
+    flex: 1,
+  },
+  acceptBtn: {
+    marginTop: 15,
+    backgroundColor: "#2ECC71",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  notifItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 15,
+    backgroundColor: "#F9FAFB",
+    padding: 12,
+    borderRadius: 10,
+  },
+});

@@ -15,7 +15,7 @@ export default function CurrentTask() {
   const [task, setTask] = useState<any>(null);
   const [showDeliveredPopup, setShowDeliveredPopup] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  // 🔥 LOAD TASK
+  // LOAD TASK
   useFocusEffect(
     useCallback(() => {
       const loadTask = async () => {
@@ -29,7 +29,7 @@ export default function CurrentTask() {
     }, [])
   );
 
-  // ❌ CANCEL TASK (FIXED)
+  //  CANCEL TASK (FIXED)
   const cancelTask = async () => {
     if (!task) return;
 
@@ -42,7 +42,7 @@ export default function CurrentTask() {
     setShowCancelModal(false);
   };
 
-  // 🚀 DELIVERY FLOW
+  // DELIVERY FLOW
   const handleAction = async () => {
     if (status === "accepted") {
       setStatus("picked_up");
@@ -63,7 +63,7 @@ export default function CurrentTask() {
     }
   };
 
-  // 📍 MAP
+  //  MAP
   const openMaps = () => {
     if (!task) return;
 
@@ -84,7 +84,7 @@ export default function CurrentTask() {
     return "";
   };
 
-  // 🧠 EMPTY STATE
+  //  EMPTY STATE
   if (!task) {
     return (
       <View style={styles.center}>
@@ -202,7 +202,7 @@ export default function CurrentTask() {
           </View>
         </View>
       </Modal>
-      {/* ❌ CANCEL CONFIRMATION MODAL */}
+      {/*  CANCEL CONFIRMATION MODAL */}
       <Modal visible={showCancelModal} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.popup}>
@@ -236,7 +236,7 @@ export default function CurrentTask() {
   );
 }
 
-// 🎨 STYLES
+//  STYLES
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F5" },
 

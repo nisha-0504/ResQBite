@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ScrollView,
   View,
@@ -25,7 +26,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-
   const handleLogin = async () => {
     if (!email || !password) {
       setError("Please enter email and password");
@@ -42,13 +42,14 @@ export default function Login() {
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.message || "Invalid credentials");
         return;
       }
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
 
       router.replace("/role");
     } catch (err) {
@@ -96,7 +97,6 @@ export default function Login() {
       setError("Google login failed");
     }
   };
-
 
   return (
     <ScrollView

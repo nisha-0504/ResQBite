@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // models/Donation.js
 const mongoose = require("mongoose");
 
@@ -17,5 +18,29 @@ const donationSchema = new mongoose.Schema({
     default: "pending"
   }
 }, { timestamps: true });
+=======
+const mongoose = require("mongoose");
+
+const donationSchema = new mongoose.Schema({
+  volunteerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+  restaurant: String,
+  ngo: String,
+  quantity: Number,
+  distance: Number,
+
+  status: {
+    type: String,
+    enum: ["assigned", "picked", "completed"],
+    default: "assigned"
+  },
+
+  pickedAt: Date,
+  completedAt: Date,
+
+  earnings: Number,
+  paid: Boolean
+});
+>>>>>>> origin/pnithya
 
 module.exports = mongoose.model("Donation", donationSchema);

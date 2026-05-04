@@ -1,6 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { LogBox } from "react-native";
 
+LogBox.ignoreAllLogs(false);
+console.error = (...args) => {
+  console.log("🔥 FULL ERROR:", ...args);
+};
 export default function TabLayout() {
   return (
     <Tabs
@@ -20,7 +25,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="active"
+        name="current_task"
         options={{
           title: "Current Task",
           tabBarIcon: ({ color }) => (
