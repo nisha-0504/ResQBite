@@ -7,7 +7,7 @@ export default function Index() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/splash"); // ✅ go to splash first
+      router.replace("/splash"); 
     }, 100);
 
     return () => clearTimeout(timer);

@@ -1,13 +1,52 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, ComponentProps } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+
+// This extracts valid names from Ionicons to stop the "underlined name" error
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+interface DetailRowProps {
+  label: string;
+  value: string | number | undefined | null;
+}
+
+interface User {
+  name: string;
+}
+
+interface Task {
+  id: number;
+  restaurant: string;
+  ngo: string;
+  distance: number;
+  quantity: number;
+  time: string;
+  priority: number;
+  icon: IconName; // Added this
+  notes?: string;
+  vehicle?: string;
+}
 
 export default function Home() {
   const router = useRouter();
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const tasks = [
+  
+  const [stats, setStats] = useState({
+    deliveries: 0,
+    meals: 0,
+    people: 0,
+  });
+
+  const [notifVisible, setNotifVisible] = useState(false);
+  const [notifications, setNotifications] = useState<
+    { id: number; text: string }[]
+  >([]);
+  const [user, setUser] = useState<User | null>(null);
+
+  // Added the 'icon' property to every task to match the interface
+  const tasks: Task[] = [
     {
       id: 1,
       restaurant: "A2B",
@@ -16,6 +55,7 @@ export default function Home() {
       quantity: 20,
       time: "6 PM",
       priority: 2,
+      icon: "fast-food", 
       notes: "Handle carefully",
       vehicle: "Bike",
     },
@@ -27,6 +67,7 @@ export default function Home() {
       quantity: 40,
       time: "7 PM",
       priority: 1,
+      icon: "leaf",
       notes: "Urgent",
       vehicle: "Bike",
     },
@@ -38,16 +79,19 @@ export default function Home() {
       quantity: 15,
       time: "5 PM",
       priority: 3,
+      icon: "pizza",
       notes: "Fragile",
       vehicle: "Scooter",
     },
   ];
+
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.priority !== b.priority) {
       return a.priority - b.priority;
     }
     return a.distance - b.distance;
   });
+
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -56,14 +100,12 @@ export default function Home() {
           style={{
             backgroundColor: "#2ECC71",
             padding: 20,
-            paddingTop: 50,
+            paddingTop: 60,
             borderBottomLeftRadius: 30,
             borderBottomRightRadius: 30,
           }}
         >
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <View>
               <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
                 Hi, Raj 👋
@@ -72,7 +114,6 @@ export default function Home() {
                 Ready to Help Today?
               </Text>
             </View>
-
             <Ionicons name="notifications-outline" size={24} color="#fff" />
           </View>
         </View>
@@ -82,15 +123,15 @@ export default function Home() {
           style={{
             flexDirection: "row",
             justifyContent: "space-around",
-            marginTop: -30,
+            marginTop: 20,
             paddingHorizontal: 10,
           }}
         >
-          {[
+          {([
             { icon: "bicycle", value: "45", label: "Deliveries" },
             { icon: "trending-up", value: "680", label: "Meals" },
             { icon: "ribbon", value: "1250", label: "Points" },
-          ].map((item, index) => (
+          ] as { icon: IconName; value: string; label: string }[]).map((item, index) => (
             <View
               key={index}
               style={{
@@ -117,7 +158,6 @@ export default function Home() {
             Available Task
           </Text>
 
-          {/* TASK CARD */}
           {sortedTasks.map((task) => (
             <View
               key={task.id}
@@ -129,9 +169,12 @@ export default function Home() {
                 elevation: 5,
               }}
             >
-              <Text style={{ fontWeight: "bold" }}>Food Pickup & Delivery</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                 <Ionicons name={task.icon} size={20} color="#2ECC71" />
+                 <Text style={{ fontWeight: "bold" }}>Food Pickup & Delivery</Text>
+              </View>
 
-              <Text style={{ color: "#6B7280" }}>
+              <Text style={{ color: "#6B7280", marginTop: 4 }}>
                 {task.restaurant} → {task.ngo}
               </Text>
 
@@ -157,7 +200,7 @@ export default function Home() {
         </View>
       </ScrollView>
 
-      {/* MODAL (POPUP) */}
+      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View
           style={{
@@ -179,16 +222,13 @@ export default function Home() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
+                marginBottom: 15
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 Task Details
               </Text>
-
-              <Pressable
-                onPress={() => setModalVisible(false)}
-                style={{ padding: 5 }}
-              >
+              <Pressable onPress={() => setModalVisible(false)} style={{ padding: 5 }}>
                 <Ionicons name="close" size={24} color="#1F2933" />
               </Pressable>
             </View>
@@ -200,32 +240,33 @@ export default function Home() {
             <Text>⏰ Time: {selectedTask?.time}</Text>
             <Text>📝 Notes: {selectedTask?.notes}</Text>
             <Text>🚲 Vehicle: {selectedTask?.vehicle}</Text>
-            {/* ACCEPT */}
-            <Pressable
-              onPress={() => {
-                setModalVisible(false);
-                router.push("/(volunteer)/(tabs)/active");
-              }}
-              style={{
-                marginTop: 15,
-                backgroundColor: "#2ECC71",
-                padding: 12,
-                borderRadius: 10,
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                Accept Task
-              </Text>
-            </Pressable>
 
-            {/* REJECT */}
+            <Pressable
+  onPress={() => {
+    if (selectedTask) {
+      setModalVisible(false);
+      // Pass the ID as a query parameter
+      router.push({
+        pathname: "/active",
+        params: { taskId: selectedTask.id }
+      });
+    }
+  }}
+  style={{
+    marginTop: 15,
+    backgroundColor: "#2ECC71",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  }}
+>
+  <Text style={{ color: "#fff", fontWeight: "bold" }}>
+    Accept Task
+  </Text>
+</Pressable>
             <Pressable
               onPress={() => setModalVisible(false)}
-              style={{
-                marginTop: 10,
-                alignItems: "center",
-              }}
+              style={{ marginTop: 10, alignItems: "center" }}
             >
               <Text style={{ color: "#6B7280" }}>Reject</Text>
             </Pressable>

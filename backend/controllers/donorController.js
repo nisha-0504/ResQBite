@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 //donorController.js
+=======
+>>>>>>> origin/nishh
 // controllers/donorController.js
 const Donation = require("../models/Donation");
 
@@ -8,6 +11,7 @@ exports.createDonation = async (req, res) => {
     const donation = await Donation.create({
       donorId: req.user.id,
       title: req.body.title,
+<<<<<<< HEAD
       quantity: req.body.quantity,
       location: req.body.location,
       images: req.body.images,
@@ -19,6 +23,17 @@ exports.createDonation = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: err.message });
+=======
+      description: req.body.description,
+      foodType: req.body.foodType,
+      quantity: req.body.quantity,
+      location: req.body.location
+    });
+
+    res.status(201).json(donation);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+>>>>>>> origin/nishh
   }
 };
 

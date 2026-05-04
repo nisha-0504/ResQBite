@@ -34,13 +34,13 @@ export default function NgoTabsLayout() {
         }}
       />
 
-      {/* Requests */}
+      {/* Active Pickups */}
       <Tabs.Screen
-        name="requests"
+        name="active"
         options={{
-          title: "Requests",
+          title: "Pickups",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="file-text" size={size} color={color} />
+            <Ionicons name="bicycle-outline" size={size} color={color} />
           ),
         }}
       />
@@ -56,7 +56,18 @@ export default function NgoTabsLayout() {
         }}
       />
 
-      {/* History */}
+      {/* Notifications (NEW) */}
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: "Alerts",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="notifications-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+     
       <Tabs.Screen
         name="history"
         options={{
@@ -66,8 +77,7 @@ export default function NgoTabsLayout() {
           ),
         }}
       />
-
-      {/* Profile */}
+       {/* Profile */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -78,5 +88,6 @@ export default function NgoTabsLayout() {
         }}
       />
     </Tabs>
+
   );
 }

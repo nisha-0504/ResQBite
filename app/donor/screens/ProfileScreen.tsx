@@ -1,10 +1,16 @@
+<<<<<<< HEAD
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useEffect, useState } from 'react';
+=======
+import React, { useEffect, useState } from "react";
+>>>>>>> origin/nishh
 import {
   View,
   Text,
   StyleSheet,
+  ActivityIndicator,
   TouchableOpacity,
+<<<<<<< HEAD
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,11 +18,19 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API from "../../../services/api"; // ✅ added
 
+=======
+  Alert,
+} from "react-native";
+import API from "../../../services/api"; // adjust path if needed
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+>>>>>>> origin/nishh
 type User = {
   name: string;
   email: string;
   role: string;
 };
+<<<<<<< HEAD
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -48,9 +62,66 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
+=======
+export default function ProfileScreen() {
+  const [loading, setLoading] = useState(true);
+const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+>>>>>>> origin/nishh
 
-      {/* HEADER */}
+  // ✅ Fetch profile data
+  const fetchProfile = async () => {
+    try {
+      const res = await API.get("/auth/profile");
+      setUser(res.data);
+    } catch (err: unknown) {
+      let errorMessage = "Failed to load profile";
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === "object" && err !== null && "response" in err) {
+        const response = (err as { response?: { data?: any } }).response;
+        errorMessage = response?.data ? String(response.data) : JSON.stringify(err);
+      } else {
+        errorMessage = String(err);
+      }
+
+      console.log(errorMessage);
+      Alert.alert("Error", "Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  // ✅ Logout
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem("token");
+    router.replace("/login"); // adjust if needed
+  };
+
+  // ✅ Loading state
+  if (loading) {
+    return <ActivityIndicator style={{ marginTop: 50 }} />;
+  }
+
+  // ✅ No user case
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text>User not found</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
+<<<<<<< HEAD
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
             {/* ✅ Dynamic initial */}
@@ -73,12 +144,17 @@ export default function ProfileScreen() {
         <Text style={styles.role}>
           {user?.role || "User"}
         </Text>
+=======
+        <Text style={styles.title}>My Profile</Text>
+>>>>>>> origin/nishh
       </View>
 
-      {/* CONTACT INFO */}
+      {/* Profile Info */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Contact Information</Text>
+        <Text style={styles.label}>Name</Text>
+        <Text style={styles.value}>{user?.name}</Text>
 
+<<<<<<< HEAD
         {/* ✅ Dynamic email */}
         <InfoRow
           icon="mail"
@@ -155,17 +231,36 @@ function Badge({ emoji }: any) {
   return (
     <View style={styles.badge}>
       <Text style={{ fontSize: 18 }}>{emoji}</Text>
+=======
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.value}>{user?.email}</Text>
+
+        <Text style={styles.label}>Role</Text>
+        <Text style={styles.value}>{user?.role}</Text>
+      </View>
+
+      {/* Logout Button */}
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
+>>>>>>> origin/nishh
     </View>
   );
 }
 
+<<<<<<< HEAD
 /* 🎨 Styles — EXACT SAME */
+=======
+/* 🎨 Styles */
+>>>>>>> origin/nishh
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
+    padding: 20,
   },
   header: {
+<<<<<<< HEAD
     backgroundColor: '#2ECC71',
     alignItems: 'center',
     paddingVertical: 40,
@@ -192,8 +287,14 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: '#F58634',
     padding: 6,
+=======
+    backgroundColor: "#2ECC71",
+    padding: 20,
+>>>>>>> origin/nishh
     borderRadius: 20,
+    marginTop: 30,
   },
+<<<<<<< HEAD
   name: {
     marginTop: 10,
     fontSize: 18,
@@ -203,8 +304,16 @@ const styles = StyleSheet.create({
   role: {
     color: 'white',
     marginTop: 4,
+=======
+
+  title: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+>>>>>>> origin/nishh
   },
   card: {
+<<<<<<< HEAD
     backgroundColor: 'white',
     margin: 16,
     padding: 16,
@@ -278,9 +387,35 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
+=======
+    backgroundColor: "white",
+    marginTop: 30,
+    padding: 20,
+    borderRadius: 12,
+  },
+
+  label: {
+    fontSize: 12,
+    color: "gray",
+    marginTop: 10,
+  },
+
+  value: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 3,
+  },
+
+  logoutBtn: {
+    marginTop: 40,
+    backgroundColor: "#EF4444",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+>>>>>>> origin/nishh
   },
   logoutText: {
-    color: '#EF4444',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
 });

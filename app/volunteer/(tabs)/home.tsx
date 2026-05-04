@@ -12,7 +12,7 @@ import {
 import { getData, getStats, KEYS, saveData } from "../../../utils/storage";
 interface DetailRowProps {
   label: string;
-  value: string | number | undefined | null; // Allows for any data type coming from your Task
+  value: string | number | undefined | null;
 }
 interface User {
   name: string;
@@ -37,7 +37,7 @@ export default function Home() {
     { id: number; text: string }[]
   >([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [user, setUser] = useState<User | null>(null); // Change this from 'null' to <User | null>(null)
+  const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState({
     deliveries: 0,
     meals: 0,
@@ -67,7 +67,6 @@ export default function Home() {
     }, []),
   );
 
-  // Sync Notifications whenever tasks change
   useEffect(() => {
     const notifs = tasks.map((task) => ({
       id: task.id,

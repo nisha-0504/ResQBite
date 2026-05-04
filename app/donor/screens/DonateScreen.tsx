@@ -3,20 +3,28 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  StyleSheet,
+  Alert,
+  ScrollView
 } from "react-native";
 import { useRouter } from "expo-router";
+<<<<<<< HEAD
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import API from "../../../services/api";
+=======
+import API from "../../../services/api"; // adjust path if needed
+
+>>>>>>> origin/nishh
 export default function DonateScreen() {
+  const router = useRouter();
+
   const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [pickupTime, setPickupTime] = useState("");
   const [location, setLocation] = useState("");
+<<<<<<< HEAD
   const [images, setImages] = useState<string[]>([]);
   const router = useRouter();
   const [showDate, setShowDate] = useState(false);
@@ -154,57 +162,90 @@ export default function DonateScreen() {
     alert("Error creating donation");
   }
 };
+=======
+  const [pickupDate, setPickupDate] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+
+  // ✅ SUBMIT HANDLER
+  const handleSubmit = async () => {
+    try {
+      // Basic validation
+      if (!foodName || !quantity || !location) {
+        Alert.alert("Error", "Please fill all required fields");
+        return;
+      }
+
+      const payload = {
+        title: foodName,
+        description: foodName,
+        foodType: "veg",
+        quantity,
+        location,
+        pickupTime: pickupDate,
+        expiryTime: expiryDate
+      };
+
+      console.log("Sending:", payload);
+
+      await API.post("/donor/donations", payload);
+
+      Alert.alert("Success", "Donation created successfully!");
+
+      // Reset form (optional)
+      setFoodName("");
+      setQuantity("");
+      setLocation("");
+      setPickupDate("");
+      setExpiryDate("");
+
+      router.replace("/donor/(tabs)");
+    } catch (err) {
+      console.log((err as any)?.response?.data || (err as Error)?.message);
+      Alert.alert("Error", "Failed to create donation");
+    }
+  };
+
+>>>>>>> origin/nishh
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}> Add Food Donation</Text>
-      </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Donate Food</Text>
 
-      <View style={styles.form}>
-        {/* Food Name */}
-        <Text style={styles.label}>Food Name</Text>
-        <TextInput
-          placeholder="e.g., Veg Biryani, Fresh Fruits"
-          style={styles.input}
-          value={foodName}
-          onChangeText={setFoodName}
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Food Name"
+        value={foodName}
+        onChangeText={setFoodName}
+      />
 
-        {/* Quantity */}
-        <Text style={styles.label}>Quantity</Text>
-        <TextInput
-          placeholder="e.g., 40 packets, 25 kg"
-          style={styles.input}
-          value={quantity}
-          onChangeText={setQuantity}
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Quantity"
+        value={quantity}
+        onChangeText={setQuantity}
+      />
 
-        {/* Pickup Time */}
-        <Text style={styles.label}>Pickup Time</Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setShowPickupDate(true)}
-        >
-          <Text>{pickupDate.toLocaleString()}</Text>
-        </TouchableOpacity>
+      <TextInput
+        style={styles.input}
+        placeholder="Location"
+        value={location}
+        onChangeText={setLocation}
+      />
 
-        {showPickupDate && (
-          <DateTimePicker
-            value={pickupDate}
-            mode="date"
-            onChange={onPickupDateChange}
-          />
-        )}
+      <TextInput
+        style={styles.input}
+        placeholder="Pickup Time"
+        value={pickupDate}
+        onChangeText={setPickupDate}
+      />
 
-        {showPickupTime && (
-          <DateTimePicker
-            value={pickupDate}
-            mode="time"
-            onChange={onPickupTimeChange}
-          />
-        )}
+      <TextInput
+        style={styles.input}
+        placeholder="Expiry Time"
+        value={expiryDate}
+        onChangeText={setExpiryDate}
+      />
 
+<<<<<<< HEAD
         {/* Expiry Time */}
         <Text style={styles.label}>Expiry Time</Text>
         <TouchableOpacity
@@ -292,95 +333,40 @@ export default function DonateScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+=======
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Submit Donation</Text>
+      </TouchableOpacity>
+>>>>>>> origin/nishh
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#F3F4F6",
+    padding: 20,
+    flexGrow: 1,
+    justifyContent: "center"
   },
-
-  header: {
-    backgroundColor: "#2ECC71",
-    marginTop: 25,
-    padding: 30,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-
-  headerText: {
-    color: "white",
-    fontSize: 20,
+  title: {
+    fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center"
   },
-
-  form: {
-    padding: 16,
-  },
-
-  label: {
-    marginTop: 12,
-    marginBottom: 5,
-    fontWeight: "500",
-  },
-
   input: {
-    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ccc",
     padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-
-  uploadBox: {
-    marginTop: 15,
-    height: 120,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#9CA3AF",
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  submitBtn: {
-    marginTop: 20,
-    backgroundColor: "#F58634",
-    padding: 14,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-
-  submitText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-
-  preview: {
-    width: "100%",
-    height: 180,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-
-  imageThumb: {
-    width: 70,
-    height: 70,
     borderRadius: 8,
-    margin: 5,
+    marginBottom: 15
   },
-
-  addBox: {
-    width: 70,
-    height: 70,
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    margin: 5,
+  button: {
+    backgroundColor: "#4CAF50",
+    padding: 15,
+    borderRadius: 8
   },
+<<<<<<< HEAD
 
   optionText: {
     marginRight: 15,
@@ -403,4 +389,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+=======
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold"
+  }
+>>>>>>> origin/nishh
 });

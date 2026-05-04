@@ -1,96 +1,109 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-} from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   ScrollView,
+//   Image,
+//   TouchableOpacity,
+// } from "react-native";
+// import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+// import { useRouter } from "expo-router";
 
-const foodData = [
-  {
-    id: "1",
-    name: "Restaurant ABC",
-    meals: "30 meals",
-    distance: "2 km",
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-  },
-  {
-    id: "2",
-    name: "Hotel Green Leaf",
-    meals: "50 meals",
-    distance: "3.5 km",
-    image: "https://images.unsplash.com/photo-1594007654729-407eedc4fe24",
-  },
-];
+// const foodData = [
+//   {
+//     id: "1",
+//     name: "Restaurant ABC",
+//     meals: "30 meals",
+//     distance: "2 km",
+//     image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+//   },
+//   {
+//     id: "2",
+//     name: "Hotel Green Leaf",
+//     meals: "50 meals",
+//     distance: "3.5 km",
+//     image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+//   },
+// ];
 
-export default function DashboardScreen() {
-  const router = useRouter();
-  return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcome}>Welcome, Helping Hands</Text>
-          <Text style={styles.subText}>Making a difference every day</Text>
-        </View>
+// export default function DashboardScreen() {
+//   const router = useRouter();
+//   return (
+//     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+//       {/* Header */}
+//       <View style={styles.header}>
+//         <View>
+//           <Text style={styles.welcome}>Welcome, Helping Hands</Text>
+//           <Text style={styles.subText}>Making a difference every day</Text>
+//         </View>
 
-        <View style={styles.bell}>
-          <Ionicons name="notifications-outline" size={20} color="#fff" />
-        </View>
-      </View>
+//         <View style={styles.bell}>
+//           <Ionicons name="notifications-outline" size={20} color="#fff" />
+//         </View>
+//       </View>
 
-      {/* Active Pickup Card */}
-      <View style={styles.activeCard}>
-        <Text style={styles.activeTitle}>Active Pickup</Text>
-        <Text style={styles.activeText}>Pickup from Restaurant ABC</Text>
+//       {/* Active Pickup Card */}
+//       <View style={styles.activeCard}>
+//         <Text style={styles.activeTitle}>Active Pickup</Text>
+//         <Text style={styles.activeText}>Pickup from Restaurant ABC</Text>
 
-        <View style={styles.row}>
-          <Ionicons name="bicycle-outline" size={16} color="#fff" />
-          <Text style={styles.activeText}> Volunteer: Raj</Text>
-        </View>
+//         <View style={styles.row}>
+//           <Ionicons name="bicycle-outline" size={16} color="#fff" />
+//           <Text style={styles.activeText}> Volunteer: Raj</Text>
+//         </View>
 
-        <Text style={styles.activeText}>Status: On the Way</Text>
-        <View style={styles.mapPlaceholder}>
-          <TouchableOpacity onPress={() => router.push("/ngo/tracking")}>
-            <Text style={styles.trackText}>Track</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      {/* Section Title */}
-      <Text style={styles.sectionTitle}>Food Available Nearby</Text>
+//         <Text style={styles.activeText}>Status: On the Way</Text>
+//         <View style={styles.mapPlaceholder}>
+//           <TouchableOpacity onPress={() => router.push("/ngo/tracking")}>
+//             <Text style={styles.trackText}>Track</Text>
+//           </TouchableOpacity>
+//         </View>
+//       </View>
+//       {/* Section Title */}
+//       <Text style={styles.sectionTitle}>Food Available Nearby</Text>
 
-      {/* Food Cards */}
-      {foodData.map((item) => (
-        <View key={item.id} style={styles.card}>
-          <Image source={{ uri: item.image }} style={styles.image} />
+//       {/* Food Cards */}
+//       {foodData.map((item) => (
+//         <View key={item.id} style={styles.card}>
+//           <Image source={{ uri: item.image }} style={styles.image} />
 
-          <View style={styles.cardContent}>
-            <Text style={styles.title}>{item.name}</Text>
+//           <View style={styles.cardContent}>
+//             <Text style={styles.title}>{item.name}</Text>
 
-            <View style={styles.infoRow}>
-              <View style={styles.row}>
-                <Ionicons name="people-outline" size={16} />
-                <Text style={styles.infoText}> {item.meals}</Text>
-              </View>
+//             <View style={styles.infoRow}>
+//               <View style={styles.row}>
+//                 <Ionicons name="people-outline" size={16} />
+//                 <Text style={styles.infoText}> {item.meals}</Text>
+//               </View>
 
-              <View style={styles.row}>
-                <Ionicons name="location-outline" size={16} />
-                <Text style={styles.infoText}> {item.distance}</Text>
-              </View>
-            </View>
+//               <View style={styles.row}>
+//                 <Ionicons name="location-outline" size={16} />
+//                 <Text style={styles.infoText}> {item.distance}</Text>
+//               </View>
+//             </View>
 
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Claim Food</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
-  );
-}
+//             <TouchableOpacity
+//               style={styles.button}
+//               onPress={() =>
+//                 router.push({
+//                   pathname: "/ngo/screens/details",
+//                   params: {
+//                     name: item.name,
+//                     meals: item.meals,
+//                     distance: item.distance,
+//                     image: item.image,
+//                   },
+//                 })
+//               }
+//             >
+//               <Text style={styles.buttonText}>Claim Food</Text>
+//             </TouchableOpacity>
+//           </View>
+//         </View>
+//       ))}
+//     </ScrollView>
+//   );
+// }
 
 const styles = StyleSheet.create({
   container: {
@@ -218,3 +231,135 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+
+const foodData = [
+  {
+    id: "1",
+    name: "Restaurant ABC",
+    meals: "30 meals",
+    distance: "2 km",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+  },
+  {
+    id: "2",
+    name: "Hotel Green Leaf",
+    meals: "50 meals",
+    distance: "3.5 km",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+  },
+];
+
+export default function DashboardScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const [claimedItems, setClaimedItems] = useState<string[]>([]);
+
+  // 👇 jab details se wapas aaye
+  useEffect(() => {
+    if (params.claimedId) {
+      setClaimedItems((prev) => [...prev, params.claimedId as string]);
+    }
+  }, [params.claimedId]);
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.welcome}>Welcome, Helping Hands</Text>
+          <Text style={styles.subText}>Making a difference every day</Text>
+        </View>
+
+        <View style={styles.bell}>
+          <Ionicons name="notifications-outline" size={20} color="#fff" />
+        </View>
+      </View>
+
+      {/* Active Pickup Card */}
+      <View style={styles.activeCard}>
+        <Text style={styles.activeTitle}>Active Pickup</Text>
+        <Text style={styles.activeText}>Pickup from Restaurant ABC</Text>
+
+        <View style={styles.row}>
+          <Ionicons name="bicycle-outline" size={16} color="#fff" />
+          <Text style={styles.activeText}> Volunteer: Raj</Text>
+        </View>
+
+        <Text style={styles.activeText}>Status: On the Way</Text>
+
+        <View style={styles.mapPlaceholder}>
+          <TouchableOpacity onPress={() => router.push("/ngo/tracking")}>
+            <Text style={styles.trackText}>Track</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Section Title */}
+      <Text style={styles.sectionTitle}>Food Available Nearby</Text>
+
+      {/* Food Cards */}
+      {foodData.map((item) => {
+        const isClaimed = claimedItems.includes(item.id);
+
+        return (
+          <View key={item.id} style={styles.card}>
+            <Image source={{ uri: item.image }} style={styles.image} />
+
+            <View style={styles.cardContent}>
+              <Text style={styles.title}>{item.name}</Text>
+
+              <View style={styles.infoRow}>
+                <View style={styles.row}>
+                  <Ionicons name="people-outline" size={16} />
+                  <Text style={styles.infoText}> {item.meals}</Text>
+                </View>
+
+                <View style={styles.row}>
+                  <Ionicons name="location-outline" size={16} />
+                  <Text style={styles.infoText}> {item.distance}</Text>
+                </View>
+              </View>
+
+              {/* 👇 UPDATED BUTTON */}
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  isClaimed && { backgroundColor: "gray" },
+                ]}
+                disabled={isClaimed}
+                onPress={() =>
+                  router.push({
+                    pathname: "/ngo/screens/details", // 
+                    params: {
+                      id: item.id, // 👈 IMPORTANT
+                      name: item.name,
+                      meals: item.meals,
+                      distance: item.distance,
+                      image: item.image,
+                    },
+                  })
+                }
+              >
+                <Text style={styles.buttonText}>
+                  {isClaimed ? "Claimed ✅" : "Claim Food"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+      })}
+    </ScrollView>
+  );
+}

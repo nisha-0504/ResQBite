@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { useRouter } from 'expo-router';
+=======
+import { useRouter } from "expo-router";
+>>>>>>> origin/nishh
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+<<<<<<< HEAD
 import API from "../../../services/api";
 
 export default function DonorDashboard() {
@@ -25,6 +30,24 @@ export default function DonorDashboard() {
       }
     };
 
+=======
+import API from "../../../services/api"; // adjust path
+
+export default function DonorDashboard() {
+  const router = useRouter();
+const [donations, setDonations] = useState<any[]>([]);
+  // ✅ Fetch donations
+  const fetchDonations = async () => {
+    try {
+      const res = await API.get("/donor/donations");
+      setDonations(res.data);
+    } catch (err) {
+      console.log((err as any).response?.data || (err as any).message);
+    }
+  };
+
+  useEffect(() => {
+>>>>>>> origin/nishh
     fetchDonations();
   }, []);
 
@@ -37,15 +60,21 @@ export default function DonorDashboard() {
 
         <TouchableOpacity
           style={styles.button}
+<<<<<<< HEAD
           onPress={() => router.push('./(tabs)/donate')}
         >
           <Text style={{ color: 'white', fontWeight: 'bold' }}>
+=======
+          onPress={() => router.push("./(tabs)/donate")}
+        >
+          <Text style={{ color: "white", fontWeight: "bold" }}>
+>>>>>>> origin/nishh
             Donate Food
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Stats */}
+      {/* Stats (still static for now) */}
       <View style={styles.statsContainer}>
         <StatCard value="150" label="Meals Donated" />
         <StatCard value="45kg" label="Food Saved" />
@@ -56,6 +85,7 @@ export default function DonorDashboard() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Active Donations</Text>
 
+<<<<<<< HEAD
         {donations.length === 0 ? (
           <Text style={{ color: "gray" }}>No donations yet</Text>
         ) : (
@@ -81,13 +111,44 @@ export default function DonorDashboard() {
             />
           ))
         )}
+=======
+        {donations.map((item) => (
+          <DonationCard
+            key={item._id}
+            id={item._id}
+            title={item.title}
+            qty={item.quantity}
+            time={new Date(item.createdAt).toLocaleTimeString()}
+            status={item.status}
+            statusColor={getStatusColor(item.status)}
+          />
+        ))}
+>>>>>>> origin/nishh
       </View>
     </ScrollView>
   );
 }
 
+/* 🔹 Status Color Helper */
+const getStatusColor = (status:any) => {
+  switch (status) {
+    case "pending":
+      return "#FACC15";
+    case "accepted":
+      return "#22C55E";
+    case "picked":
+      return "#3B82F6";
+    case "completed":
+      return "#10B981";
+    case "rejected":
+      return "#EF4444";
+    default:
+      return "#ccc";
+  }
+};
+
 /* 🔹 Stat Card */
-function StatCard({ value, label }: any) {
+function StatCard({ value, label }:any) {
   return (
     <View style={styles.card}>
       <Text style={styles.cardValue}>{value}</Text>
@@ -97,7 +158,11 @@ function StatCard({ value, label }: any) {
 }
 
 /* 🔹 Donation Card */
+<<<<<<< HEAD
 function DonationCard({ id, title, qty, time, status, statusColor }: any){
+=======
+function DonationCard({ id, title, qty, time, status, statusColor }: any) {
+>>>>>>> origin/nishh
   const router = useRouter();
 
   return (
@@ -115,19 +180,22 @@ function DonationCard({ id, title, qty, time, status, statusColor }: any){
 
       <TouchableOpacity
         style={styles.detailsBtn}
+<<<<<<< HEAD
 onPress={() =>
   router.push({
     pathname: "/donation-details",
     params: { id:id },
   })
 }      >
+=======
+        onPress={() => router.push(`/donation-details?id=${id}`)}
+      >
+>>>>>>> origin/nishh
         <Text style={styles.detailsText}>View Details</Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-/* 🔥 Styles */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -9,10 +9,8 @@ export default function Role() {
     console.log("Selected role:", selectedRole);
 
     try {
-      // (Optional) store selected role
       await AsyncStorage.setItem("selectedRole", selectedRole);
 
-      // Navigate based on role
       if (selectedRole === "donor") {
         router.replace("/donor/(tabs)");
       } else if (selectedRole === "ngo") {

@@ -59,6 +59,7 @@ export default function Login() {
     setLoading(false);
   };
 
+
   // Google login backend flow
   const handleGoogleLogin = async (token: string) => {
     try {
@@ -95,6 +96,7 @@ export default function Login() {
       setError("Google login failed");
     }
   };
+
 
   return (
     <ScrollView
