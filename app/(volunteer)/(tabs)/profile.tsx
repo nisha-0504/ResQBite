@@ -364,7 +364,7 @@ export default function Profile() {
 
                 {[
                   { key: "name", label: "Name" },
-                  { key: "birthday", label: "Birthday (e.g. DD-MM-YYY)" },
+                  { key: "birthday", label: "Birthday (e.g. DD-MM-YYYY)" },
                   { key: "phone", label: "Phone" },
                   { key: "location", label: "Location" },
                   { key: "vehicle", label: "Vehicle (e.g. Bike, Car)" },
