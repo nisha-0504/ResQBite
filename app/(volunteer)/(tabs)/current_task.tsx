@@ -66,7 +66,7 @@ export default function CurrentTask() {
     if (!task) return;
 
     try {
-      await fetch(`http://192.168.0.101:5000/api/volunteer/cancel/${task._id}`, {
+      await fetch(`${BASE_URL}/api/volunteer/cancel/${task._id}`, {
         method: "PUT",
       });
 
@@ -80,7 +80,7 @@ export default function CurrentTask() {
   const handleAction = async () => {
     if (status === "accepted") {
       try {
-        await fetch(`http://192.168.0.101:5000/api/volunteer/pickup/${task._id}`, {
+        await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
           method: "PUT",
         });
 
@@ -90,7 +90,7 @@ export default function CurrentTask() {
       }
     } else if (status === "picked_up") {
       try {
-        await fetch(`http://192.168.0.101:5000/api/volunteer/complete/${task._id}`, {
+        await fetch(`${BASE_URL}/api/volunteer/complete/${task._id}`, {
           method: "PUT",
         });
 
@@ -157,7 +157,7 @@ export default function CurrentTask() {
           <Text style={styles.sectionTitle}>Navigation</Text>
           <TouchableOpacity style={styles.button} onPress={openMaps}>
             <Text style={styles.buttonText}>
-              Start Navigation (7 km • 18 min)
+              Start Navigation
             </Text>
           </TouchableOpacity>
         </View>
@@ -264,7 +264,7 @@ export default function CurrentTask() {
             </Text>
 
             <Text style={{ marginBottom: 20, fontSize: 16 }}>
-              You earned <Text>₹60</Text>
+              You earned <Text>₹{task?.earnings || 0}</Text>
             </Text>
 
             <TouchableOpacity

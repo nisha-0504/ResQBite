@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { ViewStyle } from "react-native";
+import { BASE_URL } from "../../../config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useState } from "react";
 import {
@@ -72,7 +73,7 @@ export default function Profile() {
     useCallback(() => {
       const loadStats = async () => {
         try {
-          const res = await fetch("http://192.168.0.101:5000/api/volunteer/history");
+          const res = await fetch(`${BASE_URL}/api/volunteer/history`);
           const data = await res.json();
 
           const deliveries = data.length;

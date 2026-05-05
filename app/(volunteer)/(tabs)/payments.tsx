@@ -1,6 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { BASE_URL } from "../../../config";
 import {
   FlatList,
   Modal,
@@ -41,7 +42,7 @@ export default function PaymentsScreen() {
     useCallback(() => {
       const loadPayments = async () => {
         try {
-          const res = await fetch("http://192.168.0.101:5000/api/volunteer/history");
+          const res = await fetch(`${BASE_URL}/api/volunteer/history`);
           const data = await res.json();
 
           if (!data || data.length === 0) {
