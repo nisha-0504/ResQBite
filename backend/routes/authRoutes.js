@@ -101,7 +101,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-module.exports = router;
+
 
 // ✅ PROFILE ROUTE
 router.get("/profile", authMiddleware, async (req, res) => {
@@ -121,3 +121,54 @@ router.get("/profile", authMiddleware, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+// ✅ UPDATE PROFILE
+router.put(
+  "/update-profile",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      const user = await User.findById(
+        req.user.id
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      user.name =
+        req.body.name || user.name;
+
+      user.email =
+        req.body.email || user.email;
+
+      user.phone =
+        req.body.phone || user.phone;
+
+      user.address =
+        req.body.address || user.address;
+
+      const updatedUser =
+        await user.save();
+
+      res.json({
+        message: "Profile updated",
+        user: updatedUser,
+      });
+
+    } catch (err) {
+      console.log(
+        "UPDATE PROFILE ERROR:",
+        err
+      );
+
+      res.status(500).json({
+        message: err.message,
+      });
+    }
+  }
+);
+
+module.exports = router;

@@ -1,43 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import API from '../../../services/api'; // adjust path
+  RefreshControl,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import API from "../../../services/api"; // adjust path
 
 export default function AlertsScreen() {
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // ✅ Fetch donations and convert to alerts
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAlerts();
+    setRefreshing(false);
+  };
+
   const fetchAlerts = async () => {
     try {
-      const res = await API.get('/donor/donations');
+      const res = await API.get("/donor/donations");
 
       const generatedAlerts = res.data.map((item: any) => {
-        let type = 'default';
-        let title = '';
-        let message = '';
+        let type = "default";
+        let title = "";
+        let message = "";
 
-        if (item.status === 'accepted') {
-          type = 'ngo';
-          title = 'NGO Assigned';
-          message = 'Your donation has been accepted by an NGO.';
-        } else if (item.status === 'picked') {
-          type = 'volunteer';
-          title = 'Volunteer Assigned';
-          message = 'Volunteer is on the way.';
-        } else if (item.status === 'completed') {
-          type = 'completed';
-          title = 'Donation Completed';
-          message = 'Food delivered successfully.';
+        if (item.status === "accepted") {
+          type = "ngo";
+          title = "NGO Assigned";
+          message = "Your donation has been accepted by an NGO.";
+        } else if (item.status === "picked") {
+          type = "volunteer";
+          title = "Volunteer Assigned";
+          message = "Volunteer is on the way.";
+        } else if (item.status === "completed") {
+          type = "completed";
+          title = "Donation Completed";
+          message = "Food delivered successfully.";
         } else {
-          type = 'default';
-          title = 'Donation Created';
-          message = 'Waiting for NGO to accept.';
+          type = "default";
+          title = "Donation Created";
+          message = "Waiting for NGO to accept.";
         }
 
         return {
@@ -46,7 +53,7 @@ export default function AlertsScreen() {
           title,
           message,
           time: new Date(item.createdAt).toLocaleString(),
-          unread: true,
+          unread: item.status !== "completed",
         };
       });
 
@@ -63,9 +70,7 @@ export default function AlertsScreen() {
 
   const markAsRead = (id: string) => {
     setAlerts((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, unread: false } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, unread: false } : item)),
     );
   };
 
@@ -79,15 +84,40 @@ export default function AlertsScreen() {
         <Text style={styles.headerText}>Notifications</Text>
       </View>
 
-      <ScrollView style={styles.list}>
-        {alerts.map((item) => (
-          <AlertCard
-            key={item.id}
-            item={item}
-            onPress={() => markAsRead(item.id)}
-            onDelete={() => deleteAlert(item.id)}
+      <ScrollView 
+        style={styles.list}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#2ECC71"]}
           />
-        ))}
+        }
+        >
+        {alerts.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons
+              name="notifications-off-outline"
+              size={60}
+              color="#9CA3AF"
+            />
+
+            <Text style={styles.emptyTitle}>No Notifications</Text>
+
+            <Text style={styles.emptyText}>
+              Your donation alerts will appear here.
+            </Text>
+          </View>
+        ) : (
+          alerts.map((item) => (
+            <AlertCard
+              key={item.id}
+              item={item}
+              onPress={() => markAsRead(item.id)}
+              onDelete={() => deleteAlert(item.id)}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -97,14 +127,22 @@ export default function AlertsScreen() {
 function AlertCard({ item, onPress, onDelete }: any) {
   const getIcon = () => {
     switch (item.type) {
-      case 'ngo':
-        return { name: 'business' as const, color: '#3B82F6', bg: '#DBEAFE' };
-      case 'volunteer':
-        return { name: 'person' as const, color: '#F59E0B', bg: '#FEF3C7' };
-      case 'completed':
-        return { name: 'checkmark-done' as const, color: '#22C55E', bg: '#DCFCE7' };
+      case "ngo":
+        return { name: "business" as const, color: "#3B82F6", bg: "#DBEAFE" };
+      case "volunteer":
+        return { name: "person" as const, color: "#F59E0B", bg: "#FEF3C7" };
+      case "completed":
+        return {
+          name: "checkmark-done" as const,
+          color: "#22C55E",
+          bg: "#DCFCE7",
+        };
       default:
-        return { name: 'notifications' as const, color: '#6B7280', bg: '#E5E7EB' };
+        return {
+          name: "notifications" as const,
+          color: "#6B7280",
+          bg: "#E5E7EB",
+        };
     }
   };
 
@@ -135,21 +173,21 @@ function AlertCard({ item, onPress, onDelete }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
 
   header: {
-    backgroundColor: '#2ECC71',
+    backgroundColor: "#2ECC71",
     padding: 30,
-    marginTop:30,
+    marginTop: 30,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
 
   headerText: {
-    color: 'white',
+    color: "white",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   list: {
@@ -157,24 +195,24 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    backgroundColor: "white",
     padding: 12,
     borderRadius: 12,
     marginBottom: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
 
   unread: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: "#ECFDF5",
   },
 
   iconBox: {
     width: 40,
     height: 40,
     borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   content: {
@@ -183,17 +221,34 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   message: {
-    color: '#4B5563',
+    color: "#4B5563",
     marginTop: 2,
   },
 
   time: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     marginTop: 4,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 100,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+
+  emptyText: {
+    color: "#6B7280",
+    marginTop: 6,
+    textAlign: "center",
   },
 });

@@ -58,15 +58,15 @@ export default function NgoTabsLayout() {
 
       {/* Notifications (NEW) */}
       <Tabs.Screen
-        name="notifications"
+        name="alerts"
         options={{
-          title: "Alerts",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications-outline" size={size} color={color} />
+          title: 'Alerts',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="notifications-outline" size={22} color={color} />
           ),
         }}
       />
-
+      
      
       <Tabs.Screen
         name="history"

@@ -6,12 +6,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import API from "../../../services/api";
+
 export default function DonateScreen() {
   const [foodName, setFoodName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -25,6 +28,8 @@ export default function DonateScreen() {
   const [pickupDate, setPickupDate] = useState(new Date());
   const [showPickupDate, setShowPickupDate] = useState(false);
   const [showPickupTime, setShowPickupTime] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const onPickupDateChange = (event: any, selectedDate?: Date) => {
     setShowPickupDate(false);
     if (selectedDate) {
@@ -100,199 +105,209 @@ export default function DonateScreen() {
     }
   };
 
-  const removeImage = (indexToRemove:number) => {
+  const removeImage = (indexToRemove: number) => {
     setImages((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
   const handleSubmit = async () => {
-  try {
-    if (!foodName || !quantity || !location) {
-      alert("Please fill all required fields");
-      return;
+    setLoading(true);
+    try {
+      if (!foodName || !quantity || !location) {
+        alert("Please fill all required fields");
+        setLoading(false);
+        return;
+      }
+      if (expiryDate <= pickupDate) {
+        alert("Expiry time must be after pickup time");
+        setLoading(false);
+        return;
+      }
+      let uploadedImages = [];
+
+      // 🔥 Upload all images to Cloudinary
+      for (let uri of images) {
+        const data = new FormData();
+
+        data.append("file", {
+          uri,
+          type: "image/jpeg",
+          name: "upload.jpg",
+        } as any);
+
+        data.append("upload_preset", "resqbite_upload");
+
+        const res = await fetch(
+          "https://api.cloudinary.com/v1_1/dhvjgmkif/image/upload",
+          {
+            method: "POST",
+            body: data,
+          },
+        );
+
+        const file = await res.json();
+        uploadedImages.push(file.secure_url);
+      }
+
+      // 🔥 Send to backend
+      await API.post("/donor/donations", {
+        title: foodName,
+        quantity,
+        location,
+        pickupTime: pickupDate,
+        expiryTime: expiryDate,
+        images: uploadedImages,
+      });
+
+      alert("Donation created successfully!");
+
+      router.replace("/donor/(tabs)");
+    } catch (err: any) {
+      console.log(err.response?.data || err.message);
+      alert("Error creating donation");
     }
-
-    let uploadedImages = [];
-
-    // 🔥 Upload all images to Cloudinary
-    for (let uri of images) {
-      const data = new FormData();
-
-      data.append("file", {
-        uri,
-        type: "image/jpeg",
-        name: "upload.jpg",
-      } as any);
-
-      data.append("upload_preset", "resqbite_upload");
-
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dhvjgmkif/image/upload",
-        {
-          method: "POST",
-          body: data,
-        }
-      );
-
-      const file = await res.json();
-      uploadedImages.push(file.secure_url);
-    }
-
-    // 🔥 Send to backend
-    await API.post("/donor/donations", {
-      title: foodName,
-      quantity,
-      location,
-      pickupTime: pickupDate,
-      expiryTime: expiryDate,
-      images: uploadedImages,
-    });
-
-    alert("Donation created successfully!");
-
-    router.replace("/donor/(tabs)");
-  } catch (err: any) {
-    console.log(err.response?.data || err.message);
-    alert("Error creating donation");
-  }
-};
+  };
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}> Add Food Donation</Text>
-      </View>
-
-      <View style={styles.form}>
-        {/* Food Name */}
-        <Text style={styles.label}>Food Name</Text>
-        <TextInput
-          placeholder="e.g., Veg Biryani, Fresh Fruits"
-          style={styles.input}
-          value={foodName}
-          onChangeText={setFoodName}
-        />
-
-        {/* Quantity */}
-        <Text style={styles.label}>Quantity</Text>
-        <TextInput
-          placeholder="e.g., 40 packets, 25 kg"
-          style={styles.input}
-          value={quantity}
-          onChangeText={setQuantity}
-        />
-
-        {/* Pickup Time */}
-        <Text style={styles.label}>Pickup Time</Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setShowPickupDate(true)}
-        >
-          <Text>{pickupDate.toLocaleString()}</Text>
-        </TouchableOpacity>
-
-        {showPickupDate && (
-          <DateTimePicker
-            value={pickupDate}
-            mode="date"
-            onChange={onPickupDateChange}
-          />
-        )}
-
-        {showPickupTime && (
-          <DateTimePicker
-            value={pickupDate}
-            mode="time"
-            onChange={onPickupTimeChange}
-          />
-        )}
-
-        {/* Expiry Time */}
-        <Text style={styles.label}>Expiry Time</Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setShowDate(true)}
-        >
-          <Text>
-            {expiryDate
-              ? expiryDate.toLocaleString()
-              : "Select Expiry Date & Time"}
-          </Text>
-        </TouchableOpacity>
-
-        {showDate && (
-          <DateTimePicker
-            value={expiryDate}
-            mode="date"
-            display="default"
-            onChange={onChangeDate}
-          />
-        )}
-
-        {showTime && (
-          <DateTimePicker
-            value={expiryDate}
-            mode="time"
-            display="default"
-            onChange={onChangeTime}
-          />
-        )}
-
-        {/* Location */}
-        <Text style={styles.label}>Location</Text>
-        <TextInput
-          placeholder="Enter pickup location"
-          style={styles.input}
-          value={location}
-          onChangeText={setLocation}
-        />
-
-        {/* Upload Box */}
-        <View style={styles.uploadBox}>
-          {/* SHOW IMAGES */}
-          <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-            {images.map((img, index) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri: img }} style={styles.imageThumb} />
-
-                <TouchableOpacity
-                  style={styles.removeBtn}
-                  onPress={() => removeImage(index)}
-                >
-                  <Text style={{ color: "white", fontSize: 12 }}>✕</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-
-            {/* ADD BUTTON */}
-            {images.length < 4 && (
-              <TouchableOpacity style={styles.addBox} onPress={pickImage}>
-                <Text style={{ fontSize: 20 }}>+</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* CAMERA + GALLERY */}
-          <View style={{ flexDirection: "row", marginTop: 10 }}>
-            <TouchableOpacity onPress={pickImage}>
-              <Text style={styles.optionText}>Gallery</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={openCamera}>
-              <Text style={styles.optionText}>Camera</Text>
-            </TouchableOpacity>
-          </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerText}> Add Food Donation</Text>
         </View>
 
-        {/* Submit Button */}
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleSubmit}
-        >
-          <Text style={{ color: "white", fontWeight: "bold" }}>
-            Submit Donation
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <View style={styles.form}>
+          {/* Food Name */}
+          <Text style={styles.label}>Food Name</Text>
+          <TextInput
+            placeholder="e.g., Veg Biryani, Fresh Fruits"
+            style={styles.input}
+            value={foodName}
+            onChangeText={setFoodName}
+          />
+
+          {/* Quantity */}
+          <Text style={styles.label}>Quantity</Text>
+          <TextInput
+            placeholder="e.g., 40 packets, 25 kg"
+            style={styles.input}
+            value={quantity}
+            keyboardType="numeric"
+            onChangeText={setQuantity}
+          />
+
+          {/* Pickup Time */}
+          <Text style={styles.label}>Pickup Time</Text>
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setShowPickupDate(true)}
+          >
+            <Text>{pickupDate.toLocaleString()}</Text>
+          </TouchableOpacity>
+
+          {showPickupDate && (
+            <DateTimePicker
+              value={pickupDate}
+              mode="date"
+              minimumDate={new Date()}
+              onChange={onPickupDateChange}
+            />
+          )}
+
+          {showPickupTime && (
+            <DateTimePicker
+              value={pickupDate}
+              mode="time"
+              onChange={onPickupTimeChange}
+            />
+          )}
+
+          {/* Expiry Time */}
+          <Text style={styles.label}>Expiry Time</Text>
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setShowDate(true)}
+          >
+            <Text>
+              {expiryDate
+                ? expiryDate.toLocaleString()
+                : "Select Expiry Date & Time"}
+            </Text>
+          </TouchableOpacity>
+
+          {showDate && (
+            <DateTimePicker
+              value={expiryDate}
+              mode="date"
+              display="default"
+              onChange={onChangeDate}
+            />
+          )}
+
+          {showTime && (
+            <DateTimePicker
+              value={expiryDate}
+              mode="time"
+              display="default"
+              onChange={onChangeTime}
+            />
+          )}
+
+          {/* Location */}
+          <Text style={styles.label}>Location</Text>
+          <TextInput
+            placeholder="Enter pickup location"
+            style={styles.input}
+            value={location}
+            onChangeText={setLocation}
+          />
+
+          {/* Upload Box */}
+          <View style={styles.uploadBox}>
+            {/* SHOW IMAGES */}
+            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+              {images.map((img, index) => (
+                <View key={index} style={styles.imageContainer}>
+                  <Image source={{ uri: img }} style={styles.imageThumb} />
+
+                  <TouchableOpacity
+                    style={styles.removeBtn}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Text style={{ color: "white", fontSize: 12 }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {/* ADD BUTTON */}
+              {images.length < 4 && (
+                <TouchableOpacity style={styles.addBox} onPress={pickImage}>
+                  <Text style={{ fontSize: 20 }}>+</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* CAMERA + GALLERY */}
+            <View style={{ flexDirection: "row", marginTop: 10 }}>
+              <TouchableOpacity onPress={pickImage}>
+                <Text style={styles.optionText}>Gallery</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={openCamera}>
+                <Text style={styles.optionText}>Camera</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Submit Button */}
+          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              {loading ? "Submitting..." : "Submit Donation"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

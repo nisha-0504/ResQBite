@@ -4,27 +4,15 @@ import { useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
 
 const historyData = [
+  
   {
     id: "1",
-    name: "Restaurant ABC",
-    meals: "30 meals",
-    volunteer: "Raj Kumar",
-    date: "March 14, 2026",
-  },
-  {
-    id: "2",
-    name: "Hotel Green Leaf",
-    meals: "50 meals",
-    volunteer: "Priya Sharma",
+    name: "Domino's Pizza",
+    meals: "25 meals",
+    volunteer: "Nisha",
     date: "March 13, 2026",
   },
-  {
-    id: "3",
-    name: "Food Plaza",
-    meals: "25 meals",
-    volunteer: "Amit Singh",
-    date: "March 12, 2026",
-  },
+  
 ];
 
 export default function HistoryScreen() {

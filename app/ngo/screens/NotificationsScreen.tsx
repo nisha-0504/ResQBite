@@ -11,14 +11,8 @@ const data = [
   {
     id: "1",
     title: "New Food Available",
-    msg: "Restaurant ABC added food",
+    msg: "Dominos Pizza added food",
     time: "2 min ago",
-  },
-  {
-    id: "2",
-    title: "Pickup Reminder",
-    msg: "Pickup from XYZ Cafe",
-    time: "10 min ago",
   },
 ];
 

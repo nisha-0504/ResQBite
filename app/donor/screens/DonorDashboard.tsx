@@ -6,11 +6,13 @@ import {
   Text,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 import API from "../../../services/api"; // adjust path
 
 export default function DonorDashboard() {
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
   const [donations, setDonations] = useState<any[]>([]);
   // ✅ Fetch donations
   const fetchDonations = async () => {
@@ -21,13 +23,26 @@ export default function DonorDashboard() {
       console.log((err as any).response?.data || (err as any).message);
     }
   };
-
+  const onRefresh = async () => {
+  setRefreshing(true);
+  await fetchDonations();
+  setRefreshing(false);
+};
   useEffect(() => {
     fetchDonations();
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      colors={["#2ECC71"]}
+    />
+  }
+  >
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Hello, Restaurant ABC</Text>
@@ -54,7 +69,17 @@ export default function DonorDashboard() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Active Donations</Text>
         {donations.length === 0 ? (
-          <Text style={{ color: "gray" }}>No donations yet</Text>
+          <View style={styles.emptyContainer}>
+  <Text style={{ fontSize: 50 }}>🍱</Text>
+
+  <Text style={styles.emptyTitle}>
+    No Donations Yet
+  </Text>
+
+  <Text style={styles.emptyText}>
+    Start donating food to help people.
+  </Text>
+</View>
         ) : (
           donations.map((item) => (
             <DonationCard
@@ -72,7 +97,6 @@ export default function DonorDashboard() {
             />
           ))
         )}{" "}
-        origin/nishh
       </View>
     </ScrollView>
   );
@@ -255,4 +279,19 @@ const styles = StyleSheet.create({
     color: "#2ECC71",
     fontWeight: "500",
   },
+  emptyContainer: {
+  alignItems: "center",
+  marginTop: 30,
+},
+
+emptyTitle: {
+  fontWeight: "bold",
+  fontSize: 18,
+  marginTop: 10,
+},
+
+emptyText: {
+  color: "#6B7280",
+  marginTop: 5,
+},
 });

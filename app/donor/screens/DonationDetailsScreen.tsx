@@ -96,18 +96,43 @@ const [donation, setDonation] = useState<Donation | null>(null);
 
       <View style={styles.row}>
         <Text style={styles.label}>Status</Text>
+        <View
+    style={[
+      styles.statusBadge,
+      {
+        backgroundColor:
+          donation.status === "pending"
+            ? "#FEF9C3"
+            : donation.status === "accepted"
+            ? "#DBEAFE"
+            : donation.status === "picked"
+            ? "#FFEDD5"
+            : "#DCFCE7",
+      },
+    ]}
+  >
         <Text style={[
           styles.value,
-          { color: donation.status === "pending" ? "#FACC15" : "#22C55E" }
+          {
+  color:
+    donation.status === "pending"
+      ? "#FACC15"
+      : donation.status === "accepted"
+      ? "#3B82F6"
+      : donation.status === "picked"
+      ? "#F97316"
+      : "#22C55E"
+}
         ]}>
           {donation.status}
         </Text>
+      </View>
       </View>
 
       <View style={styles.row}>
         <Text style={styles.label}>Created</Text>
         <Text style={styles.value}>
-          {new Date(donation.createdAt).toLocaleString()}
+          {new Date(donation.createdAt).toLocaleDateString()}
         </Text>
       </View>
     </View>
@@ -170,4 +195,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5
   },
+  statusBadge: {
+  paddingHorizontal: 12,
+  paddingVertical: 5,
+  borderRadius: 20,
+},
+
+statusText: {
+  fontWeight: "bold",
+  textTransform: "capitalize",
+},
 });

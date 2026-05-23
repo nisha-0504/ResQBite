@@ -99,17 +99,17 @@ export default function ProfileScreen() {
 
         <View style={styles.impactRow}>
           <View style={styles.impactBox}>
-            <Text style={styles.impactNumber}>150</Text>
+            <Text style={styles.impactNumber}>0</Text>
             <Text style={styles.impactLabel}>Meals</Text>
           </View>
 
           <View style={styles.impactBox}>
-            <Text style={styles.impactNumber}>45kg</Text>
+            <Text style={styles.impactNumber}>0 kg</Text>
             <Text style={styles.impactLabel}>Food Saved</Text>
           </View>
 
           <View style={styles.impactBox}>
-            <Text style={styles.impactNumber}>120</Text>
+            <Text style={styles.impactNumber}>0</Text>
             <Text style={styles.impactLabel}>People</Text>
           </View>
         </View>

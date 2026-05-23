@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { BASE_URL } from "../config";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
-import API from "../services/api"; 
+import API from "../services/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -28,30 +28,35 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-
     if (!email || !password) {
       setError("Please enter email and password");
       return;
     }
-
+    if (!email.endsWith("@gmail.com")) {
+      setError("Only Gmail accounts are allowed");
+      return;
+    }
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
         },
-        body: JSON.stringify({ email, password }),
-      });
+      );
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.message || "Invalid credentials");
+        setLoading(false);
         return;
       }
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
-
 
       router.replace("/role");
     } catch (err) {
@@ -62,35 +67,30 @@ export default function Login() {
     setLoading(false);
   };
 
-
   // Google login backend flow
   const handleGoogleLogin = async (token: string) => {
-  try {
-    // Google API (fetch is fine)
-    const res = await fetch(
-      "https://www.googleapis.com/oauth2/v2/userinfo",
-      {
+    try {
+      // Google API (fetch is fine)
+      const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
         headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+      });
 
-    const user = await res.json();
+      const user = await res.json();
 
-    // Backend (use axios)
-    const backendRes = await API.post("/auth/google", {
-      name: user.name,
-      email: user.email,
-      googleId: user.id,
-    });
+      // Backend (use axios)
+      const backendRes = await API.post("/auth/google", {
+        name: user.name,
+        email: user.email,
+        googleId: user.id,
+      });
 
-    const data = backendRes.data;
+      const data = backendRes.data;
 
-    console.log("Backend response:", data);
-
-  } catch (err: any) {
-    console.log("ERROR:", err.response?.data || err.message);
-  }
-};
+      console.log("Backend response:", data);
+    } catch (err: any) {
+      console.log("ERROR:", err.response?.data || err.message);
+    }
+  };
 
   return (
     <ScrollView
@@ -118,6 +118,9 @@ export default function Login() {
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Enter your email"
+          placeholderTextColor="#888"
+          keyboardType="email-address"
+          autoCapitalize="none"
           style={styles.input}
           value={email}
           onChangeText={(text) => {
@@ -141,15 +144,20 @@ export default function Login() {
 
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
           <Ionicons
-            name={showPassword ? "eye-off-outline" : "eye-outline"}
+            name={showPassword ? "eye-outline" : "eye-off-outline"}
             size={22}
             color="gray"
           />
         </TouchableOpacity>
       </View>
+      {password.length > 0 && password.length < 8 ? (
+        <Text style={styles.inlineError}>
+          Password must contain at least 8 characters
+        </Text>
+      ) : null}
 
       <TouchableOpacity
-        style={styles.loginBtn}
+        style={[styles.loginBtn, loading && { opacity: 0.7 }]}
         onPress={handleLogin}
         disabled={loading}
       >
@@ -159,10 +167,7 @@ export default function Login() {
       </TouchableOpacity>
 
       {/* safer trigger */}
-      <TouchableOpacity
-        style={styles.googleBtn}
-        
-      >
+      <TouchableOpacity style={styles.googleBtn}>
         <Text style={styles.googleText}>Continue with Google</Text>
       </TouchableOpacity>
 
@@ -266,5 +271,12 @@ const styles = StyleSheet.create({
   },
   successText: {
     color: "#166534",
+  },
+  inlineError: {
+    color: "#EF4444",
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 10,
+    marginLeft: 4,
   },
 });

@@ -13,6 +13,7 @@ import { BASE_URL } from "../config";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import RNPickerSelect from "react-native-picker-select";
 import { Ionicons } from "@expo/vector-icons";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
 export default function Signup() {
   const router = useRouter();
@@ -32,36 +33,60 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [customVehicle, setCustomVehicle] = useState("");
 
   const handleSignup = async () => {
     if (!name || !email || !password || !confirmPassword) {
       setError("Please fill all fields");
       return;
     }
-
+    if (!email.endsWith("@gmail.com")) {
+      setError("Only Gmail addresses are allowed");
+      return;
+    }
+    if (!acceptedTerms) {
+      setError("Please accept Terms & Conditions");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must contain at least 8 characters");
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9]).+$/;
+
+    if (!passwordRegex.test(password)) {
+      setError("Password must contain 1 uppercase letter and 1 number");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            dob,
+            age,
+            gender,
+            email,
+            password,
+            vehicleType,
+          }),
         },
-        body: JSON.stringify({
-          name,
-          dob,
-          age,
-          gender,
-          email,
-          password,
-          vehicleType,
-        }),
-      });
+      );
 
       const data = await response.json();
       console.log("SIGNUP RESPONSE:", data);
@@ -82,180 +107,263 @@ export default function Signup() {
   };
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       style={{ flex: 1 }}
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {/* Image */}
-      <Image
-        source={{
-          uri: "https://images.unsplash.com/photo-1542810634-71277d95dcbb",
-        }}
-        style={styles.image}
-      />
-
-      {/* Title */}
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join ResQBite</Text>
-
-      {error ? (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : null}
-
-      {success ? (
-        <View style={styles.successBox}>
-          <Text style={styles.successText}>{success}</Text>
-        </View>
-      ) : null}
-
-      {/* Name */}
-      <Text style={styles.label}>Name</Text>
-      <TextInput
-        placeholder="Enter your name"
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-      />
-
-      {/* DOB */}
-      <Text style={styles.label}>Date of Birth</Text>
-      <TouchableOpacity
-        onPress={() => setShowPicker(true)}
-        style={styles.input}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
-        <Text>{dob.toDateString()}</Text>
-      </TouchableOpacity>
-
-      {/* Age */}
-      <Text style={styles.label}>Age</Text>
-      <TextInput value={age} editable={false} style={styles.input} />
-
-      {/* Gender */}
-      <Text style={styles.label}>Gender</Text>
-
-      <View style={styles.genderContainer}>
-        {["male", "female", "other"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.genderButton,
-              gender === item && styles.genderSelected,
-            ]}
-            onPress={() => setGender(item)}
-          >
-            <Text
-              style={[
-                styles.genderText,
-                gender === item && styles.genderTextSelected,
-              ]}
-            >
-              {item.charAt(0).toUpperCase() + item.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Email */}
-      <Text style={styles.label}>Email</Text>
-      <TextInput
-        placeholder="Enter your email"
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      {/* Password */}
-      <Text style={styles.label}>Password</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Enter your password"
-          secureTextEntry={!showPassword}
-          style={styles.input}
-          value={password}
-          onChangeText={(text) => {
-            setPassword(text);
-            setError("");
+        {/* Image */}
+        <Image
+          source={{
+            uri: "https://images.unsplash.com/photo-1542810634-71277d95dcbb",
           }}
+          style={styles.image}
         />
 
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Ionicons
-            name={showPassword ? "eye-off-outline" : "eye-outline"}
-            size={22}
-            color="gray"
-          />
-        </TouchableOpacity>
-      </View>
+        {/* Title */}
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Join ResQBite</Text>
 
-      <Text style={styles.label}>Confirm Password</Text>
-      <View style={styles.inputContainer}>
+        {error ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
+
+        {success ? (
+          <View style={styles.successBox}>
+            <Text style={styles.successText}>{success}</Text>
+          </View>
+        ) : null}
+
+        {/* Name */}
+        <Text style={styles.label}>Name</Text>
         <TextInput
-          placeholder="Confirm password"
-          secureTextEntry={!showConfirmPassword}
+          placeholder="Enter your name"
+          placeholderTextColor="#888"
+          autoCapitalize="words"
           style={styles.input}
-          value={confirmPassword}
-          onChangeText={(text) => {
-            setConfirmPassword(text);
-            setError("");
-          }}
+          value={name}
+          onChangeText={setName}
         />
 
+        {/* DOB */}
+        <Text style={styles.label}>Date of Birth</Text>
         <TouchableOpacity
-          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          onPress={() => setShowPicker(true)}
+          style={styles.input}
         >
-          <Ionicons
-            name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-            size={22}
-            color="gray"
-          />
+          <Text>{dob.toLocaleDateString()}</Text>
         </TouchableOpacity>
-      </View>
 
-      {/* Vehicle Type */}
-      <Text style={styles.label}>Vehicle Type (Optional)</Text>
-      <TextInput
-        placeholder="Bike / Car / Truck etc.."
-        style={styles.input}
-        value={vehicleType}
-        onChangeText={setVehicleType}
-      />
+        {/* Age */}
+        <Text style={styles.label}>Age</Text>
+        <TextInput value={age} editable={false} style={styles.input} />
 
-      {showPicker && (
-        <DateTimePicker
-          value={dob}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowPicker(false);
+        {/* Gender */}
+        <Text style={styles.label}>Gender</Text>
 
-            if (selectedDate) {
-              setDob(selectedDate);
+        <View style={styles.genderContainer}>
+          {["male", "female", "other"].map((item) => (
+            <TouchableOpacity
+              key={item}
+              style={[
+                styles.genderButton,
+                gender === item && styles.genderSelected,
+              ]}
+              onPress={() => setGender(item)}
+            >
+              <Text
+                style={[
+                  styles.genderText,
+                  gender === item && styles.genderTextSelected,
+                ]}
+              >
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-              const currentYear = new Date().getFullYear();
-              const birthYear = selectedDate.getFullYear();
-
-              setAge((currentYear - birthYear).toString());
-            }
-          }}
+        {/* Email */}
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          placeholder="Enter your email"
+          placeholderTextColor="#888"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
         />
-      )}
 
-      {/* Signup Button */}
-      <TouchableOpacity style={styles.signupBtn} onPress={handleSignup}>
-        <Text style={styles.signupText}>
-          {loading ? "Creating account..." : "Signup"}
+        {/* Password */}
+        <Text style={styles.label}>Password</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Enter your password"
+            placeholderTextColor="#888"
+            autoCapitalize="none"
+            secureTextEntry={!showPassword}
+            style={styles.input}
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError("");
+            }}
+          />
+
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-outline" : "eye-off-outline"}
+              size={22}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {password.length > 0 && password.length < 8 ? (
+          <Text style={styles.inlineError}>
+            Password must contain 8 characters
+          </Text>
+        ) : null}
+        <Text style={styles.label}>Confirm Password</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Confirm password"
+            placeholderTextColor="#888"
+            autoCapitalize="none"
+            secureTextEntry={!showConfirmPassword}
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              setError("");
+            }}
+          />
+
+          <TouchableOpacity
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons
+              name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+              size={22}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Vehicle Type */}
+        <Text style={styles.label}>Vehicle Type (Optional)</Text>
+
+        <View style={styles.pickerContainer}>
+          <RNPickerSelect
+            onValueChange={(value) => setVehicleType(value)}
+            value={vehicleType}
+            placeholder={{
+              label: "Select Vehicle Type",
+              value: null,
+            }}
+            items={[
+              { label: "Bike", value: "Bike" },
+              { label: "Scooter", value: "Scooter" },
+              { label: "Car", value: "Car" },
+              { label: "Truck", value: "Truck" },
+              {
+                label: "Other (Please specify)",
+                value: "Other",
+              },
+            ]}
+            style={{
+              inputIOS: styles.pickerInput,
+              inputAndroid: styles.pickerInput,
+              placeholder: {
+                color: "#888",
+              },
+            }}
+            useNativeAndroidPickerStyle={false}
+            Icon={() => <Ionicons name="chevron-down" size={20} color="gray" />}
+          />
+        </View>
+        {vehicleType === "Other" && (
+          <TextInput
+            placeholder="Please specify vehicle"
+            placeholderTextColor="#888"
+            style={styles.input}
+            value={customVehicle}
+            onChangeText={setCustomVehicle}
+          />
+        )}
+
+        {showPicker && (
+          <DateTimePicker
+            value={dob}
+            mode="date"
+            display="default"
+            maximumDate={new Date()}
+            onChange={(event, selectedDate) => {
+              setShowPicker(false);
+
+              if (selectedDate) {
+                setDob(selectedDate);
+
+                const today = new Date();
+
+                let calculatedAge =
+                  today.getFullYear() - selectedDate.getFullYear();
+
+                const monthDifference =
+                  today.getMonth() - selectedDate.getMonth();
+
+                if (
+                  monthDifference < 0 ||
+                  (monthDifference === 0 &&
+                    today.getDate() < selectedDate.getDate())
+                ) {
+                  calculatedAge--;
+                }
+
+                setAge(calculatedAge.toString());
+              }
+            }}
+          />
+        )}
+
+        <View style={styles.termsContainer}>
+          <TouchableOpacity onPress={() => setAcceptedTerms(!acceptedTerms)}>
+            <Ionicons
+              name={acceptedTerms ? "checkbox" : "square-outline"}
+              size={24}
+              color="#F58634"
+            />
+          </TouchableOpacity>
+
+          <Text style={styles.termsText}>I agree to Terms & Conditions</Text>
+        </View>
+
+        {/* Signup Button */}
+        <TouchableOpacity
+          style={[styles.signupBtn, loading && { opacity: 0.7 }]}
+          onPress={handleSignup}
+          disabled={loading}
+        >
+          <Text style={styles.signupText}>
+            {loading ? "Creating account..." : "Signup"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Login Redirect */}
+        <Text style={styles.login} onPress={() => router.push("/login")}>
+          Already have an account? Login
         </Text>
-      </TouchableOpacity>
-
-      {/* Login Redirect */}
-      <Text style={styles.login} onPress={() => router.push("/login")}>
-        Already have an account? Login
-      </Text>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -287,7 +395,7 @@ const styles = StyleSheet.create({
 
   label: {
     marginTop: 10,
-    marginBottom: 5,
+    marginBottom: 10,
     fontWeight: "500",
   },
 
@@ -298,6 +406,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     backgroundColor: "white",
+    marginBottom: 12,
   },
 
   signupBtn: {
@@ -327,18 +436,19 @@ const styles = StyleSheet.create({
 
   genderButton: {
     flex: 1,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
+    paddingVertical: 14,
+    borderRadius: 30,
     alignItems: "center",
     marginHorizontal: 4,
     backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
 
   genderSelected: {
     backgroundColor: "#F58634",
     borderColor: "#F58634",
+    elevation: 3,
   },
 
   genderText: {
@@ -383,5 +493,39 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "white",
     marginBottom: 15,
+  },
+  termsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 20,
+  },
+
+  termsText: {
+    marginLeft: 10,
+    color: "#444",
+    fontSize: 14,
+  },
+  inlineError: {
+    color: "#EF4444",
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 10,
+    marginLeft: 4,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 14,
+    backgroundColor: "white",
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    justifyContent: "center",
+  },
+
+  pickerInput: {
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "black",
   },
 });

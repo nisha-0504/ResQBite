@@ -8,6 +8,15 @@ const userSchema = new mongoose.Schema({
   age: Number,
   gender: String,
   vehicleType: { type: String, default: null },
+  phone: {
+  type: String,
+  default: "Not Added",
+},
+
+address: {
+  type: String,
+  default: "Not Added",
+},
 });
 
 module.exports = mongoose.model("User", userSchema);

@@ -30,15 +30,15 @@ export default function ActiveScreen() {
 
       {/* ACTIVE PICKUP CARD */}
       <View style={styles.activeCard}>
-        <Text style={styles.activeTitle}>Restaurant ABC</Text>
+        <Text style={styles.activeTitle}>Domino's Pizza</Text>
         <Text style={styles.activeText}>📍 MG Road, Bangalore</Text>
 
         <View style={styles.row}>
           <Ionicons name="bicycle-outline" size={16} color="#fff" />
-          <Text style={styles.activeText}> Volunteer: Raj</Text>
+          <Text style={styles.activeText}> Volunteer: Nisha</Text>
         </View>
 
-        <Text style={styles.activeText}>🍱 30 meals (Veg)</Text>
+        <Text style={styles.activeText}>🍱 10 meals (Veg)</Text>
         <Text style={styles.status}>Status: On the Way</Text>
 
         {/* BUTTONS */}
