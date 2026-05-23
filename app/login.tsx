@@ -57,7 +57,9 @@ export default function Login() {
         return;
       }
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      await AsyncStorage.setItem("token", data.token);
 
+      console.log("TOKEN SAVED:", data.token);
       router.replace("/role");
     } catch (err) {
       console.error(err);

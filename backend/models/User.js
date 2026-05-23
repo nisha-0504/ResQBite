@@ -12,7 +12,11 @@ const userSchema = new mongoose.Schema({
   type: String,
   default: "Not Added",
 },
-
+ role: {
+    type: String,
+    enum:["donor", "ngo", "volunteer"],
+    default: null,
+  },
 address: {
   type: String,
   default: "Not Added",

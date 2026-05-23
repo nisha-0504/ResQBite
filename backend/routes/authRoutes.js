@@ -170,5 +170,31 @@ router.put(
     }
   }
 );
+router.put(
+  "/select-role",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { role: req.body.role },
+        { new: true }
+      );
 
+      // generate NEW token with updated role
+      const token = generateToken(user);
+
+      res.json({
+        message: "Role updated",
+        token,
+        user,
+      });
+
+    } catch (err) {
+      res.status(500).json({
+        message: err.message,
+      });
+    }
+  }
+);
 module.exports = router;

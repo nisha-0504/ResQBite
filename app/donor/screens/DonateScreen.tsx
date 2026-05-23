@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import {
   View,
@@ -149,13 +150,14 @@ export default function DonateScreen() {
 
       // 🔥 Send to backend
       await API.post("/donor/donations", {
-        title: foodName,
-        quantity,
-        location,
-        pickupTime: pickupDate,
-        expiryTime: expiryDate,
-        images: uploadedImages,
-      });
+  foodType: foodName,
+  description: foodName,
+  quantity,
+  location,
+  pickupTime: pickupDate,
+  expiryTime: expiryDate,
+  images: uploadedImages,
+});
 
       alert("Donation created successfully!");
 

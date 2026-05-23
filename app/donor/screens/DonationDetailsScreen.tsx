@@ -79,7 +79,15 @@ const [donation, setDonation] = useState<Donation | null>(null);
 
   return (
   <View style={styles.container}>
-    
+
+    {/* Header */}
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>Donation Details</Text>
+      <Text style={styles.headerSubtitle}>
+        Track your food donation
+      </Text>
+    </View>
+
     {/* Card */}
     <View style={styles.card}>
       <Text style={styles.title}>{donation.title}</Text>
@@ -96,51 +104,51 @@ const [donation, setDonation] = useState<Donation | null>(null);
 
       <View style={styles.row}>
         <Text style={styles.label}>Status</Text>
+
         <View
-    style={[
-      styles.statusBadge,
-      {
-        backgroundColor:
-          donation.status === "pending"
-            ? "#FEF9C3"
-            : donation.status === "accepted"
-            ? "#DBEAFE"
-            : donation.status === "picked"
-            ? "#FFEDD5"
-            : "#DCFCE7",
-      },
-    ]}
-  >
-        <Text style={[
-          styles.value,
-          {
-  color:
-    donation.status === "pending"
-      ? "#FACC15"
-      : donation.status === "accepted"
-      ? "#3B82F6"
-      : donation.status === "picked"
-      ? "#F97316"
-      : "#22C55E"
-}
-        ]}>
-          {donation.status}
-        </Text>
-      </View>
+          style={[
+            styles.statusBadge,
+            {
+              backgroundColor:
+                donation.status === "pending"
+                  ? "#FEF3C7"
+                  : "#DCFCE7",
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusText,
+              {
+                color:
+                  donation.status === "pending"
+                    ? "#D97706"
+                    : "#16A34A",
+              },
+            ]}
+          >
+            {donation.status}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.row}>
         <Text style={styles.label}>Created</Text>
         <Text style={styles.value}>
-          {new Date(donation.createdAt).toLocaleDateString()}
+          {new Date(donation.createdAt).toLocaleString()}
         </Text>
       </View>
     </View>
 
     {/* Delete Button */}
     {donation.status === "pending" && (
-      <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-        <Text style={styles.deleteText}>Delete Donation</Text>
+      <TouchableOpacity
+        style={styles.deleteBtn}
+        onPress={handleDelete}
+      >
+        <Text style={styles.deleteText}>
+          Delete Donation
+        </Text>
       </TouchableOpacity>
     )}
 
@@ -151,58 +159,86 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
-    padding: 16,
+  },
+
+  header: {
+    backgroundColor: "#2ECC71",
+    padding: 24,
+    paddingTop: 50,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+
+  headerTitle: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+
+  headerSubtitle: {
+    color: "white",
+    marginTop: 5,
+    opacity: 0.9,
   },
 
   card: {
     backgroundColor: "white",
+    margin: 18,
     padding: 20,
-    borderRadius: 16,
+    borderRadius: 20,
     elevation: 3,
   },
 
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 20,
+    color: "#111827",
+    marginBottom: 25,
   },
 
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    alignItems: "center",
+    marginBottom: 18,
   },
 
   label: {
     color: "#6B7280",
-    fontWeight: "500",
+    fontWeight: "600",
+    fontSize: 14,
   },
+
   value: {
     fontWeight: "bold",
+    color: "#111827",
+    maxWidth: "55%",
+    textAlign: "right",
+  },
+
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+
+  statusText: {
+    fontWeight: "bold",
+    textTransform: "capitalize",
   },
 
   deleteBtn: {
-    marginTop: 30,
-    backgroundColor: "#EF4444",
+    marginHorizontal: 18,
+    marginTop: 10,
+    backgroundColor: "#F58634",
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
   },
 
   deleteText: {
     color: "#fff",
-    textAlign: "center",
     fontWeight: "bold",
-    marginBottom: 5
+    fontSize: 15,
   },
-  statusBadge: {
-  paddingHorizontal: 12,
-  paddingVertical: 5,
-  borderRadius: 20,
-},
-
-statusText: {
-  fontWeight: "bold",
-  textTransform: "capitalize",
-},
 });

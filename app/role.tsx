@@ -1,28 +1,40 @@
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import API from "../services/api";
 export default function Role() {
   const router = useRouter();
 
-  const handleRoleSelect = async (selectedRole:string) => {
-    console.log("Selected role:", selectedRole);
+  const handleRoleSelect = async (selectedRole: string) => {
+  console.log("Selected role:", selectedRole);
 
-    try {
-      await AsyncStorage.setItem("selectedRole", selectedRole);
+  try {
+    // save role in backend
+    const res = await API.put("/auth/select-role", {
+      role: selectedRole,
+    });
 
-      if (selectedRole === "donor") {
-        router.replace("/donor/(tabs)");
-      } else if (selectedRole === "ngo") {
-        router.replace("/ngo/(tabs)");
-      } else {
-        router.replace("/(volunteer)/(tabs)/home");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong");
+console.log("ROLE API RESPONSE:", res.data);
+    // save updated token
+    await AsyncStorage.setItem("token", res.data.token);
+
+    // optional local storage
+    await AsyncStorage.setItem("selectedRole", selectedRole);
+
+    // navigate
+    if (selectedRole === "donor") {
+      router.replace("/donor/(tabs)");
+    } else if (selectedRole === "ngo") {
+      router.replace("/ngo/(tabs)");
+    } else {
+      router.replace("/(volunteer)/(tabs)/home");
     }
-  };
+
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <View style={styles.container}>

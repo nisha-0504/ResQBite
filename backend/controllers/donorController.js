@@ -6,6 +6,7 @@ const Donation = require("../models/Donation");
 exports.createDonation = async (req, res) => {
   try {
     const donation = await Donation.create({
+      donorId: req.user.id,
       description: req.body.description,
       foodType: req.body.foodType,
       quantity: req.body.quantity,

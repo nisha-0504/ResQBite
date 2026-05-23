@@ -9,18 +9,46 @@ import {
   RefreshControl,
 } from "react-native";
 import API from "../../../services/api"; // adjust path
+type User = {
+  name: string;
+  email: string;
+  role: string;
+};
+
+const getErrorMessage = (err: unknown) => {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null && "response" in err) {
+    return (err as any).response?.data || (err as any).message || String(err);
+  }
+  return String(err);
+};
 
 export default function DonorDashboard() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [donations, setDonations] = useState<any[]>([]);
+  useEffect(() => {
+    const fetchUser = async () => {
+  try {
+    const res = await API.get("/auth/profile");
+
+    console.log("PROFILE DATA:", res.data);
+
+    setUser(res.data);
+  } catch (err: unknown) {
+    console.log("❌ USER FETCH DETAILS:", getErrorMessage(err));
+  }
+};
+    fetchUser();
+  }, []);
   // ✅ Fetch donations
   const fetchDonations = async () => {
     try {
       const res = await API.get("/donor/donations");
       setDonations(res.data);
-    } catch (err) {
-      console.log((err as any).response?.data || (err as any).message);
+    } catch (err: unknown) {
+      console.log(getErrorMessage(err));
     }
   };
   const onRefresh = async () => {
@@ -45,7 +73,7 @@ export default function DonorDashboard() {
   >
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Hello, Restaurant ABC</Text>
+        <Text style={styles.title}>Hello, {user?.name || "User"}</Text>
         <Text style={styles.subtitle}>Save Food • Feed People</Text>
 
         <TouchableOpacity
@@ -85,14 +113,14 @@ export default function DonorDashboard() {
             <DonationCard
               key={item._id}
               id={item._id}
-              title={item.title}
+              title={item.foodType || "Food Item"}
               qty={item.quantity}
               time={
                 item.pickupTime
                   ? new Date(item.pickupTime).toLocaleTimeString()
                   : new Date(item.createdAt).toLocaleTimeString()
               }
-              status={item.status || "Pending"}
+              status={item.status || "pending"}
               statusColor={getStatusColor(item.status)}
             />
           ))
