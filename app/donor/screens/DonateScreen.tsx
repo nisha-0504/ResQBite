@@ -152,7 +152,7 @@ export default function DonateScreen() {
       await API.post("/donor/donations", {
   foodType: foodName,
   description: foodName,
-  quantity,
+  quantity: Number(quantity),
   location,
   pickupTime: pickupDate,
   expiryTime: expiryDate,

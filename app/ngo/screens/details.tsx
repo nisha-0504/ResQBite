@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
+import API from "../../../services/api";
 
 export default function DetailsScreen() {
   const router = useRouter();
@@ -15,9 +16,9 @@ export default function DetailsScreen() {
 
   // ✅ Params (safe casting)
   const id = params.id as string;
-  const name = params.name as string;
-  const meals = params.meals as string;
-  const distance = params.distance as string;
+  const foodType =params.foodType as string;
+  const meals = params.quantity as string;
+  const location = params.location as string;
   const image = params.image as string;
 
   // ✅ State
@@ -25,22 +26,36 @@ export default function DetailsScreen() {
   const [claimed, setClaimed] = useState(false);
 
   // ✅ Confirm handler
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+  try {
+
+    await API.put(
+      `/ngo/accept/${id}`
+    );
+
     setClaimed(true);
 
     Alert.alert(
       "Success ✅",
-      `You have claimed ${quantity} meals from ${name}`
+      `Food donation accepted`
     );
 
-    if (!id) return;
+    router.replace("/ngo/(tabs)");
 
-    // 👇 Go back to dashboard with claimed info
-    router.push({
-      pathname: "/ngo/(tabs)",
-      params: { claimedId: id },
-    });
-  };
+  } catch (err) {
+
+    const error = err as any;
+
+console.log(
+  error.response?.data || error.message
+);
+
+    Alert.alert(
+      "Error",
+      "Failed to accept donation"
+    );
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -56,10 +71,10 @@ export default function DetailsScreen() {
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>{name}</Text>
+        <Text style={styles.title}>{foodType}</Text>
 
         <Text style={styles.info}>🍱 Available: {meals}</Text>
-        <Text style={styles.info}>📍 {distance}</Text>
+        <Text style={styles.info}>📍 {location}</Text>
 
         {/* Quantity Selector */}
         <Text style={styles.label}>Select Quantity</Text>

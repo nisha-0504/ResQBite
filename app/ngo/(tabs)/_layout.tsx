@@ -54,19 +54,7 @@ export default function NgoTabsLayout() {
             <Feather name="map" size={size} color={color} />
           ),
         }}
-      />
-
-      {/* Notifications (NEW) */}
-      <Tabs.Screen
-        name="alerts"
-        options={{
-          title: 'Alerts',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="notifications-outline" size={22} color={color} />
-          ),
-        }}
-      />
-      
+      />      
      
       <Tabs.Screen
         name="history"

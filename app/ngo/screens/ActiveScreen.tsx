@@ -1,16 +1,37 @@
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import API from "../../../services/api";
+import { useState, useEffect } from "react";
 
 export default function ActiveScreen() {
   const router = useRouter();
+  const [donations, setDonations] = useState<any[]>([]);
+  const fetchActiveDonations =
+  async () => {
 
+    try {
+
+      const res = await API.get(
+        "/ngo/active"
+      );
+
+      setDonations(res.data);
+
+    } catch (err) {
+      console.log(err);
+    }
+};
+useEffect(() => {
+  fetchActiveDonations();
+}, []);
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
@@ -20,48 +41,79 @@ export default function ActiveScreen() {
           <Text style={styles.subText}>Track and manage your pickups</Text>
         </View>
 
-        <TouchableOpacity
-  style={styles.bell}
-  onPress={() => router.push("/ngo/(tabs)/notifications")}
->
-  <Ionicons name="notifications-outline" size={20} color="#fff" />
-</TouchableOpacity>
+        
       </View>
 
       {/* ACTIVE PICKUP CARD */}
-      <View style={styles.activeCard}>
-        <Text style={styles.activeTitle}>Domino's Pizza</Text>
-        <Text style={styles.activeText}>📍 MG Road, Bangalore</Text>
+      {donations.length === 0 ? (
 
-        <View style={styles.row}>
-          <Ionicons name="bicycle-outline" size={16} color="#fff" />
-          <Text style={styles.activeText}> Volunteer: Nisha</Text>
-        </View>
+  <View style={styles.emptyContainer}>
 
-        <Text style={styles.activeText}>🍱 10 meals (Veg)</Text>
-        <Text style={styles.status}>Status: On the Way</Text>
+    <Text style={styles.emptyIcon}>
+      📦
+    </Text>
 
-        {/* BUTTONS */}
-        <View style={styles.btnRow}>
-          <TouchableOpacity style={styles.callBtn}>
-            <Ionicons name="call-outline" size={16} color="#fff" />
-            <Text style={styles.btnText}> Call</Text>
-          </TouchableOpacity>
+    <Text style={styles.emptyTitle}>
+      No Active Pickups
+    </Text>
 
-          <TouchableOpacity style={styles.pickBtn}>
-            <Text style={styles.btnText}>Mark Picked</Text>
-          </TouchableOpacity>
-        </View>
+    <Text style={styles.emptyText}>
+      Accepted donations will
+      appear here
+    </Text>
 
-        {/* TRACK BUTTON */}
-        <TouchableOpacity
-          style={styles.trackBtn}
-          onPress={() => router.push("/ngo/tracking")}
-        >
-          <Ionicons name="location-outline" size={16} color="#fff" />
-          <Text style={styles.btnText}> Track on Map</Text>
-        </TouchableOpacity>
-      </View>
+  </View>
+
+) : (
+
+  donations.map((item) => (
+
+  <View
+    key={item._id}
+    style={styles.activeCard}
+  >
+
+    <Image
+      source={{
+        uri:
+          item.images?.[0] ||
+          "https://via.placeholder.com/300",
+      }}
+      style={styles.foodImage}
+    />
+
+    <Text style={styles.activeTitle}>
+      {item.foodType}
+    </Text>
+
+    <Text style={styles.activeText}>
+      📍 {item.location}
+    </Text>
+
+    <Text style={styles.activeText}>
+      🍱 {item.quantity} meals
+    </Text>
+
+    <Text style={styles.status}>
+      Status: Accepted
+    </Text>
+
+    <TouchableOpacity
+      style={styles.trackBtn}
+    >
+      <Ionicons
+        name="location-outline"
+        size={16}
+        color="#fff"
+      />
+
+      <Text style={styles.btnText}>
+        Track Pickup
+      </Text>
+    </TouchableOpacity>
+
+  </View>
+)))}
     </ScrollView>
   );
 }
@@ -166,4 +218,33 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
+  foodImage: {
+  width: "100%",
+  height: 160,
+  borderRadius: 14,
+  marginBottom: 12,
+},
+emptyContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 120,
+},
+
+emptyIcon: {
+  fontSize: 50,
+},
+
+emptyTitle: {
+  fontSize: 18,
+  fontWeight: "bold",
+  marginTop: 12,
+  color: "#2fb463",
+},
+
+emptyText: {
+  marginTop: 6,
+  color: "#777",
+  textAlign: "center",
+},
 });

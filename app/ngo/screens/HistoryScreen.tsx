@@ -1,22 +1,46 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import API from "../../../services/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
 
-const historyData = [
-  
-  {
-    id: "1",
-    name: "Domino's Pizza",
-    meals: "25 meals",
-    volunteer: "Nisha",
-    date: "March 13, 2026",
-  },
-  
-];
+
 
 export default function HistoryScreen() {
   const router = useRouter();
+  const [historyData, setHistoryData] =
+  useState<any[]>([]);
+
+  const fetchHistory =
+  async () => {
+
+    try {
+
+      const res = await API.get(
+        "/ngo/history"
+      );
+
+      setHistoryData(res.data);
+
+    } catch (err) {
+      console.log(err);
+    }
+};
+
+useEffect(() => {
+  fetchHistory();
+}, []);
 
   return (
     <View style={styles.container}>
@@ -32,7 +56,27 @@ export default function HistoryScreen() {
 
       {/* List */}
       <ScrollView showsVerticalScrollIndicator={false}>
-        {historyData.map((item) => (
+        {historyData.length === 0 ? (
+
+  <View style={styles.emptyContainer}>
+
+    <Text style={styles.emptyIcon}>
+      📜
+    </Text>
+
+    <Text style={styles.emptyTitle}>
+      No History Yet
+    </Text>
+
+    <Text style={styles.emptyText}>
+      Completed pickups will
+      appear here
+    </Text>
+
+  </View>
+
+) : (
+    historyData.map((item) => (
           <View key={item.id} style={styles.card}>
             
             {/* Icon */}
@@ -42,21 +86,26 @@ export default function HistoryScreen() {
 
             {/* Content */}
             <View style={{ flex: 1 }}>
-              <Text style={styles.title}>{item.name}</Text>
+              <Text style={styles.title}>{item.foodType}</Text>
 
               <View style={styles.row}>
                 <Ionicons name="cube-outline" size={14} color="#777" />
-                <Text style={styles.subText}> {item.meals}</Text>
+                <Text style={styles.subText}> {item.quantity} meals</Text>
               </View>
 
               <Text style={styles.subText}>
-                Volunteer: {item.volunteer}
+                Completed Successfully
               </Text>
 
-              <Text style={styles.date}>{item.date}</Text>
+              <Text style={styles.date}>
+  {new Date(
+    item.updatedAt
+  ).toLocaleDateString()}
+</Text>
             </View>
           </View>
-        ))}
+        ))
+        )}
       </ScrollView>
 
     </View>
@@ -127,4 +176,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#999",
   },
+  emptyContainer: {
+  alignItems: "center",
+  marginTop: 120,
+},
+
+emptyIcon: {
+  fontSize: 50,
+},
+
+emptyTitle: {
+  fontSize: 18,
+  fontWeight: "bold",
+  color: "#2fb463",
+  marginTop: 10,
+},
+
+emptyText: {
+  marginTop: 5,
+  color: "#777",
+  textAlign: "center",
+},
 });

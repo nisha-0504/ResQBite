@@ -22,10 +22,60 @@ exports.acceptDonation = async (req, res) => {
     }
 
     donation.status = "accepted";
+    // save NGO ID
+    donation.ngoId = req.user.id;
     await donation.save();
 
     res.json({ message: "Donation accepted", donation });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+// 3. Get accepted donations for NGO
+exports.getActiveDonations = async (
+  req,
+  res
+) => {
+  try {
+
+    const donations =
+      await Donation.find({
+        ngoId: req.user.id,
+        status: "accepted",
+      }).sort({
+        createdAt: -1,
+      });
+
+    res.json(donations);
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
+// 4. NGO history
+exports.getHistory = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const donations =
+      await Donation.find({
+        ngoId: req.user.id,
+        status: "completed",
+      }).sort({
+        updatedAt: -1,
+      });
+
+    res.json(donations);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message,
+    });
   }
 };

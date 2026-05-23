@@ -9,15 +9,59 @@ import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Modal, TextInput } from "react-native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, {
+  useState,
+  useEffect,
+} from "react";
+import API from "../../../services/api";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [name, setName] = useState("Helping Hands NGO");
-  const [email, setEmail] = useState("ngo@email.com");
-  const [phone, setPhone] = useState("+91 98765 43210");
+  const [name, setName] =
+  useState("");
+
+const [email, setEmail] =
+  useState("");
+
+const [phone, setPhone] =
+  useState("Not Added");
+
+const [address, setAddress] =
+  useState("Not Added");
+
+  const fetchProfile =
+  async () => {
+
+    try {
+
+      const res = await API.get(
+        "/auth/profile"
+      );
+
+      setName(res.data.name);
+
+      setEmail(res.data.email);
+
+      setPhone(
+        res.data.phone ||
+        "Not Added"
+      );
+
+      setAddress(
+        res.data.address ||
+        "Not Added"
+      );
+
+    } catch (err) {
+      console.log(err);
+    }
+};
+
+useEffect(() => {
+  fetchProfile();
+}, []);
 
   const handleLogout = async () => {
     try {
@@ -40,18 +84,20 @@ export default function ProfileScreen() {
 
         <Text style={styles.headerTitle}>Profile</Text>
 
-        <TouchableOpacity>
-          <Feather name="settings" size={20} color="#fff" />
-        </TouchableOpacity>
+      
       </View>
 
       {/* Profile Info */}
       <View style={styles.profileSection}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>H</Text>
+          <Text style={styles.avatarText}>
+  {name?.charAt(0).toUpperCase()}
+</Text>
         </View>
 
-        <Text style={styles.name}>Helping Hands NGO</Text>
+        <Text style={styles.name}>
+  {name}
+</Text>
         <Text style={styles.role}>NGO</Text>
       </View>
 
@@ -65,7 +111,9 @@ export default function ProfileScreen() {
           </View>
           <View>
             <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>ngo@email.com</Text>
+            <Text style={styles.value}>
+  {email}
+</Text>
           </View>
         </View>
 
@@ -75,7 +123,9 @@ export default function ProfileScreen() {
           </View>
           <View>
             <Text style={styles.label}>Phone</Text>
-            <Text style={styles.value}>+91 98765 43210</Text>
+            <Text style={styles.value}>
+  {phone}
+</Text>
           </View>
         </View>
 
@@ -84,8 +134,12 @@ export default function ProfileScreen() {
             <Ionicons name="location-outline" size={18} color="#2fb463" />
           </View>
           <View>
-            <Text style={styles.label}>Location</Text>
-            <Text style={styles.value}>123 Main Street, City Area</Text>
+            <Text style={styles.label}>
+  Address
+</Text>
+            <Text style={styles.value}>
+  {address}
+</Text>
           </View>
         </View>
       </View>
@@ -185,6 +239,16 @@ export default function ProfileScreen() {
               onChangeText={setPhone}
             />
 
+            <Text style={styles.label}>
+  Address
+</Text>
+
+<TextInput
+  style={styles.input}
+  value={address}
+  onChangeText={setAddress}
+/>
+
             <TouchableOpacity
               style={styles.closeBtn}
               onPress={() => setModalVisible(false)}
@@ -193,7 +257,36 @@ export default function ProfileScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.saveBtn}
-              onPress={() => setModalVisible(false)}
+              onPress={async () => {
+
+  try {
+
+    const res = await API.put(
+      "/auth/update-profile",
+      {
+        name,
+        email,
+        phone,
+        address,
+      }
+    );
+
+    setName(res.data.user.name);
+
+    setEmail(res.data.user.email);
+
+    setPhone(res.data.user.phone);
+
+    setAddress(
+      res.data.user.address
+    );
+
+    setModalVisible(false);
+
+  } catch (err) {
+    console.log(err);
+  }
+}}
             >
               <Text style={styles.saveText}>Save Changes</Text>
             </TouchableOpacity>
@@ -216,7 +309,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "center",
   },
 
@@ -224,6 +317,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+    marginLeft: 15,
   },
 
   profileSection: {

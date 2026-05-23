@@ -9,61 +9,145 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-
-const foodData = [
-  {
-    id: "1",
-    name: "Dominos Pizza",
-    meals: "25 meals",
-    distance: "2 km",
-    image: "https://images.unsplash.com/photo-1550547660-d9450f859349",
-  },
-];
+import API from "../../../services/api";
 
 export default function DashboardScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-
   const [claimedItems, setClaimedItems] = useState<string[]>([]);
+  const [foodData, setFoodData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ngoName, setNgoName] =
+  useState("");
+  const [activeDonation, setActiveDonation] =
+  useState<any>(null);
 
   useEffect(() => {
+    fetchDonations();
+    fetchActiveDonation();
+    fetchProfile();
     if (params.claimedId) {
       setClaimedItems((prev) => [...prev, params.claimedId as string]);
     }
   }, [params.claimedId]);
+
+  const fetchDonations = async () => {
+    try {
+      const res = await API.get("/ngo/donations");
+      setFoodData(res.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchActiveDonation =
+  async () => {
+
+    try {
+
+      const res = await API.get(
+        "/ngo/active"
+      );
+
+      if (res.data.length > 0) {
+        setActiveDonation(res.data[0]);
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
+};
+
+const fetchProfile =
+  async () => {
+
+    try {
+
+      const res = await API.get(
+        "/auth/profile"
+      );
+
+      setNgoName(res.data.name);
+
+    } catch (err) {
+      console.log(err);
+    }
+};
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.welcome}>Welcome, Helping Hands</Text>
+          <Text style={styles.welcome}>Welcome, {ngoName}</Text>
           <Text style={styles.subText}>Making a difference every day</Text>
         </View>
 
-        <View style={styles.bell}>
-          <Ionicons name="notifications-outline" size={20} color="#fff" />
-        </View>
+        <TouchableOpacity
+  style={styles.bell}
+  onPress={() =>
+    router.push("/ngo/screens/NotificationsScreen")
+  }
+>
+  <Ionicons
+    name="notifications-outline"
+    size={22}
+    color="#fff"
+  />
+</TouchableOpacity>
       </View>
 
       {/* Active Pickup Card */}
-      <View style={styles.activeCard}>
-        <Text style={styles.activeTitle}>Active Pickup</Text>
-        <Text style={styles.activeText}>Pickup from Domino's Pizza</Text>
+      {activeDonation && (
 
-        <View style={styles.row}>
-          <Ionicons name="bicycle-outline" size={16} color="#fff" />
-          <Text style={styles.activeText}> Volunteer: Nisha</Text>
-        </View>
+  <View style={styles.activeCard}>
 
-        <Text style={styles.activeText}>Status: On the Way</Text>
+    <Image
+      source={{
+        uri:
+          activeDonation.images?.[0] ||
+          "https://via.placeholder.com/300",
+      }}
+      style={styles.activeImage}
+    />
 
-        <View style={styles.mapPlaceholder}>
-          <TouchableOpacity onPress={() => router.push("/ngo/tracking")}>
-            <Text style={styles.trackText}>Track</Text>
-          </TouchableOpacity>agh
-        </View>
-      </View>
+    <Text style={styles.activeTitle}>
+      Active Pickup
+    </Text>
+
+    <Text style={styles.activeText}>
+      {activeDonation.foodType}
+    </Text>
+
+    <Text style={styles.activeText}>
+      📍 {activeDonation.location}
+    </Text>
+
+    <Text style={styles.activeText}>
+      🍱 {activeDonation.quantity} meals
+    </Text>
+
+    <Text style={styles.activeText}>
+      Status: Accepted
+    </Text>
+
+    <TouchableOpacity
+      style={styles.mapPlaceholder}
+      onPress={() =>
+        router.push("/ngo/tracking")
+      }
+    >
+
+      <Text style={styles.trackText}>
+        Track
+      </Text>
+
+    </TouchableOpacity>
+
+  </View>
+)}
 
       {/* Section Title */}
       <Text style={styles.sectionTitle}>Food Available Nearby</Text>
@@ -74,20 +158,24 @@ export default function DashboardScreen() {
 
         return (
           <View key={item.id} style={styles.card}>
-            <Image source={{ uri: item.image }} style={styles.image} />
+            <Image source={{ uri:
+  item.images?.[0] ||
+  "https://via.placeholder.com/300" }} style={styles.image} />
 
             <View style={styles.cardContent}>
-              <Text style={styles.title}>{item.name}</Text>
+              <Text style={styles.title}>
+                {item.foodType || "Food Donation"}
+              </Text>
 
               <View style={styles.infoRow}>
                 <View style={styles.row}>
                   <Ionicons name="people-outline" size={16} />
-                  <Text style={styles.infoText}> {item.meals}</Text>
+                  <Text style={styles.infoText}> {item.quantity} meals</Text>
                 </View>
 
                 <View style={styles.row}>
                   <Ionicons name="location-outline" size={16} />
-                  <Text style={styles.infoText}> {item.distance}</Text>
+                  <Text style={styles.infoText}> {item.location}</Text>
                 </View>
               </View>
 
@@ -100,13 +188,13 @@ export default function DashboardScreen() {
                 disabled={isClaimed}
                 onPress={() =>
                   router.push({
-                    pathname: "/ngo/screens/details", // 
+                    pathname: "/ngo/screens/details", //
                     params: {
-                      id: item.id, // 👈 IMPORTANT
-                      name: item.name,
-                      meals: item.meals,
-                      distance: item.distance,
-                      image: item.image,
+                      id: item._id,
+                      foodType: item.foodType,
+                      quantity: item.quantity,
+                      location: item.location,
+                      image: item.images?.[0],
                     },
                   })
                 }
@@ -198,11 +286,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginHorizontal: 20,
-    marginBottom: 10,
-  },
+  fontSize: 18,
+  fontWeight: "bold",
+  marginHorizontal: 20,
+  marginTop: 20,
+  marginBottom: 12,
+},
 
   card: {
     backgroundColor: "#fff",
@@ -248,4 +337,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
+  activeImage: {
+  width: "100%",
+  height: 150,
+  borderRadius: 12,
+  marginBottom: 10,
+},
 });
