@@ -1,107 +1,213 @@
-const Task = require("../models/Task");
-const mongoose = require("mongoose"); // ➕ ADD
-
+//const Task = require("../models/Task");// ➕ ADD
+const Donation =
+  require("../models/Donation");
 // 📌 CURRENT TASK (ONLY ACTIVE)
-exports.getCurrentTask = async (req, res) => {
-  try {
-    const task = await Task.findOne({
-      status: { $in: ["accepted", "picked"] },
-      volunteerId: new mongoose.Types.ObjectId(req.user.id)
-    });
+exports.getCurrentTask =
+  async (req, res) => {
 
+    try {
 
-    res.json(task || null);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
+      const donation =
+        await Donation.findOne({
+          volunteerId: req.user.id,
+          status: {
+            $in: [
+              "assigned",
+              "picked",
+            ],
+          },
+        });
+
+      res.json(donation || null);
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        msg: "Server error",
+      });
+    }
 };
 
 // 📌 AVAILABLE TASKS (MULTIPLE)
-exports.getAvailableTasks = async (req, res) => {
-  const tasks = await Task.find({ status: "available" });
-  res.json(tasks);
+exports.getAvailableTasks =
+  async (req, res) => {
+
+    try {
+
+      const donations =
+        await Donation.find({
+          status: "accepted",
+        }).sort({
+          updatedAt: -1,
+        });
+
+      res.json(donations);
+
+    } catch (err) {
+
+      console.log(err);
+
+      res.status(500).json({
+        msg: "Server error",
+      });
+    }
 };
 
 // 📌 HISTORY
-exports.getHistory = async (req, res) => {
-  try {
-    const tasks = await Task.find({
-      status: "completed",
-      volunteerId: new mongoose.Types.ObjectId(req.user.id)
-    }).sort({ completedAt: -1 });
+exports.getHistory =
+  async (req, res) => {
 
-    res.json(tasks);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
+    try {
+
+      const donations =
+        await Donation.find({
+          volunteerId: req.user.id,
+          status: "completed",
+        }).sort({
+          completedAt: -1,
+        });
+
+      res.json(donations);
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        msg: "Server error",
+      });
+    }
+};  
 
 // 📌 ACCEPT + PICKUP
-exports.pickupTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
+exports.pickupTask =
+  async (req, res) => {
 
-    if (!task) return res.status(404).json({ msg: "Not found" });
+    try {
 
-    if (task.status === "available") {
-      task.status = "accepted";
+      const donation =
+        await Donation.findById(
+          req.params.id
+        );
 
-      task.volunteerId = new mongoose.Types.ObjectId(req.user.id); // ✅ FIX
-    } else if (task.status === "accepted") {
-      task.status = "picked";
+      if (!donation) {
+
+        return res.status(404).json({
+          msg: "Not found",
+        });
+      }
+
+      // Volunteer accepts task
+      if (
+        donation.status ===
+        "accepted"
+      ) {
+
+        donation.status =
+          "assigned";
+
+        donation.volunteerId =
+          req.user.id;
+      }
+
+      // Volunteer picked food
+      else if (
+        donation.status ===
+        "assigned"
+      ) {
+
+        donation.status =
+          "picked";
+
+        donation.pickedAt =
+          new Date();
+      }
+
+      await donation.save();
+
+      res.json(donation);
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        msg: "Server error",
+      });
     }
-
-    await task.save();
-
-    res.json(task);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
 };
 
 // 📌 COMPLETE
-exports.completeTask = async (req, res) => {
-  try {
-    const task = await Task.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        volunteerId: new mongoose.Types.ObjectId(req.user.id)
-      },
-      {
-        status: "completed",
-        completedAt: new Date(),
-      },
-      { new: true }
-    );
+exports.completeTask =
+  async (req, res) => {
 
-    res.json(task);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
+    try {
+
+      const donation =
+        await Donation.findById(
+          req.params.id
+        );
+
+      if (!donation) {
+
+        return res.status(404).json({
+          msg: "Not found",
+        });
+      }
+
+      donation.status =
+        "completed";
+
+      donation.completedAt =
+        new Date();
+
+      await donation.save();
+
+      res.json(donation);
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        msg: "Server error",
+      });
+    }
 };
 
 // 📌 CANCEL
-exports.cancelTask = async (req, res) => {
-  try {
-    const task = await Task.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        volunteerId: new mongoose.Types.ObjectId(req.user.id)
-      },
-      {
-        status: "available",
-        volunteerId: null,
-      },
-      { new: true }
-    );
+exports.cancelTask =
+  async (req, res) => {
 
-    res.json(task);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
+    try {
+
+      const donation =
+        await Donation.findByIdAndUpdate(
+          req.params.id,
+          {
+            status: "accepted",
+            volunteerId: null,
+          },
+          { new: true }
+        );
+
+      if (!donation) {
+
+        return res.status(404).json({
+          msg: "Not found",
+        });
+      }
+
+      res.json(donation);
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        msg: "Server error",
+      });
+    }
 };

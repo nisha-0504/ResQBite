@@ -9,66 +9,44 @@ import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Modal, TextInput } from "react-native";
 import { useRouter } from "expo-router";
-import React, {
-  useState,
-  useEffect,
-} from "react";
+import React, { useState, useEffect } from "react";
 import API from "../../../services/api";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [name, setName] =
-  useState("");
+  const [name, setName] = useState("");
 
-const [email, setEmail] =
-  useState("");
+  const [email, setEmail] = useState("");
 
-const [phone, setPhone] =
-  useState("Not Added");
+  const [phone, setPhone] = useState("Not Added");
 
-const [address, setAddress] =
-  useState("Not Added");
+  const [address, setAddress] = useState("Not Added");
 
-  const fetchProfile =
-  async () => {
-
+  const fetchProfile = async () => {
     try {
-
-      const res = await API.get(
-        "/auth/profile"
-      );
+      const res = await API.get("/auth/profile");
 
       setName(res.data.name);
 
       setEmail(res.data.email);
 
-      setPhone(
-        res.data.phone ||
-        "Not Added"
-      );
+      setPhone(res.data.phone || "Not Added");
 
-      setAddress(
-        res.data.address ||
-        "Not Added"
-      );
-
+      setAddress(res.data.address || "Not Added");
     } catch (err) {
       console.log(err);
     }
-};
+  };
 
-useEffect(() => {
-  fetchProfile();
-}, []);
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const handleLogout = async () => {
     try {
-      // 🧹 Clear stored data (role, token, etc.)
       await AsyncStorage.clear();
-
-      // 🔄 Navigate to role selection
       router.replace("/login");
     } catch (e) {
       console.log("Logout error:", e);
@@ -83,21 +61,15 @@ useEffect(() => {
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Profile</Text>
-
-      
       </View>
 
       {/* Profile Info */}
       <View style={styles.profileSection}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-  {name?.charAt(0).toUpperCase()}
-</Text>
+          <Text style={styles.avatarText}>{name?.charAt(0).toUpperCase()}</Text>
         </View>
 
-        <Text style={styles.name}>
-  {name}
-</Text>
+        <Text style={styles.name}>{name}</Text>
         <Text style={styles.role}>NGO</Text>
       </View>
 
@@ -111,9 +83,7 @@ useEffect(() => {
           </View>
           <View>
             <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>
-  {email}
-</Text>
+            <Text style={styles.value}>{email}</Text>
           </View>
         </View>
 
@@ -123,9 +93,7 @@ useEffect(() => {
           </View>
           <View>
             <Text style={styles.label}>Phone</Text>
-            <Text style={styles.value}>
-  {phone}
-</Text>
+            <Text style={styles.value}>{phone}</Text>
           </View>
         </View>
 
@@ -134,12 +102,8 @@ useEffect(() => {
             <Ionicons name="location-outline" size={18} color="#2fb463" />
           </View>
           <View>
-            <Text style={styles.label}>
-  Address
-</Text>
-            <Text style={styles.value}>
-  {address}
-</Text>
+            <Text style={styles.label}>Address</Text>
+            <Text style={styles.value}>{address}</Text>
           </View>
         </View>
       </View>
@@ -203,7 +167,7 @@ useEffect(() => {
       {/* Logout */}
       <TouchableOpacity
         style={styles.logoutBtn}
-        onPress={() => router.replace("/role")} // ✅ IMPORTANT
+        onPress={() => router.replace("/role")} 
       >
         <MaterialIcons name="logout" size={18} color="red" />
         <Text style={styles.logoutText}> Logout</Text>
@@ -239,15 +203,13 @@ useEffect(() => {
               onChangeText={setPhone}
             />
 
-            <Text style={styles.label}>
-  Address
-</Text>
+            <Text style={styles.label}>Address</Text>
 
-<TextInput
-  style={styles.input}
-  value={address}
-  onChangeText={setAddress}
-/>
+            <TextInput
+              style={styles.input}
+              value={address}
+              onChangeText={setAddress}
+            />
 
             <TouchableOpacity
               style={styles.closeBtn}
@@ -258,39 +220,30 @@ useEffect(() => {
             <TouchableOpacity
               style={styles.saveBtn}
               onPress={async () => {
+                try {
+                  const res = await API.put("/auth/update-profile", {
+                    name,
+                    email,
+                    phone,
+                    address,
+                  });
 
-  try {
+                  setName(res.data.user.name);
 
-    const res = await API.put(
-      "/auth/update-profile",
-      {
-        name,
-        email,
-        phone,
-        address,
-      }
-    );
+                  setEmail(res.data.user.email);
 
-    setName(res.data.user.name);
+                  setPhone(res.data.user.phone);
 
-    setEmail(res.data.user.email);
+                  setAddress(res.data.user.address);
 
-    setPhone(res.data.user.phone);
-
-    setAddress(
-      res.data.user.address
-    );
-
-    setModalVisible(false);
-
-  } catch (err) {
-    console.log(err);
-  }
-}}
+                  setModalVisible(false);
+                } catch (err) {
+                  console.log(err);
+                }
+              }}
             >
               <Text style={styles.saveText}>Save Changes</Text>
             </TouchableOpacity>
-
           </View>
         </View>
       </Modal>
@@ -484,7 +437,7 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)", // 🔥 shaded background
+    backgroundColor: "rgba(0,0,0,0.5)", 
     justifyContent: "center",
     alignItems: "center",
   },

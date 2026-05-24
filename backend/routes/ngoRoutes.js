@@ -12,7 +12,11 @@ const {
 
 router.get("/donations", getDonations);
 
-router.put("/accept/:id", acceptDonation);
+router.put(
+  "/accept/:id",
+  authMiddleware,
+  acceptDonation
+);
 
 router.get(
   "/active",

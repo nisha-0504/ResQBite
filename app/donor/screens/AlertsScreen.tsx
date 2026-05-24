@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import API from "../../../services/api"; // adjust path
+import API from "../../../services/api";
 
 export default function AlertsScreen() {
   const [alerts, setAlerts] = useState<any[]>([]);

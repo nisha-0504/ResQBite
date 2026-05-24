@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from "react";
 import {
   View,
@@ -54,7 +53,7 @@ export default function DonateScreen() {
 
     if (selectedDate) {
       setExpiryDate(selectedDate);
-      setTimeout(() => setShowTime(true), 100); // smoother
+      setTimeout(() => setShowTime(true), 100); 
     }
   };
 
@@ -124,7 +123,6 @@ export default function DonateScreen() {
       }
       let uploadedImages = [];
 
-      // 🔥 Upload all images to Cloudinary
       for (let uri of images) {
         const data = new FormData();
 
@@ -148,7 +146,6 @@ export default function DonateScreen() {
         uploadedImages.push(file.secure_url);
       }
 
-      // 🔥 Send to backend
       await API.post("/donor/donations", {
   foodType: foodName,
   description: foodName,

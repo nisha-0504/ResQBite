@@ -1,9 +1,8 @@
-
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_URL } from "../../../config";
-import { useCallback, useEffect, useState, ComponentProps } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -23,40 +22,36 @@ interface User {
 }
 
 interface Task {
-  restaurant: string;
-  ngo: string;
-  distance: number;
-  quantity: number;
-  time: string;
-  notes?: string;
   _id: string;
-  earnings?: number;
-  urgency?: string;
-}
 
-// This extracts valid names from Ionicons to stop the "underlined name" error
-type IconName = ComponentProps<typeof Ionicons>['name'];
+  title?: string;
 
-interface DetailRowProps {
-  label: string;
-  value: string | number | undefined | null;
-}
+  foodType?: string;
 
-interface User {
-  name: string;
-}
-
-interface Task {
-  id: number;
-  restaurant: string;
-  ngo: string;
-  distance: number;
   quantity: number;
-  time: string;
-  priority: number;
-  icon: IconName; // Added this
+
+  location?: string;
+
+  restaurant?: string;
+
+  ngo?: string;
+
+  distance?: number;
+
+  images?: string[];
+
+  earnings?: number;
+
+  urgency?: string;
+
+  pickupTime?: string;
+
+  expiryTime?: string;
+
+  description?: string;
+
+  status?: string;
   notes?: string;
-  vehicle?: string;
 }
 
 export default function Home() {
@@ -76,24 +71,21 @@ export default function Home() {
     earnings: 0,
   });
 
-  //  REMOVED loadingTaskId
-  //  REMOVED acceptedTaskId
-
   useFocusEffect(
     useCallback(() => {
       const loadAllData = async () => {
         try {
-          const storedUser = await AsyncStorage.getItem("user"); //  ADDED
-
+          const storedUser = await AsyncStorage.getItem("user");
+          const token = await AsyncStorage.getItem("token");
           if (!storedUser) {
             console.log("No user found");
             return;
           }
 
-          const user = JSON.parse(storedUser); //  FIXED
+          const user = JSON.parse(storedUser);
           fetch(`${BASE_URL}/api/volunteer/available`, {
             headers: {
-              "user-id": user._id || user.id,
+              Authorization: `Bearer ${token}`,
             },
           });
 
@@ -102,16 +94,17 @@ export default function Home() {
           });
           const resTasks = await fetch(`${BASE_URL}/api/volunteer/available`, {
             headers: {
-              "user-id": user._id || user.id,
+              Authorization: `Bearer ${token}`,
             },
           });
 
           const tasksData = await resTasks.json();
+          
           setTasks(tasksData || []);
 
           const resHistory = await fetch(`${BASE_URL}/api/volunteer/history`, {
             headers: {
-              "user-id": user._id || user.id,
+              Authorization: `Bearer ${token}`,
             },
           });
 
@@ -120,11 +113,11 @@ export default function Home() {
           const deliveries = history.length;
           const meals = history.reduce(
             (sum: number, item: any) => sum + (item.quantity || 0),
-            0
+            0,
           );
           const earnings = history.reduce(
             (sum: number, item: any) => sum + (item.earnings || 0),
-            0
+            0,
           );
 
           setStats({ deliveries, meals, earnings });
@@ -134,34 +127,32 @@ export default function Home() {
       };
 
       loadAllData();
-    }, [])
+    }, []),
   );
 
   useEffect(() => {
     const notifs = tasks.map((task) => ({
       id: task._id,
-      text: `New task from ${task.restaurant}`,
+      text: `New ${task.foodType || "food"} donation available`,
     }));
     setNotifications(notifs);
   }, [tasks]);
 
   const handleAccept = async (task: Task) => {
     try {
-      const storedUser = await AsyncStorage.getItem("user"); //  ADD
+      const storedUser = await AsyncStorage.getItem("user");
+      const token = await AsyncStorage.getItem("token");
       if (!storedUser) return;
 
-      const user = JSON.parse(storedUser); //  ADD
+      const user = JSON.parse(storedUser);
 
-      await fetch(
-        `${BASE_URL}/api/volunteer/pickup/${task._id}`, //  use BASE_URL
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "user-id": user._id || user.id, //  IMPORTANT
-          },
-        }
-      );
+      await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setModalVisible(false);
       setTasks((prev) => prev.filter((t) => t._id !== task._id));
@@ -172,7 +163,7 @@ export default function Home() {
   };
 
   const sortedTasks = [...tasks].sort(
-    (a, b) => (a.distance || 0) - (b.distance || 0)
+    (a, b) => (a.distance || 0) - (b.distance || 0),
   );
 
   return (
@@ -197,7 +188,14 @@ export default function Home() {
           </View>
         </View>
 
-        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 30, marginBottom: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            marginTop: 30,
+            marginBottom: 10,
+          }}
+        >
           {[
             { icon: "bicycle", value: stats.deliveries, label: "Deliveries" },
             { icon: "trending-up", value: stats.meals, label: "Meals" },
@@ -229,7 +227,8 @@ export default function Home() {
                 }
                 size={22}
                 color="#2ECC71"
-              />              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              />{" "}
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 {item.value}
               </Text>
               <Text>{item.label}</Text>
@@ -243,9 +242,15 @@ export default function Home() {
           </Text>
 
           {sortedTasks.length === 0 ? (
-            <Text style={{ textAlign: "center", marginTop: 40, color: "#999" }}>
-              No available tasks at the moment.
-            </Text>
+            <View style={uiStyles.emptyContainer}>
+              <Text style={uiStyles.emptyIcon}>🚴</Text>
+
+              <Text style={uiStyles.emptyTitle}>No Tasks Available</Text>
+
+              <Text style={uiStyles.emptyText}>
+                New pickup tasks will appear here
+              </Text>
+            </View>
           ) : (
             sortedTasks.map((task) => (
               <View key={task._id} style={uiStyles.taskCard}>
@@ -253,16 +258,12 @@ export default function Home() {
                   Food Pickup & Delivery
                 </Text>
                 <Text style={{ color: "#6B7280" }}>
-                  {task.restaurant} → {task.ngo}
+                  {task.foodType || task.title}
                 </Text>
 
-                <Text>
-                  {(task?.distance ?? 0)} km • ₹{task?.earnings ?? 0} {task?.time || ""}
-                </Text>
+                <Text>📍 {task.location || "Location unavailable"}</Text>
 
-                <Text>
-                  {task.urgency === "urgent" ? "Urgent" : "Normal"}
-                </Text>
+                <Text>{task.urgency === "urgent" ? "Urgent" : "Normal"}</Text>
 
                 <Pressable
                   onPress={() => {
@@ -272,7 +273,7 @@ export default function Home() {
                   style={uiStyles.viewDetailsBtn}
                 >
                   <Text style={{ color: "#fff" }}>
-                    View Details {/*  UPDATED */}
+                    View Details {/* ✅ UPDATED */}
                   </Text>
                 </Pressable>
               </View>
@@ -296,21 +297,24 @@ export default function Home() {
             </View>
 
             <View style={uiStyles.detailContainer}>
-              <DetailRow label="Restaurant:" value={selectedTask?.restaurant} />
-              <DetailRow label="NGO:" value={selectedTask?.ngo} />
+              <DetailRow label="Food Type:" value={selectedTask?.foodType} />
+              <DetailRow label="Location:" value={selectedTask?.location} />
               <DetailRow
                 label="Distance:"
                 value={`${selectedTask?.distance} km`}
               />
               <DetailRow label="Quantity:" value={selectedTask?.quantity} />
-              <DetailRow label="Time:" value={selectedTask?.time} />
+              <DetailRow
+                label="Pickup Time:"
+                value={selectedTask?.pickupTime}
+              />
               <DetailRow
                 label="Earnings:"
-                value={`₹${selectedTask?.earnings || 0}`} // ➕ ADDED
+                value={`₹${selectedTask?.earnings || 0}`}
               />
               <DetailRow
                 label="Pickup Deadline:"
-                value={selectedTask?.time} // ➕ ADDED
+                value={selectedTask?.pickupTime}
               />
               {selectedTask?.notes && (
                 <DetailRow label="Notes:" value={selectedTask?.notes} />
@@ -352,7 +356,7 @@ export default function Home() {
                   <Pressable
                     onPress={() =>
                       setNotifications((prev) =>
-                        prev.filter((n) => n.id !== item.id)
+                        prev.filter((n) => n.id !== item.id),
                       )
                     }
                   >
@@ -383,7 +387,7 @@ const uiStyles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
     paddingBottom: 25,
-    minHeight: 140, // ➕ ADDED
+    minHeight: 140,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
@@ -466,5 +470,26 @@ const uiStyles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     padding: 12,
     borderRadius: 10,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 60,
+  },
+
+  emptyIcon: {
+    fontSize: 50,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2ECC71",
+    marginTop: 10,
+  },
+
+  emptyText: {
+    color: "#777",
+    textAlign: "center",
+    marginTop: 5,
   },
 });

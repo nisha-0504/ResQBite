@@ -8,7 +8,7 @@ import {
   View,
   RefreshControl,
 } from "react-native";
-import API from "../../../services/api"; // adjust path
+import API from "../../../services/api";
 type User = {
   name: string;
   email: string;
@@ -42,7 +42,7 @@ export default function DonorDashboard() {
 };
     fetchUser();
   }, []);
-  // ✅ Fetch donations
+  
   const fetchDonations = async () => {
     try {
       const res = await API.get("/donor/donations");

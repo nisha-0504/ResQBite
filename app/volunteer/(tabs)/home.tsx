@@ -44,7 +44,6 @@ export default function Home() {
     people: 0,
   });
 
-  // Load Tasks, User, and Stats when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       const loadAllData = async () => {
@@ -75,7 +74,6 @@ export default function Home() {
     setNotifications(notifs);
   }, [tasks]);
 
-  // Initial Seed Data (Only if empty)
   useEffect(() => {
     const seedData = async () => {
       const existing = await getData(KEYS.AVAILABLE);
@@ -100,7 +98,6 @@ export default function Home() {
             priority: 1,
           },
         ]);
-        // Refresh local state after seeding
         const freshData = await getData(KEYS.AVAILABLE);
         setTasks(freshData);
       }
@@ -110,13 +107,10 @@ export default function Home() {
 
   const handleAccept = async (task:Task) => {
     try {
-      // ✅ SAVE TASK HERE
       await saveData(KEYS.ACTIVE, task);
 
       const check = await getData(KEYS.ACTIVE);
       console.log("SAVED TASK:", check);
-
-      // ✅ REMOVE FROM AVAILABLE
       const available = (await getData(KEYS.AVAILABLE)) ?? [];
       const updated = available.filter((t:Task) => t.id !== task.id);
 
@@ -124,8 +118,6 @@ export default function Home() {
 
       setTasks(updated);
       setModalVisible(false);
-
-      // ✅ NAVIGATE
       router.push("/volunteer/(tabs)/current_task");
     } catch (error) {
       console.error(error);
@@ -294,7 +286,6 @@ export default function Home() {
   );
 }
 
-// Helper Component for Modal Rows
 const DetailRow = ({ label, value }: DetailRowProps) => (
   <View style={uiStyles.detailRow}>
     <Text style={uiStyles.detailKey}>{label}</Text>

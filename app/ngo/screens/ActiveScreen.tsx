@@ -14,24 +14,18 @@ import { useState, useEffect } from "react";
 export default function ActiveScreen() {
   const router = useRouter();
   const [donations, setDonations] = useState<any[]>([]);
-  const fetchActiveDonations =
-  async () => {
-
+  const fetchActiveDonations = async () => {
     try {
-
-      const res = await API.get(
-        "/ngo/active"
-      );
+      const res = await API.get("/ngo/active");
 
       setDonations(res.data);
-
     } catch (err) {
       console.log(err);
     }
-};
-useEffect(() => {
-  fetchActiveDonations();
-}, []);
+  };
+  useEffect(() => {
+    fetchActiveDonations();
+  }, []);
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
@@ -40,80 +34,45 @@ useEffect(() => {
           <Text style={styles.welcome}>Active Pickups</Text>
           <Text style={styles.subText}>Track and manage your pickups</Text>
         </View>
-
-        
       </View>
 
       {/* ACTIVE PICKUP CARD */}
       {donations.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>📦</Text>
 
-  <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>No Active Pickups</Text>
 
-    <Text style={styles.emptyIcon}>
-      📦
-    </Text>
+          <Text style={styles.emptyText}>
+            Accepted donations will appear here
+          </Text>
+        </View>
+      ) : (
+        donations.map((item) => (
+          <View key={item._id} style={styles.activeCard}>
+            <Image
+              source={{
+                uri: item.images?.[0] || "https://via.placeholder.com/300",
+              }}
+              style={styles.foodImage}
+            />
 
-    <Text style={styles.emptyTitle}>
-      No Active Pickups
-    </Text>
+            <Text style={styles.activeTitle}>{item.foodType}</Text>
 
-    <Text style={styles.emptyText}>
-      Accepted donations will
-      appear here
-    </Text>
+            <Text style={styles.activeText}>📍 {item.location}</Text>
 
-  </View>
+            <Text style={styles.activeText}>🍱 {item.quantity} meals</Text>
 
-) : (
+            <Text style={styles.status}>Status: Accepted</Text>
 
-  donations.map((item) => (
+            <TouchableOpacity style={styles.trackBtn}>
+              <Ionicons name="location-outline" size={16} color="#fff" />
 
-  <View
-    key={item._id}
-    style={styles.activeCard}
-  >
-
-    <Image
-      source={{
-        uri:
-          item.images?.[0] ||
-          "https://via.placeholder.com/300",
-      }}
-      style={styles.foodImage}
-    />
-
-    <Text style={styles.activeTitle}>
-      {item.foodType}
-    </Text>
-
-    <Text style={styles.activeText}>
-      📍 {item.location}
-    </Text>
-
-    <Text style={styles.activeText}>
-      🍱 {item.quantity} meals
-    </Text>
-
-    <Text style={styles.status}>
-      Status: Accepted
-    </Text>
-
-    <TouchableOpacity
-      style={styles.trackBtn}
-    >
-      <Ionicons
-        name="location-outline"
-        size={16}
-        color="#fff"
-      />
-
-      <Text style={styles.btnText}>
-        Track Pickup
-      </Text>
-    </TouchableOpacity>
-
-  </View>
-)))}
+              <Text style={styles.btnText}>Track Pickup</Text>
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
     </ScrollView>
   );
 }
@@ -127,7 +86,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#2fb463",
     padding: 20,
-    paddingTop: 60, // better spacing
+    paddingTop: 60, 
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
     flexDirection: "row",
@@ -155,7 +114,7 @@ const styles = StyleSheet.create({
   activeCard: {
     backgroundColor: "#ff7a3c",
     margin: 20,
-    marginTop: 10, // 👈 FIXED (no overlap issue)
+    marginTop: 10, 
     padding: 18,
     borderRadius: 18,
     elevation: 4,
@@ -219,32 +178,32 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   foodImage: {
-  width: "100%",
-  height: 160,
-  borderRadius: 14,
-  marginBottom: 12,
-},
-emptyContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  marginTop: 120,
-},
+    width: "100%",
+    height: 160,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 120,
+  },
 
-emptyIcon: {
-  fontSize: 50,
-},
+  emptyIcon: {
+    fontSize: 50,
+  },
 
-emptyTitle: {
-  fontSize: 18,
-  fontWeight: "bold",
-  marginTop: 12,
-  color: "#2fb463",
-},
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 12,
+    color: "#2fb463",
+  },
 
-emptyText: {
-  marginTop: 6,
-  color: "#777",
-  textAlign: "center",
-},
+  emptyText: {
+    marginTop: 6,
+    color: "#777",
+    textAlign: "center",
+  },
 });

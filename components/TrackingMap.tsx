@@ -9,7 +9,6 @@ export default function TrackingMap() {
 
   const markerRef = useRef<any>(null);
 
-  // 📍 Get user location
   useEffect(() => {
     getLocation();
   }, []);
@@ -26,7 +25,6 @@ export default function TrackingMap() {
     setLocation(loc.coords);
   };
 
-  // 📏 Distance calculation
   const calculateDistance = () => {
     if (!deliveryLocation || !location) return 0;
 
@@ -36,7 +34,6 @@ export default function TrackingMap() {
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // 📐 Format distance nicely
   const formatDistance = () => {
     const dist = calculateDistance();
     const km = dist * 111;
@@ -48,7 +45,6 @@ export default function TrackingMap() {
     }
   };
 
-  // 📊 Status logic
   const getStatus = () => {
     const dist = calculateDistance();
 
@@ -57,7 +53,6 @@ export default function TrackingMap() {
     return "On the way 📍";
   };
 
-  // 🚚 Smooth movement
   useEffect(() => {
     let interval: any;
 
@@ -76,7 +71,6 @@ export default function TrackingMap() {
           const dx = Math.abs(prev.latitude - location.latitude);
           const dy = Math.abs(prev.longitude - location.longitude);
 
-          // stop near destination
           if (dx < 0.0002 && dy < 0.0002) {
             return prev;
           }
@@ -84,7 +78,7 @@ export default function TrackingMap() {
           const newLat = prev.latitude - 0.0001;
           const newLng = prev.longitude - 0.0001;
 
-          // ✨ smooth animation
+          
           if (markerRef.current) {
             markerRef.current.animateMarkerToCoordinate(
               {
@@ -106,7 +100,6 @@ export default function TrackingMap() {
     return () => clearInterval(interval);
   }, [location]);
 
-  // ⏳ Loading
   if (!location) {
     return (
       <View style={styles.loader}>

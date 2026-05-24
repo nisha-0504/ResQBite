@@ -9,29 +9,39 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import API from "../../../services/api";
+import AsyncStorage
+from
+"@react-native-async-storage/async-storage";
 
 export default function DetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  // ✅ Params (safe casting)
   const id = params.id as string;
   const foodType =params.foodType as string;
   const meals = params.quantity as string;
   const location = params.location as string;
   const image = params.image as string;
 
-  // ✅ State
   const [quantity, setQuantity] = useState(10);
   const [claimed, setClaimed] = useState(false);
 
-  // ✅ Confirm handler
   const handleConfirm = async () => {
   try {
-
+    const token =
+  await AsyncStorage.getItem(
+    "token"
+  );
     await API.put(
-      `/ngo/accept/${id}`
-    );
+  `/ngo/accept/${id}`,
+  {},
+  {
+    headers: {
+      Authorization:
+        `Bearer ${token}`,
+    },
+  }
+);
 
     setClaimed(true);
 
@@ -64,7 +74,7 @@ console.log(
         source={{
           uri:
             image ||
-            "https://via.placeholder.com/300", // fallback
+            "https://via.placeholder.com/300", 
         }}
         style={styles.image}
       />

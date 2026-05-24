@@ -2,7 +2,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import API from "../../services/api"; // add this
+import API from "../../services/api"; 
 
 export default function DonorDashboard() {
   const [image, setImage] = useState<string | null>(null);

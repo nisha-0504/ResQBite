@@ -1,6 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { BASE_URL } from "../../../config";
 import {
   FlatList,
   Modal,
@@ -8,10 +9,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 🧠 Helper: get week range
 const getWeekRange = (dateStr: string) => {
   const date = new Date(dateStr);
   const start = new Date(date);
@@ -27,21 +28,26 @@ const getWeekRange = (dateStr: string) => {
   })} → ${end.toLocaleDateString("en-GB", {
     month: "short",
     day: "numeric",
-    year: "numeric"
-  })}`; // ✅ UPDATED
+    year: "numeric",
+  })}`;
 };
 
 export default function PaymentsScreen() {
   const [selectedWeek, setSelectedWeek] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [payments, setPayments] = useState([]);
-  const [filter, setFilter] = useState("all"); // ➕ ADDED
+  const [filter, setFilter] = useState("all");
 
   useFocusEffect(
     useCallback(() => {
       const loadPayments = async () => {
         try {
-          const res = await fetch("http://192.168.0.101:5000/api/volunteer/history");
+          const token = await AsyncStorage.getItem("token");
+          const res = await fetch(`${BASE_URL}/api/volunteer/history`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           const data = await res.json();
 
           if (!data || data.length === 0) {
@@ -52,13 +58,15 @@ export default function PaymentsScreen() {
           const history = data.sort(
             (a: any, b: any) =>
               new Date(b.completedAt || 0).getTime() -
-              new Date(a.completedAt || 0).getTime()
+              new Date(a.completedAt || 0).getTime(),
           );
 
           const grouped: any = {};
 
           history.forEach((task: any, index: number) => {
-            const week = getWeekRange(task.completedAt || new Date().toISOString());
+            const week = getWeekRange(
+              task.completedAt || new Date().toISOString(),
+            );
 
             if (!grouped[week]) {
               grouped[week] = {
@@ -67,7 +75,7 @@ export default function PaymentsScreen() {
                 total: 0,
                 orders: [],
                 paidTotal: 0,
-                pendingTotal: 0
+                pendingTotal: 0,
               };
             }
 
@@ -76,7 +84,9 @@ export default function PaymentsScreen() {
               route: `${task.restaurant} → ${task.ngo}`,
               distance: `${task.distance} km`,
               fee: task.earnings || 0,
-              date: new Date(task.completedAt || Date.now()).toLocaleString("en-GB"),
+              date: new Date(task.completedAt || Date.now()).toLocaleString(
+                "en-GB",
+              ),
               paid: task.paid ?? false,
             };
 
@@ -90,7 +100,7 @@ export default function PaymentsScreen() {
           Object.values(grouped).forEach((week: any) => {
             week.orders.sort(
               (a: any, b: any) =>
-                new Date(b.date).getTime() - new Date(a.date).getTime()
+                new Date(b.date).getTime() - new Date(a.date).getTime(),
             );
 
             const allPaid = week.orders.every((o: any) => o.paid);
@@ -100,53 +110,56 @@ export default function PaymentsScreen() {
           });
 
           setPayments(Object.values(grouped));
-
         } catch (err) {
           console.error("PAYMENTS ERROR:", err);
         }
       };
 
       loadPayments();
-    }, [])
+    }, []),
   );
 
-  // 🔍 SEARCH + FILTER (SAFE)
   const filteredPayments = payments.filter((item: any) => {
     const query = search.toLowerCase();
 
     const matchesSearch =
       item.week.toLowerCase().includes(query) ||
-      item.orders.some((order: any) =>
-        order.route.toLowerCase().includes(query) ||
-        order.date.toLowerCase().includes(query)
+      item.orders.some(
+        (order: any) =>
+          order.route.toLowerCase().includes(query) ||
+          order.date.toLowerCase().includes(query),
       );
 
-    if (filter === "week") return matchesSearch; // ➕ ADDED
-    if (filter === "month") return matchesSearch; // ➕ ADDED
+    if (filter === "week") return matchesSearch;
+    if (filter === "month") return matchesSearch;
 
     return matchesSearch;
   });
 
-  // SUMMARY
-  const totalEarned = payments.reduce((sum: number, w: any) => sum + (w.total || 0), 0);
-  const totalPaid = payments.reduce((sum: number, w: any) => sum + (w.paidTotal || 0), 0);
-  const totalPending = payments.reduce((sum: number, w: any) => sum + (w.pendingTotal || 0), 0);
+  const totalEarned = payments.reduce(
+    (sum: number, w: any) => sum + (w.total || 0),
+    0,
+  );
+  const totalPaid = payments.reduce(
+    (sum: number, w: any) => sum + (w.paidTotal || 0),
+    0,
+  );
+  const totalPending = payments.reduce(
+    (sum: number, w: any) => sum + (w.pendingTotal || 0),
+    0,
+  );
 
   return (
     <View style={styles.container}>
-
       {/* HEADER */}
       <View style={styles.header}>
-
         {/* Title + ₹ */}
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={styles.headerText}>
-            Payments
-          </Text>
+          <Text style={styles.headerText}>Payments</Text>
 
           <Text
             style={{
-              color: "white", // 
+              color: "white",
               fontSize: 30,
               marginLeft: 13,
               fontWeight: "bold",
@@ -160,7 +173,6 @@ export default function PaymentsScreen() {
         <Text style={{ color: "#E8F5E9", marginTop: 8 }}>
           Track your earnings and payouts
         </Text>
-
       </View>
       {/* SEARCH */}
       <View style={{ padding: 20 }}>
@@ -175,17 +187,18 @@ export default function PaymentsScreen() {
           }}
         >
           <Ionicons name="search" size={25} color="#6B7280" /> {/* ➕ ADDED */}
-
           <TextInput
             placeholder="Search (e.g. Apr, 01/05, NGO)"
             value={search}
             onChangeText={setSearch}
-            style={{ marginLeft: 10, flex: 1 }} // ✅ UPDATED
+            style={{ marginLeft: 10, flex: 1 }}
           />
         </View>
 
         {/* ➕ FILTER BUTTONS */}
-        <View style={{ flexDirection: "row", marginTop: 15 }}> {/* ➕ ADDED */}
+        <View style={{ flexDirection: "row", marginTop: 15 }}>
+          {" "}
+          {/* ➕ ADDED */}
           {["all", "week", "month"].map((f) => (
             <TouchableOpacity
               key={f}
@@ -198,42 +211,129 @@ export default function PaymentsScreen() {
               }}
             >
               <Text style={{ color: filter === f ? "#fff" : "#000" }}>
-                {f === "all" ? "All" : f === "week" ? "This Week" : "This Month"}
+                {f === "all"
+                  ? "All"
+                  : f === "week"
+                    ? "This Week"
+                    : "This Month"}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* SUMMARY CARDS */}
-        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 15, marginBottom: 10 }}> {/* ✅ UPDATED */}
-          <View style={{ backgroundColor: "#fff", padding: 15, borderRadius: 16, width: 100, alignItems: "center", elevation: 5 }}>
-            <Ionicons name="cash-outline" size={22} color="#2ECC71" /> // ✅ UPDATED
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>₹{totalEarned}</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            marginTop: 15,
+            marginBottom: 10,
+          }}
+        >
+          {" "}
+          {/* ✅ UPDATED */}
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 15,
+              borderRadius: 16,
+              width: 100,
+              alignItems: "center",
+              elevation: 5,
+            }}
+          >
+            <Ionicons name="cash-outline" size={22} color="#2ECC71" />
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              ₹{totalEarned}
+            </Text>
             <Text>Earned</Text>
           </View>
-
-          <View style={{ backgroundColor: "#fff", padding: 15, borderRadius: 16, width: 100, alignItems: "center", elevation: 5 }}>
-            <Ionicons name="checkmark-circle-outline" size={22} color="#2ECC71" /> // ✅ UPDATED
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>₹{totalPaid}</Text>
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 15,
+              borderRadius: 16,
+              width: 100,
+              alignItems: "center",
+              elevation: 5,
+            }}
+          >
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={22}
+              color="#2ECC71"
+            />
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              ₹{totalPaid}
+            </Text>
             <Text>Paid</Text>
           </View>
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 15,
+              borderRadius: 16,
+              width: 100,
+              alignItems: "center",
+              elevation: 5,
+            }}
+          >
+            <Ionicons name="time-outline" size={22} color="#2ECC71" />
 
-          <View style={{ backgroundColor: "#fff", padding: 15, borderRadius: 16, width: 100, alignItems: "center", elevation: 5 }}>
-            <Ionicons name="time-outline" size={22} color="#2ECC71" /> // ✅ UPDATED          <Text style={{ fontSize: 18, fontWeight: "bold" }}>₹{totalPending}</Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+              }}
+            >
+              ₹{totalPending}
+            </Text>
+
             <Text>Pending</Text>
           </View>
         </View>
 
         {filteredPayments.length === 0 && (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            <Text>No payments yet </Text>
-          </Text>
+          <View
+            style={{
+              alignItems: "center",
+              marginTop: 50,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 50,
+              }}
+            >
+              💰
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                color: "#2ECC71",
+                marginTop: 10,
+              }}
+            >
+              No Payments Yet
+            </Text>
+
+            <Text
+              style={{
+                color: "#777",
+                marginTop: 5,
+              }}
+            >
+              Completed deliveries will appear here
+            </Text>
+          </View>
         )}
 
         <FlatList
           data={filteredPayments}
           keyExtractor={(item: any) => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }} // ➕ ADDED (gap below)
+          contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }: any) => (
             <TouchableOpacity
               style={styles.card}
@@ -251,39 +351,42 @@ export default function PaymentsScreen() {
                     color: item.status === "Paid" ? "#2ECC71" : "red",
                     fontSize: 12,
                     fontWeight: "bold",
-                    marginTop: 4
+                    marginTop: 4,
                   }}
                 >
                   Status: {item.status}
                 </Text>
               </View>
 
-              <Text style={[styles.amount, { fontSize: 18 }]}>₹{item.total}</Text>
+              <Text style={[styles.amount, { fontSize: 18 }]}>
+                ₹{item.total}
+              </Text>
             </TouchableOpacity>
           )}
         />
 
         <Modal visible={!!selectedWeek} transparent animationType="fade">
           <View style={styles.overlay}>
-            <View style={[styles.popup, { marginTop: 40 }]}> {/* ✅ UPDATED */}
-
-              <View style={styles.popupHeader}> {/* ✅ UPDATED */}
+            <View style={[styles.popup, { marginTop: 40 }]}>
+              {" "}
+              {/* ✅ UPDATED */}
+              <View style={styles.popupHeader}>
+                {" "}
+                {/* ✅ UPDATED */}
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.popupTitle}>
-                    {selectedWeek?.week}
-                  </Text>
+                  <Text style={styles.popupTitle}>{selectedWeek?.week}</Text>
                 </View>
-
                 <TouchableOpacity onPress={() => setSelectedWeek(null)}>
                   <Text style={styles.close}>✕</Text>
                 </TouchableOpacity>
               </View>
-
               {/* ➕ ADDED BELOW HEADER */}
               <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10 }}>
-                Total earned: <Text style={{ fontWeight: "bold" }}>₹{selectedWeek?.total}</Text>
+                Total earned:{" "}
+                <Text style={{ fontWeight: "bold" }}>
+                  ₹{selectedWeek?.total}
+                </Text>
               </Text>
-
               <FlatList
                 data={selectedWeek?.orders || []}
                 keyExtractor={(item: any) => item.id}
@@ -302,7 +405,7 @@ export default function PaymentsScreen() {
                       style={{
                         color: item.paid ? "#2ECC71" : "red",
                         fontWeight: "bold",
-                        marginTop: 5
+                        marginTop: 5,
                       }}
                     >
                       {item.paid ? "Paid" : "Unpaid"}
@@ -310,15 +413,13 @@ export default function PaymentsScreen() {
                   </View>
                 )}
               />
-
-
               <TouchableOpacity
                 style={{
                   backgroundColor: "#2ecc71",
                   padding: 12,
                   borderRadius: 10,
-                  marginTop: 15, // ✅ UPDATED (gap)
-                  alignItems: "center"
+                  marginTop: 15,
+                  alignItems: "center",
                 }}
                 onPress={() => setSelectedWeek(null)}
               >
@@ -334,19 +435,24 @@ export default function PaymentsScreen() {
   );
 }
 
-// STYLES UNCHANGED
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
   header: {
     backgroundColor: "#2ecc71",
     padding: 20,
-    paddingTop: 50, // ➕ ADDED
-    minHeight: 140, // ➕ ADDED
+    paddingTop: 50,
+    minHeight: 140,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   headerText: { color: "white", fontSize: 30, fontWeight: "bold" },
-  search: { backgroundColor: "white", margin: 10, padding: 12, borderRadius: 10, elevation: 2 },
+  search: {
+    backgroundColor: "white",
+    margin: 10,
+    padding: 12,
+    borderRadius: 10,
+    elevation: 2,
+  },
   card: {
     backgroundColor: "white",
     marginHorizontal: 10,
@@ -356,7 +462,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    elevation: 2
+    elevation: 2,
   },
   week: { fontWeight: "bold", fontSize: 14 },
   amount: { fontWeight: "bold", fontSize: 16 },
@@ -364,19 +470,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   popup: {
     width: "90%",
     maxHeight: "70%",
     backgroundColor: "white",
     borderRadius: 15,
-    padding: 15
+    padding: 15,
   },
   popupHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10
+    marginBottom: 10,
   },
   popupTitle: { fontWeight: "bold", fontSize: 16 },
   close: { fontSize: 18, color: "#333", fontWeight: "bold" },
@@ -384,10 +490,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
     padding: 12,
     borderRadius: 10,
-    marginVertical: 6
+    marginVertical: 6,
   },
   date: { fontSize: 12, color: "gray", marginBottom: 2 },
   route: { fontWeight: "600", marginBottom: 5 },
   row: { flexDirection: "row", justifyContent: "space-between" },
-  fee: { fontWeight: "bold" }
+  fee: { fontWeight: "bold" },
 });

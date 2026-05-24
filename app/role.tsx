@@ -9,19 +9,16 @@ export default function Role() {
   console.log("Selected role:", selectedRole);
 
   try {
-    // save role in backend
     const res = await API.put("/auth/select-role", {
       role: selectedRole,
     });
 
 console.log("ROLE API RESPONSE:", res.data);
-    // save updated token
+    
     await AsyncStorage.setItem("token", res.data.token);
 
-    // optional local storage
     await AsyncStorage.setItem("selectedRole", selectedRole);
 
-    // navigate
     if (selectedRole === "donor") {
       router.replace("/donor/(tabs)");
     } else if (selectedRole === "ngo") {

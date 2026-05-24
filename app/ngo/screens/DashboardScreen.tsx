@@ -17,10 +17,8 @@ export default function DashboardScreen() {
   const [claimedItems, setClaimedItems] = useState<string[]>([]);
   const [foodData, setFoodData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ngoName, setNgoName] =
-  useState("");
-  const [activeDonation, setActiveDonation] =
-  useState<any>(null);
+  const [ngoName, setNgoName] = useState("");
+  const [activeDonation, setActiveDonation] = useState<any>(null);
 
   useEffect(() => {
     fetchDonations();
@@ -42,39 +40,27 @@ export default function DashboardScreen() {
     }
   };
 
-  const fetchActiveDonation =
-  async () => {
-
+  const fetchActiveDonation = async () => {
     try {
-
-      const res = await API.get(
-        "/ngo/active"
-      );
+      const res = await API.get("/ngo/active");
 
       if (res.data.length > 0) {
         setActiveDonation(res.data[0]);
       }
-
     } catch (err) {
       console.log(err);
     }
-};
+  };
 
-const fetchProfile =
-  async () => {
-
+  const fetchProfile = async () => {
     try {
-
-      const res = await API.get(
-        "/auth/profile"
-      );
+      const res = await API.get("/auth/profile");
 
       setNgoName(res.data.name);
-
     } catch (err) {
       console.log(err);
     }
-};
+  };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -86,68 +72,44 @@ const fetchProfile =
         </View>
 
         <TouchableOpacity
-  style={styles.bell}
-  onPress={() =>
-    router.push("/ngo/screens/NotificationsScreen")
-  }
->
-  <Ionicons
-    name="notifications-outline"
-    size={22}
-    color="#fff"
-  />
-</TouchableOpacity>
+          style={styles.bell}
+          onPress={() => router.push("/ngo/screens/NotificationsScreen")}
+        >
+          <Ionicons name="notifications-outline" size={22} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       {/* Active Pickup Card */}
       {activeDonation && (
+        <View style={styles.activeCard}>
+          <Image
+            source={{
+              uri:
+                activeDonation.images?.[0] || "https://via.placeholder.com/300",
+            }}
+            style={styles.activeImage}
+          />
 
-  <View style={styles.activeCard}>
+          <Text style={styles.activeTitle}>Active Pickup</Text>
 
-    <Image
-      source={{
-        uri:
-          activeDonation.images?.[0] ||
-          "https://via.placeholder.com/300",
-      }}
-      style={styles.activeImage}
-    />
+          <Text style={styles.activeText}>{activeDonation.foodType}</Text>
 
-    <Text style={styles.activeTitle}>
-      Active Pickup
-    </Text>
+          <Text style={styles.activeText}>📍 {activeDonation.location}</Text>
 
-    <Text style={styles.activeText}>
-      {activeDonation.foodType}
-    </Text>
+          <Text style={styles.activeText}>
+            🍱 {activeDonation.quantity} meals
+          </Text>
 
-    <Text style={styles.activeText}>
-      📍 {activeDonation.location}
-    </Text>
+          <Text style={styles.activeText}>Status: Accepted</Text>
 
-    <Text style={styles.activeText}>
-      🍱 {activeDonation.quantity} meals
-    </Text>
-
-    <Text style={styles.activeText}>
-      Status: Accepted
-    </Text>
-
-    <TouchableOpacity
-      style={styles.mapPlaceholder}
-      onPress={() =>
-        router.push("/ngo/tracking")
-      }
-    >
-
-      <Text style={styles.trackText}>
-        Track
-      </Text>
-
-    </TouchableOpacity>
-
-  </View>
-)}
+          <TouchableOpacity
+            style={styles.mapPlaceholder}
+            onPress={() => router.push("/ngo/tracking")}
+          >
+            <Text style={styles.trackText}>Track</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Section Title */}
       <Text style={styles.sectionTitle}>Food Available Nearby</Text>
@@ -158,9 +120,12 @@ const fetchProfile =
 
         return (
           <View key={item.id} style={styles.card}>
-            <Image source={{ uri:
-  item.images?.[0] ||
-  "https://via.placeholder.com/300" }} style={styles.image} />
+            <Image
+              source={{
+                uri: item.images?.[0] || "https://via.placeholder.com/300",
+              }}
+              style={styles.image}
+            />
 
             <View style={styles.cardContent}>
               <Text style={styles.title}>
@@ -188,7 +153,7 @@ const fetchProfile =
                 disabled={isClaimed}
                 onPress={() =>
                   router.push({
-                    pathname: "/ngo/screens/details", //
+                    pathname: "/ngo/screens/details", 
                     params: {
                       id: item._id,
                       foodType: item.foodType,
@@ -279,19 +244,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   trackText: {
-    color: "white", // White font color
+    color: "white",
     fontSize: 16,
     fontWeight: "bold",
     alignSelf: "center",
     marginTop: 10,
   },
   sectionTitle: {
-  fontSize: 18,
-  fontWeight: "bold",
-  marginHorizontal: 20,
-  marginTop: 20,
-  marginBottom: 12,
-},
+    fontSize: 18,
+    fontWeight: "bold",
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 12,
+  },
 
   card: {
     backgroundColor: "#fff",
@@ -338,9 +303,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   activeImage: {
-  width: "100%",
-  height: 150,
-  borderRadius: 12,
-  marginBottom: 10,
-},
+    width: "100%",
+    height: 150,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
 });

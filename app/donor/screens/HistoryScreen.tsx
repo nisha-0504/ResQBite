@@ -6,17 +6,15 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import API from '../../../services/api'; // adjust path
+import API from '../../../services/api'; 
 
 export default function HistoryScreen() {
   const [data, setData] = useState<any[]>([]);
 
-  // ✅ Fetch donation history
   const fetchHistory = async () => {
     try {
       const res = await API.get('/donor/donations');
 
-      // Filter only past donations
       const history = res.data.filter(
         (item: any) =>
           item.status === 'completed' ||

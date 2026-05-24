@@ -4,6 +4,10 @@ const Donation = require("../models/Donation");
 exports.getDonations = async (req, res) => {
   try {
     const donations = await Donation.find({ status: "pending" });
+    console.log(
+  "AVAILABLE DONATIONS:",
+  donations
+);
     res.json(donations);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -28,8 +32,16 @@ exports.acceptDonation = async (req, res) => {
 
     res.json({ message: "Donation accepted", donation });
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+
+  console.log(
+    "ACCEPT ERROR:",
+    err
+  );
+
+  res.status(500).json({
+    error: err.message
+  });
+}
 };
 // 3. Get accepted donations for NGO
 exports.getActiveDonations = async (

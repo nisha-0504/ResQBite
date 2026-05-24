@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 export default function CurrentTask() {
@@ -23,7 +23,7 @@ export default function CurrentTask() {
       const loadTask = async () => {
         try {
           const storedUser = await AsyncStorage.getItem("user");
-
+          const token = await AsyncStorage.getItem("token");
           if (!storedUser) {
             console.log("No user found");
             return;
@@ -33,9 +33,10 @@ export default function CurrentTask() {
           const res = await fetch(`${BASE_URL}/api/volunteer/current`, {
             headers: {
               "Content-Type": "application/json",
-              "user-id": user._id || user.id, // ➕ ADD
+              Authorization: `Bearer ${token}`,
             },
-          }); const data = await res.json();
+          });
+          const data = await res.json();
           if (!data) {
             setTask(null);
             return;
@@ -45,7 +46,7 @@ export default function CurrentTask() {
 
           if (data?.status === "picked") {
             setStatus("picked_up");
-          } else if (data?.status === "accepted") {
+          } else if (data?.status === "assigned") {
             setStatus("accepted");
           }
         } catch (err) {
@@ -54,7 +55,7 @@ export default function CurrentTask() {
       };
 
       loadTask();
-    }, [])
+    }, []),
   );
   useEffect(() => {
     if (!showDeliveredPopup) {
@@ -66,8 +67,13 @@ export default function CurrentTask() {
     if (!task) return;
 
     try {
-      await fetch(`http://192.168.0.101:5000/api/volunteer/cancel/${task._id}`, {
+      const token = await AsyncStorage.getItem("token");
+      await fetch(`${BASE_URL}/api/volunteer/cancel/${task._id}`, {
         method: "PUT",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       setTask(null);
@@ -78,10 +84,15 @@ export default function CurrentTask() {
   };
 
   const handleAction = async () => {
+    const token = await AsyncStorage.getItem("token");
     if (status === "accepted") {
       try {
-        await fetch(`http://192.168.0.101:5000/api/volunteer/pickup/${task._id}`, {
+        await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
           method: "PUT",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         setStatus("picked_up");
@@ -90,8 +101,12 @@ export default function CurrentTask() {
       }
     } else if (status === "picked_up") {
       try {
-        await fetch(`http://192.168.0.101:5000/api/volunteer/complete/${task._id}`, {
+        await fetch(`${BASE_URL}/api/volunteer/complete/${task._id}`, {
           method: "PUT",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         setShowDeliveredPopup(true);
@@ -104,11 +119,10 @@ export default function CurrentTask() {
   const openMaps = () => {
     if (!task) return;
 
-    const destination =
-      status === "accepted" ? task.restaurant : task.ngo;
+    const destination = status === "accepted" ? task.restaurant : task.ngo;
 
     const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-      destination
+      destination,
     )}`;
 
     Linking.openURL(url);
@@ -123,30 +137,33 @@ export default function CurrentTask() {
   if (!task) {
     return (
       <View style={styles.center}>
-        <Text>No Active Task</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>🚴</Text>
+
+          <Text style={styles.emptyTitle}>No Current Delivery</Text>
+
+          <Text style={styles.emptyText}>
+            Accepted deliveries will appear here
+          </Text>
+        </View>
       </View>
     );
   }
   const handleCall = async (type: "restaurant" | "ngo") => {
-    const phone =
-      type === "restaurant"
-        ? "tel:9876543210"
-        : "tel:9123456780";
+    const phone = type === "restaurant" ? "tel:9876543210" : "tel:9123456780";
 
-    const supported = await Linking.canOpenURL(phone); // ✅ ADDED
+    const supported = await Linking.canOpenURL(phone);
 
     if (supported) {
-      await Linking.openURL(phone); // ✅ UPDATED
+      await Linking.openURL(phone);
     } else {
-      console.log("Dialer not supported"); // ✅ ADDED
+      console.log("Dialer not supported");
     }
-
   };
 
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
-
         <View style={styles.header}>
           <Text style={styles.headerText}>Current Delivery</Text>
         </View>
@@ -156,9 +173,7 @@ export default function CurrentTask() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Navigation</Text>
           <TouchableOpacity style={styles.button} onPress={openMaps}>
-            <Text style={styles.buttonText}>
-              Start Navigation (7 km • 18 min)
-            </Text>
+            <Text style={styles.buttonText}>Start Navigation</Text>
           </TouchableOpacity>
         </View>
 
@@ -187,15 +202,19 @@ export default function CurrentTask() {
         <View style={styles.card}>
           <TouchableOpacity
             style={{ flexDirection: "row", alignItems: "center" }}
-            onPress={() => handleCall("restaurant")} // ✅ ADDED
+            onPress={() => handleCall("restaurant")} 
           >
             <Text style={{ marginRight: 10 }}>📞</Text>
             <Text>Call Restaurant</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center", marginTop: 12 }}
-            onPress={() => handleCall("ngo")} // ✅ ADDED
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 12,
+            }}
+            onPress={() => handleCall("ngo")} 
           >
             <Text style={{ marginRight: 10 }}>📞</Text>
             <Text>Call NGO</Text>
@@ -217,7 +236,9 @@ export default function CurrentTask() {
           <View style={styles.verticalLine} />
 
           <View style={styles.stepRow}>
-            <View style={[styles.circle, status === "picked_up" && styles.done]} />
+            <View
+              style={[styles.circle, status === "picked_up" && styles.done]}
+            />
             <View style={styles.stepText}>
               <Text style={styles.stepTitle}>Picked Up</Text>
             </View>
@@ -232,14 +253,13 @@ export default function CurrentTask() {
             </View>
           </View>
         </View>
-
       </ScrollView>
 
       <View style={styles.bottom}>
         <TouchableOpacity
           style={styles.primaryBtn}
           onPress={handleAction}
-          disabled={!task}   // ✅ ADD THIS LINE
+          disabled={!task}
         >
           {getButtonText() ? (
             <Text style={styles.primaryText}>{getButtonText()}</Text>
@@ -259,21 +279,23 @@ export default function CurrentTask() {
       <Modal visible={showDeliveredPopup} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.popup}>
-            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 12 }}>
+            <Text
+              style={{ fontWeight: "bold", fontSize: 18, marginBottom: 12 }}
+            >
               Delivery Completed!
             </Text>
 
             <Text style={{ marginBottom: 20, fontSize: 16 }}>
-              You earned <Text>₹60</Text>
+              You earned <Text>₹{task?.earnings || 0}</Text>
             </Text>
 
             <TouchableOpacity
-              style={[styles.button, { width: "50%", paddingVertical: 14 }]} // ✅ UPDATED
+              style={[styles.button, { width: "50%", paddingVertical: 14 }]}
               onPress={() => {
                 setShowDeliveredPopup(false);
               }}
             >
-              <Text style={[styles.buttonText, { fontSize: 18 }]}>Close</Text> // ✅ UPDATED
+              <Text style={[styles.buttonText, { fontSize: 18 }]}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -282,7 +304,9 @@ export default function CurrentTask() {
       <Modal visible={showCancelModal} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.popup}>
-            <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 10 }}>
+            <Text
+              style={{ fontWeight: "bold", fontSize: 16, marginBottom: 10 }}
+            >
               Cancel Delivery?
             </Text>
 
@@ -312,7 +336,6 @@ export default function CurrentTask() {
   );
 }
 
-// STYLES UNCHANGED
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5F5F5" },
 
@@ -323,7 +346,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     margin: 10,
     padding: 15,
-    borderRadius: 10
+    borderRadius: 10,
   },
 
   cardRow: {
@@ -331,7 +354,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     margin: 10,
     padding: 15,
-    borderRadius: 10
+    borderRadius: 10,
   },
 
   sectionTitle: { fontWeight: "bold", marginBottom: 10 },
@@ -342,7 +365,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2ECC71",
     padding: 12,
     borderRadius: 8,
-    alignItems: "center"
+    alignItems: "center",
   },
 
   buttonText: { color: "white", fontWeight: "bold" },
@@ -353,7 +376,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.4)"
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
 
   popup: {
@@ -361,10 +384,15 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     width: "80%",
-    alignItems: "center"
+    alignItems: "center",
   },
 
-  dotGreen: { width: 10, height: 10, borderRadius: 5, backgroundColor: "green" },
+  dotGreen: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "green",
+  },
   dotRed: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red" },
 
   line: { width: 2, flex: 1, backgroundColor: "#ccc" },
@@ -373,7 +401,7 @@ const styles = StyleSheet.create({
 
   stepRow: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   circle: {
@@ -382,12 +410,12 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     borderWidth: 2,
     borderColor: "#ccc",
-    marginRight: 10
+    marginRight: 10,
   },
 
   done: {
     backgroundColor: "#2ECC71",
-    borderColor: "#2ECC71"
+    borderColor: "#2ECC71",
   },
 
   verticalLine: {
@@ -395,43 +423,43 @@ const styles = StyleSheet.create({
     height: 20,
     backgroundColor: "#ccc",
     marginLeft: 6,
-    marginVertical: 2
+    marginVertical: 2,
   },
 
   stepText: {
-    flex: 1
+    flex: 1,
   },
 
   stepTitle: {
     fontSize: 14,
-    fontWeight: "600"
+    fontWeight: "600",
   },
 
   routeRow: {
-    flexDirection: "row"
+    flexDirection: "row",
   },
 
   routeLine: {
     alignItems: "center",
-    marginRight: 12
+    marginRight: 12,
   },
 
   label: {
     fontSize: 12,
-    color: "gray"
+    color: "gray",
   },
 
   primaryBtn: {
     backgroundColor: "#2ECC71",
     padding: 14,
     borderRadius: 10,
-    alignItems: "center"
+    alignItems: "center",
   },
 
   primaryText: {
     color: "white",
     fontWeight: "bold",
-    fontSize: 16
+    fontSize: 16,
   },
 
   secondaryBtn: {
@@ -440,11 +468,31 @@ const styles = StyleSheet.create({
     borderColor: "red",
     padding: 12,
     borderRadius: 10,
-    alignItems: "center"
+    alignItems: "center",
   },
 
   secondaryText: {
     color: "red",
-    fontWeight: "bold"
-  }
+    fontWeight: "bold",
+  },
+  emptyContainer: {
+    alignItems: "center",
+  },
+
+  emptyIcon: {
+    fontSize: 50,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 10,
+    color: "#2ECC71",
+  },
+
+  emptyText: {
+    color: "#777",
+    marginTop: 5,
+    textAlign: "center",
+  },
 });

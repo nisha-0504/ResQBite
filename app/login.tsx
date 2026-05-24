@@ -69,17 +69,16 @@ export default function Login() {
     setLoading(false);
   };
 
-  // Google login backend flow
+  
   const handleGoogleLogin = async (token: string) => {
     try {
-      // Google API (fetch is fine)
+      
       const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const user = await res.json();
 
-      // Backend (use axios)
       const backendRes = await API.post("/auth/google", {
         name: user.name,
         email: user.email,

@@ -8,7 +8,7 @@ import {
   Alert
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import API from "../../../services/api"; // adjust path
+import API from "../../../services/api"; 
 type Donation = {
   _id: string;
   title: string;
@@ -23,7 +23,6 @@ export default function DonationDetailsScreen() {
 const [donation, setDonation] = useState<Donation | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch donation details
   const fetchDonation = async () => {
     try {
       const res = await API.get(`/donor/donations/${id}`);
@@ -40,7 +39,6 @@ const [donation, setDonation] = useState<Donation | null>(null);
     fetchDonation();
   }, []);
 
-  // ✅ Delete donation
   const handleDelete = async () => {
     Alert.alert(
       "Delete Donation",

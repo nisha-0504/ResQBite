@@ -1,50 +1,32 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import API from "../../../services/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
 
-
-
 export default function HistoryScreen() {
   const router = useRouter();
-  const [historyData, setHistoryData] =
-  useState<any[]>([]);
+  const [historyData, setHistoryData] = useState<any[]>([]);
 
-  const fetchHistory =
-  async () => {
-
+  const fetchHistory = async () => {
     try {
-
-      const res = await API.get(
-        "/ngo/history"
-      );
+      const res = await API.get("/ngo/history");
 
       setHistoryData(res.data);
-
     } catch (err) {
       console.log(err);
     }
-};
+  };
 
-useEffect(() => {
-  fetchHistory();
-}, []);
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
   return (
     <View style={styles.container}>
-      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -57,57 +39,42 @@ useEffect(() => {
       {/* List */}
       <ScrollView showsVerticalScrollIndicator={false}>
         {historyData.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>📜</Text>
 
-  <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No History Yet</Text>
 
-    <Text style={styles.emptyIcon}>
-      📜
-    </Text>
-
-    <Text style={styles.emptyTitle}>
-      No History Yet
-    </Text>
-
-    <Text style={styles.emptyText}>
-      Completed pickups will
-      appear here
-    </Text>
-
-  </View>
-
-) : (
-    historyData.map((item) => (
-          <View key={item.id} style={styles.card}>
-            
-            {/* Icon */}
-            <View style={styles.iconCircle}>
-              <Ionicons name="checkmark" size={18} color="#2fb463" />
-            </View>
-
-            {/* Content */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.title}>{item.foodType}</Text>
-
-              <View style={styles.row}>
-                <Ionicons name="cube-outline" size={14} color="#777" />
-                <Text style={styles.subText}> {item.quantity} meals</Text>
+            <Text style={styles.emptyText}>
+              Completed pickups will appear here
+            </Text>
+          </View>
+        ) : (
+          historyData.map((item) => (
+            <View key={item.id} style={styles.card}>
+              {/* Icon */}
+              <View style={styles.iconCircle}>
+                <Ionicons name="checkmark" size={18} color="#2fb463" />
               </View>
 
-              <Text style={styles.subText}>
-                Completed Successfully
-              </Text>
+              {/* Content */}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>{item.foodType}</Text>
 
-              <Text style={styles.date}>
-  {new Date(
-    item.updatedAt
-  ).toLocaleDateString()}
-</Text>
+                <View style={styles.row}>
+                  <Ionicons name="cube-outline" size={14} color="#777" />
+                  <Text style={styles.subText}> {item.quantity} meals</Text>
+                </View>
+
+                <Text style={styles.subText}>Completed Successfully</Text>
+
+                <Text style={styles.date}>
+                  {new Date(item.updatedAt).toLocaleDateString()}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))
+          ))
         )}
       </ScrollView>
-
     </View>
   );
 }
@@ -177,24 +144,24 @@ const styles = StyleSheet.create({
     color: "#999",
   },
   emptyContainer: {
-  alignItems: "center",
-  marginTop: 120,
-},
+    alignItems: "center",
+    marginTop: 120,
+  },
 
-emptyIcon: {
-  fontSize: 50,
-},
+  emptyIcon: {
+    fontSize: 50,
+  },
 
-emptyTitle: {
-  fontSize: 18,
-  fontWeight: "bold",
-  color: "#2fb463",
-  marginTop: 10,
-},
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2fb463",
+    marginTop: 10,
+  },
 
-emptyText: {
-  marginTop: 5,
-  color: "#777",
-  textAlign: "center",
-},
+  emptyText: {
+    marginTop: 5,
+    color: "#777",
+    textAlign: "center",
+  },
 });

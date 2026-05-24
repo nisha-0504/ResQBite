@@ -5,12 +5,10 @@ import { useRouter } from "expo-router";
 export default function Splash() {
   const router = useRouter();
 
-  // 🎬 Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
-    // ✨ Run animations together
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -25,7 +23,6 @@ export default function Splash() {
       }),
     ]).start();
 
-    // ⏳ Navigate after animation
     const timer = setTimeout(() => {
       router.replace("/login");
     }, 2200);

@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import API from "../../../services/api"; // ✅ added
+import API from "../../../services/api";
 import {
   Modal,
   TextInput,
@@ -40,7 +40,6 @@ const [phone, setPhone] =
 const [location, setLocation] =
   useState("Not Added");
 
-  // ✅ Fetch profile from backend
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -58,7 +57,6 @@ setLocation(res.data.location || "");
     fetchProfile();
   }, []);
 
-  // ✅ Logout
   const handleLogout = async () => {
     try {
       await AsyncStorage.clear();
