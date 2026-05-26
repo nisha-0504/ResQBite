@@ -167,10 +167,7 @@ export default function Login() {
         </Text>
       </TouchableOpacity>
 
-      {/* safer trigger */}
-      <TouchableOpacity style={styles.googleBtn}>
-        <Text style={styles.googleText}>Continue with Google</Text>
-      </TouchableOpacity>
+      
 
       <TouchableOpacity onPress={() => router.push("/signup")}>
         <Text style={styles.signup}>Signup</Text>

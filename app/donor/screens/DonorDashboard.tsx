@@ -88,9 +88,9 @@ export default function DonorDashboard() {
 
       {/* Stats (still static for now) */}
       <View style={styles.statsContainer}>
-        <StatCard value="150" label="Meals Donated" />
-        <StatCard value="45kg" label="Food Saved" />
-        <StatCard value="120" label="People Helped" />
+        <StatCard value="0" label="Meals Donated" />
+        <StatCard value="0 kg" label="Food Saved" />
+        <StatCard value="0" label="People Helped" />
       </View>
 
       {/* Active Donations */}

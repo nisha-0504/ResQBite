@@ -154,7 +154,7 @@ export default function Signup() {
         />
 
         {/* DOB */}
-        <Text style={styles.label}>Date of Birth</Text>
+        <Text style={styles.label}>Date of Birth/ Date of Establishment</Text>
         <TouchableOpacity
           onPress={() => setShowPicker(true)}
           style={styles.input}
