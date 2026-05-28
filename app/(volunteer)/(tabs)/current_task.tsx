@@ -168,7 +168,7 @@ export default function CurrentTask() {
           <Text style={styles.headerText}>Current Delivery</Text>
         </View>
 
-        {/* ❌ REMOVED ETA CARD */}
+        
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Navigation</Text>
@@ -177,7 +177,7 @@ export default function CurrentTask() {
           </TouchableOpacity>
         </View>
 
-        {/* 🔥 ROUTE */}
+        
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Route</Text>
 
