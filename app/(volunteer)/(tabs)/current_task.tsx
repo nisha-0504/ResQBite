@@ -105,11 +105,22 @@ export default function CurrentTask() {
     if (!task) return;
 
     const destination =
-      status === "accepted" ? task.restaurant : task.ngo;
+      status === "accepted"
+        ? task?.restaurantLocation
+        : task?.ngoLocation;
 
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-      destination
-    )}`;
+    if (!destination?.address) {
+      console.log("No address found");
+      return;
+    }
+
+    const address =
+      status === "accepted"
+        ? task?.restaurantLocation?.address
+        : task?.ngoLocation?.address;
+
+    const url =
+      `https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=${encodeURIComponent(address)}&travelmode=driving`;
 
     Linking.openURL(url);
   };
@@ -175,11 +186,21 @@ export default function CurrentTask() {
 
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>Pickup</Text>
-              <Text style={styles.place}>{task?.restaurant || "N/A"}</Text>
+              <Text style={styles.place}>
+                {task?.restaurant || "N/A"}
+              </Text>
 
+              <Text style={styles.label}>
+                {task?.restaurantLocation?.address || "No location"}
+              </Text>
               <Text style={[styles.label, { marginTop: 16 }]}>Drop</Text>
-              <Text style={styles.place}>{task?.ngo || "N/A"}</Text>
-            </View>
+              <Text style={styles.place}>
+                {task?.ngo || "N/A"}
+              </Text>
+
+              <Text style={styles.label}>
+                {task?.ngoLocation?.address || "No location"}
+              </Text>            </View>
           </View>
         </View>
 

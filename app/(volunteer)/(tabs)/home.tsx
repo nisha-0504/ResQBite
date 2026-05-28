@@ -23,7 +23,21 @@ interface User {
 
 interface Task {
   restaurant: string;
+
+  restaurantLocation?: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  };
+
   ngo: string;
+
+  ngoLocation?: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  };
+
   distance: number;
   quantity: number;
   time: string;
@@ -230,6 +244,14 @@ export default function Home() {
                   {task.restaurant} → {task.ngo}
                 </Text>
 
+                <Text style={{ color: "#9CA3AF", marginTop: 4 }}>
+                  📍 Donor: {task.restaurantLocation?.address || "No location"}
+                </Text>
+
+                <Text style={{ color: "#9CA3AF" }}>
+                  📍 NGO: {task.ngoLocation?.address || "No location"}
+                </Text>
+
                 <Text>
                   {(task?.distance ?? 0)} km • ₹{task?.earnings ?? 0} {task?.time || ""}
                 </Text>
@@ -270,8 +292,18 @@ export default function Home() {
             </View>
 
             <View style={uiStyles.detailContainer}>
-              <DetailRow label="Restaurant:" value={selectedTask?.restaurant} />
+              <DetailRow label="Donor:" value={selectedTask?.restaurant} />
+              <DetailRow
+                label="Donor Location:"
+                value={selectedTask?.restaurantLocation?.address}
+              />
               <DetailRow label="NGO:" value={selectedTask?.ngo} />
+
+
+              <DetailRow
+                label="NGO Location:"
+                value={selectedTask?.ngoLocation?.address}
+              />
               <DetailRow
                 label="Distance:"
                 value={`${selectedTask?.distance} km`}
