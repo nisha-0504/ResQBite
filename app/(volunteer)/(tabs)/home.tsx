@@ -144,7 +144,6 @@ export default function Home() {
       const token = await AsyncStorage.getItem("token");
       if (!storedUser) return;
 
-      const user = JSON.parse(storedUser);
 
       await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
         method: "PUT",
@@ -227,7 +226,7 @@ export default function Home() {
                 }
                 size={22}
                 color="#2ECC71"
-              />{" "}
+              />
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 {item.value}
               </Text>
@@ -282,7 +281,6 @@ export default function Home() {
         </View>
       </ScrollView>
 
-      {/* MODALS unchanged */}
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={uiStyles.modalOverlay}>

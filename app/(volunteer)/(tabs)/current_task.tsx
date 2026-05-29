@@ -168,7 +168,7 @@ export default function CurrentTask() {
           <Text style={styles.headerText}>Current Delivery</Text>
         </View>
 
-        
+
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Navigation</Text>
@@ -177,7 +177,7 @@ export default function CurrentTask() {
           </TouchableOpacity>
         </View>
 
-        
+
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Route</Text>
 
@@ -198,11 +198,10 @@ export default function CurrentTask() {
           </View>
         </View>
 
-        {/* ➕ ADDED CALL BUTTONS */}
         <View style={styles.card}>
           <TouchableOpacity
             style={{ flexDirection: "row", alignItems: "center" }}
-            onPress={() => handleCall("restaurant")} 
+            onPress={() => handleCall("restaurant")}
           >
             <Text style={{ marginRight: 10 }}>📞</Text>
             <Text>Call Restaurant</Text>
@@ -214,14 +213,14 @@ export default function CurrentTask() {
               alignItems: "center",
               marginTop: 12,
             }}
-            onPress={() => handleCall("ngo")} 
+            onPress={() => handleCall("ngo")}
           >
             <Text style={{ marginRight: 10 }}>📞</Text>
             <Text>Call NGO</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ❌ REMOVED SAFETY NOTE */}
+        
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Order Status</Text>

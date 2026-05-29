@@ -117,7 +117,7 @@ export default function History() {
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
       <ScrollView>
-        {/* HEADER */}
+        
         <View
           style={{
             backgroundColor: "#2ECC71",
@@ -129,8 +129,7 @@ export default function History() {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {" "}
-            {/* ➕ ADDED */}
+            
             <Text style={{ fontSize: 30, fontWeight: "bold", color: "#fff" }}>
               History
             </Text>
@@ -146,9 +145,7 @@ export default function History() {
           </Text>
         </View>
 
-        {/* FILTER BUTTONS (UI ONLY) */}
-
-        {/* SEARCH */}
+        
         <View style={{ padding: 20 }}>
           <View
             style={{
@@ -169,10 +166,8 @@ export default function History() {
             />
           </View>
 
-          {/* ➕ FILTERS MOVED BELOW SEARCH */}
           <View style={{ flexDirection: "row", marginTop: 15 }}>
-            {" "}
-            {/* ✅ UPDATED */}
+            
             {["all", "today", "week"].map((f) => (
               <Pressable
                 key={f}
@@ -190,7 +185,7 @@ export default function History() {
               </Pressable>
             ))}
           </View>
-          {/* ➕ SUMMARY CARDS */}
+          
           <View
             style={{
               flexDirection: "row",
@@ -250,7 +245,7 @@ export default function History() {
               <Text>This Week</Text>
             </View>
           </View>
-          {/* ➕ FILTER BUTTONS */}
+          
 
           {filteredData.length === 0 && (
             <View
@@ -289,7 +284,6 @@ export default function History() {
             </View>
           )}
 
-          {/* GROUPED LIST */}
           {[
             { title: "Today", data: grouped.today },
             { title: "Yesterday", data: grouped.yesterday },
@@ -337,9 +331,6 @@ export default function History() {
         </View>
       </ScrollView>
 
-      {/* MODAL UNCHANGED */}
-
-      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View
           style={{
@@ -356,7 +347,7 @@ export default function History() {
               backgroundColor: "#fff",
             }}
           >
-            {/* HEADER */}
+            
             <View
               style={{
                 flexDirection: "row",
@@ -373,7 +364,7 @@ export default function History() {
               </Pressable>
             </View>
 
-            {/* DETAILS */}
+            
             <View style={styles.detailContainer}>
               <View style={styles.detailRow}>
                 <Text style={[styles.key, { width: 110 }]}>Food Type:</Text>

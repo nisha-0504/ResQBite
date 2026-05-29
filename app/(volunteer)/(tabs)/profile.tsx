@@ -157,8 +157,7 @@ export default function Profile() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
-      <ScrollView>
-        {/* HEADER */}
+      <ScrollView>        
         <View
           style={{
             backgroundColor: "#2ECC71",
@@ -180,8 +179,7 @@ export default function Profile() {
               borderBottomRightRadius: 30,
               marginTop: 10,
             }}
-          >
-            {/* Profile Circle */}
+          >            
             <View
               style={{
                 width: 70,
@@ -195,9 +193,7 @@ export default function Profile() {
               <Text style={{ fontSize: 30, color: "#6B7280" }}>
                 {user?.name?.[0] || "U"}
               </Text>
-            </View>
-
-            {/* Name + small text */}
+            </View>            
             <View style={{ marginLeft: 12 }}>
               <Text
                 style={{
@@ -220,9 +216,7 @@ export default function Profile() {
               </Text>
             </View>
           </View>
-        </View>
-
-        {/* DETAILS */}
+        </View>      
         <View
           style={{
             backgroundColor: "#fff",
@@ -232,8 +226,7 @@ export default function Profile() {
             marginHorizontal: 10,
             elevation: 3,
           }}
-        >
-          {/* NAME */}
+        >         
           <View style={{ flexDirection: "row", marginBottom: 15 }}>
             <View style={iconBox}>
               <Ionicons name="person-outline" size={20} color="#2ECC71" />
@@ -242,9 +235,7 @@ export default function Profile() {
               <Text style={label}>Name</Text>
               <Text style={value}>{user?.name || "Volunteer"}</Text>{" "}
             </View>
-          </View>
-
-          {/* PHONE */}
+          </View>          
           <View style={{ flexDirection: "row", marginBottom: 15 }}>
             <View style={iconBox}>
               <Ionicons name="call-outline" size={20} color="#2ECC71" />
@@ -253,9 +244,7 @@ export default function Profile() {
               <Text style={label}>Phone</Text>
               <Text style={value}>{user?.phone || "Not added"}</Text>
             </View>
-          </View>
-
-          {/* LOCATION */}
+          </View>          
           <View style={{ flexDirection: "row", marginBottom: 15 }}>
             <View style={iconBox}>
               <Ionicons name="location-outline" size={20} color="#2ECC71" />
@@ -264,9 +253,7 @@ export default function Profile() {
               <Text style={label}>Location</Text>
               <Text style={value}>{user?.address || "Not added"}</Text>
             </View>
-          </View>
-
-          {/* VEHICLE */}
+          </View>          
           <View style={{ flexDirection: "row" }}>
             <View style={iconBox}>
               <Ionicons name="bicycle-outline" size={20} color="#2ECC71" />
@@ -276,9 +263,7 @@ export default function Profile() {
               <Text style={value}>{user?.vehicle || "Not added"}</Text>
             </View>
           </View>
-        </View>
-
-        {/* SMALL STATS */}
+        </View>       
         <View
           style={{
             flexDirection: "row",
@@ -291,12 +276,10 @@ export default function Profile() {
             <Text style={smallValue}>⭐ {user?.rating || 0}</Text>
             <Text style={smallLabel}>Rating</Text>
           </View>
-
           <View style={smallCard}>
             <Text style={smallValue}>📅 {user?.joined || "-"}</Text>
             <Text style={smallLabel}>Joined</Text>
           </View>
-
           <View style={smallCard}>
             <Text style={[smallValue, { color: "#2ECC71" }]}>
               {user?.verified ? "Verified" : "Pending"}
@@ -304,8 +287,6 @@ export default function Profile() {
             <Text style={smallLabel}>Status</Text>
           </View>
         </View>
-
-        {/* IMPACT */}
         <Text
           style={{
             fontSize: 18,
@@ -316,7 +297,6 @@ export default function Profile() {
         >
           Your Impact ⭐
         </Text>
-
         <View
           style={{
             flexDirection: "row",
@@ -358,8 +338,6 @@ export default function Profile() {
             </View>
           ))}
         </View>
-
-        {/* ACTIONS */}
         <Text
           style={{
             fontSize: 18,
@@ -370,8 +348,6 @@ export default function Profile() {
         >
           Actions
         </Text>
-
-        {/* EDIT PROFILE */}
         <Pressable
           onPress={() => setModalVisible(true)}
           style={{
@@ -388,8 +364,6 @@ export default function Profile() {
           <Ionicons name="create-outline" size={20} color="#2ECC71" />
           <Text style={{ marginLeft: 10, fontSize: 16 }}>Edit Profile</Text>
         </Pressable>
-
-        {/* LOGOUT */}
         <Pressable
           onPress={() => setLogoutVisible(true)}
           style={{
@@ -410,7 +384,6 @@ export default function Profile() {
         </Pressable>
       </ScrollView>
 
-      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View
           style={{
@@ -519,7 +492,7 @@ export default function Profile() {
               backgroundColor: "#fff",
             }}
           >
-            {/* TITLE */}
+            
             <Text
               style={{
                 fontSize: 18,
@@ -530,12 +503,12 @@ export default function Profile() {
               Confirm Logout
             </Text>
 
-            {/* MESSAGE */}
+            
             <Text style={{ color: "#6B7280" }}>
               Are you sure you want to logout?
             </Text>
 
-            {/* BUTTONS */}
+            
             <View
               style={{
                 flexDirection: "row",
@@ -543,7 +516,7 @@ export default function Profile() {
                 marginTop: 20,
               }}
             >
-              {/* CANCEL */}
+             
               <Pressable
                 onPress={() => setLogoutVisible(false)}
                 style={{
@@ -558,7 +531,7 @@ export default function Profile() {
                 <Text>Cancel</Text>
               </Pressable>
 
-              {/* LOGOUT */}
+              
               <Pressable
                 onPress={() => {
                   setLogoutVisible(false);

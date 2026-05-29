@@ -38,7 +38,7 @@ console.log("ROLE API RESPONSE:", res.data);
       <Text style={styles.title}>Choose Your Role</Text>
       <Text style={styles.subtitle}>How would you like to contribute?</Text>
 
-      {/* Donor */}
+      
       <TouchableOpacity
         style={styles.card}
         onPress={() => handleRoleSelect("donor")}
@@ -57,7 +57,7 @@ console.log("ROLE API RESPONSE:", res.data);
         <Text style={styles.arrow}>→</Text>
       </TouchableOpacity>
 
-      {/* NGO */}
+      
       <TouchableOpacity
         style={styles.card}
         onPress={() => handleRoleSelect("ngo")}
@@ -76,7 +76,7 @@ console.log("ROLE API RESPONSE:", res.data);
         <Text style={styles.arrow}>→</Text>
       </TouchableOpacity>
 
-      {/* Volunteer */}
+      
       <TouchableOpacity
         style={styles.card}
         onPress={() => handleRoleSelect("volunteer")}
