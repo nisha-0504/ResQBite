@@ -12,10 +12,6 @@ import {
   StyleSheet,
 } from "react-native";
 
-interface DetailRowProps {
-  label: string;
-  value: string | number | undefined | null;
-}
 
 interface User {
   name: string;
@@ -52,6 +48,10 @@ interface Task {
 
   status?: string;
   notes?: string;
+}
+interface DetailRowProps {
+  label: string;
+  value: string | number | undefined | null;
 }
 
 export default function Home() {
@@ -99,7 +99,7 @@ export default function Home() {
           });
 
           const tasksData = await resTasks.json();
-          
+
           setTasks(tasksData || []);
 
           const resHistory = await fetch(`${BASE_URL}/api/volunteer/history`, {
@@ -144,7 +144,6 @@ export default function Home() {
       const token = await AsyncStorage.getItem("token");
       if (!storedUser) return;
 
-      const user = JSON.parse(storedUser);
 
       await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
         method: "PUT",
@@ -175,7 +174,7 @@ export default function Home() {
           >
             <View>
               <Text style={{ fontSize: 30, fontWeight: "bold", color: "#fff" }}>
-                Welcome, {user?.name || "Volunteer"} 👋
+                Welcome, {user?.name ? String(user.name) : "Volunteer"} 👋
               </Text>
               <Text style={{ color: "#E8F5E9", marginTop: 8 }}>
                 Ready to Help Today?
@@ -227,7 +226,7 @@ export default function Home() {
                 }
                 size={22}
                 color="#2ECC71"
-              />{" "}
+              />
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                 {item.value}
               </Text>
@@ -282,7 +281,6 @@ export default function Home() {
         </View>
       </ScrollView>
 
-      {/* MODALS unchanged */}
 
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={uiStyles.modalOverlay}>

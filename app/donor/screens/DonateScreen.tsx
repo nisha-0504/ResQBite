@@ -170,13 +170,13 @@ export default function DonateScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView style={styles.container}>
-        {/* Header */}
+        
         <View style={styles.header}>
           <Text style={styles.headerText}> Add Food Donation</Text>
         </View>
 
         <View style={styles.form}>
-          {/* Food Name */}
+         
           <Text style={styles.label}>Food Name</Text>
           <TextInput
             placeholder="e.g., Veg Biryani, Fresh Fruits"
@@ -185,7 +185,7 @@ export default function DonateScreen() {
             onChangeText={setFoodName}
           />
 
-          {/* Quantity */}
+          
           <Text style={styles.label}>Quantity</Text>
           <TextInput
             placeholder="e.g., 40 packets, 25 kg"
@@ -195,7 +195,7 @@ export default function DonateScreen() {
             onChangeText={setQuantity}
           />
 
-          {/* Pickup Time */}
+          
           <Text style={styles.label}>Pickup Time</Text>
           <TouchableOpacity
             style={styles.input}
@@ -221,7 +221,7 @@ export default function DonateScreen() {
             />
           )}
 
-          {/* Expiry Time */}
+          
           <Text style={styles.label}>Expiry Time</Text>
           <TouchableOpacity
             style={styles.input}
@@ -252,7 +252,7 @@ export default function DonateScreen() {
             />
           )}
 
-          {/* Location */}
+          
           <Text style={styles.label}>Location</Text>
           <TextInput
             placeholder="Enter pickup location"
@@ -261,9 +261,9 @@ export default function DonateScreen() {
             onChangeText={setLocation}
           />
 
-          {/* Upload Box */}
+          
           <View style={styles.uploadBox}>
-            {/* SHOW IMAGES */}
+            
             <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
               {images.map((img, index) => (
                 <View key={index} style={styles.imageContainer}>

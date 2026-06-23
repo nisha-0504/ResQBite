@@ -28,17 +28,19 @@ exports.getCurrentTask =
         msg: "Server error",
       });
     }
-};
+  };
 
 // 📌 AVAILABLE TASKS (MULTIPLE)
 exports.getAvailableTasks =
   async (req, res) => {
+    
 
     try {
 
       const donations =
         await Donation.find({
           status: "accepted",
+          volunteerId: null
         }).sort({
           updatedAt: -1,
         });
@@ -53,7 +55,7 @@ exports.getAvailableTasks =
         msg: "Server error",
       });
     }
-};
+  };
 
 // 📌 HISTORY
 exports.getHistory =
@@ -79,7 +81,7 @@ exports.getHistory =
         msg: "Server error",
       });
     }
-};  
+  };
 
 // 📌 ACCEPT + PICKUP
 exports.pickupTask =
@@ -137,7 +139,7 @@ exports.pickupTask =
         msg: "Server error",
       });
     }
-};
+  };
 
 // 📌 COMPLETE
 exports.completeTask =
@@ -146,19 +148,23 @@ exports.completeTask =
     try {
 
       const donation =
-        await Donation.findById(
-          req.params.id
-        );
+        await Donation.findOne({
+
+          _id: req.params.id,
+
+          volunteerId: req.user.id
+
+        });
 
       if (!donation) {
 
         return res.status(404).json({
-          msg: "Not found",
+          msg: "Not found"
         });
+
       }
 
-      donation.status =
-        "completed";
+      donation.status = "completed";
 
       donation.completedAt =
         new Date();
@@ -172,10 +178,12 @@ exports.completeTask =
       console.error(err);
 
       res.status(500).json({
-        msg: "Server error",
+        msg: "Server error"
       });
+
     }
-};
+
+  };
 
 // 📌 CANCEL
 exports.cancelTask =
@@ -210,4 +218,4 @@ exports.cancelTask =
         msg: "Server error",
       });
     }
-};
+  };

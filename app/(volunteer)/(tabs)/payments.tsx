@@ -151,12 +151,9 @@ export default function PaymentsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
       <View style={styles.header}>
-        {/* Title + ₹ */}
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.headerText}>Payments</Text>
-
           <Text
             style={{
               color: "white",
@@ -169,12 +166,12 @@ export default function PaymentsScreen() {
           </Text>
         </View>
 
-        {/* Subtitle */}
+        
         <Text style={{ color: "#E8F5E9", marginTop: 8 }}>
           Track your earnings and payouts
         </Text>
       </View>
-      {/* SEARCH */}
+      
       <View style={{ padding: 20 }}>
         <View
           style={{
@@ -186,7 +183,7 @@ export default function PaymentsScreen() {
             elevation: 3,
           }}
         >
-          <Ionicons name="search" size={25} color="#6B7280" /> {/* ➕ ADDED */}
+          <Ionicons name="search" size={25} color="#6B7280" /> 
           <TextInput
             placeholder="Search (e.g. Apr, 01/05, NGO)"
             value={search}
@@ -194,11 +191,7 @@ export default function PaymentsScreen() {
             style={{ marginLeft: 10, flex: 1 }}
           />
         </View>
-
-        {/* ➕ FILTER BUTTONS */}
         <View style={{ flexDirection: "row", marginTop: 15 }}>
-          {" "}
-          {/* ➕ ADDED */}
           {["all", "week", "month"].map((f) => (
             <TouchableOpacity
               key={f}
@@ -220,8 +213,6 @@ export default function PaymentsScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* SUMMARY CARDS */}
         <View
           style={{
             flexDirection: "row",
@@ -230,8 +221,7 @@ export default function PaymentsScreen() {
             marginBottom: 10,
           }}
         >
-          {" "}
-          {/* ✅ UPDATED */}
+          
           <View
             style={{
               backgroundColor: "#fff",
@@ -368,11 +358,7 @@ export default function PaymentsScreen() {
         <Modal visible={!!selectedWeek} transparent animationType="fade">
           <View style={styles.overlay}>
             <View style={[styles.popup, { marginTop: 40 }]}>
-              {" "}
-              {/* ✅ UPDATED */}
               <View style={styles.popupHeader}>
-                {" "}
-                {/* ✅ UPDATED */}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.popupTitle}>{selectedWeek?.week}</Text>
                 </View>
@@ -380,7 +366,7 @@ export default function PaymentsScreen() {
                   <Text style={styles.close}>✕</Text>
                 </TouchableOpacity>
               </View>
-              {/* ➕ ADDED BELOW HEADER */}
+              
               <Text style={{ fontSize: 16, marginTop: 10, marginBottom: 10 }}>
                 Total earned:{" "}
                 <Text style={{ fontWeight: "bold" }}>
@@ -393,14 +379,11 @@ export default function PaymentsScreen() {
                 renderItem={({ item }: any) => (
                   <View style={styles.orderCard}>
                     <Text style={styles.route}>{item.route}</Text>
-
                     <View style={styles.row}>
                       <Text>{item.distance}</Text>
                       <Text style={styles.fee}>₹{item.fee}</Text>
                     </View>
-
                     <Text style={styles.date}>{item.date}</Text>
-
                     <Text
                       style={{
                         color: item.paid ? "#2ECC71" : "red",
