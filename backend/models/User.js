@@ -9,18 +9,18 @@ const userSchema = new mongoose.Schema({
   gender: String,
   vehicleType: { type: String, default: null },
   phone: {
-  type: String,
-  default: "Not Added",
-},
- role: {
     type: String,
-    enum:["donor", "ngo", "volunteer"],
-    default: null,
+    default: "Not Added",
   },
-address: {
+ role: {
   type: String,
-  default: "Not Added",
+  enum: ["donor", "ngo", "volunteer"],
+  required: false,
 },
+  address: {
+    type: String,
+    default: "Not Added",
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);
