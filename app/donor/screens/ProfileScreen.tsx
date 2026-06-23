@@ -69,7 +69,7 @@ setLocation(res.data.location || "");
   return (
     <ScrollView style={styles.container}>
 
-      {/* HEADER */}
+      
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
@@ -80,29 +80,29 @@ setLocation(res.data.location || "");
           </View>
         </View>
 
-        {/* ✅ Dynamic name */}
+    
         <Text style={styles.name}>
           {user?.name || "Loading..."}
         </Text>
 
-        {/* ✅ Dynamic role */}
+       
         <Text style={styles.role}>
           {user?.role || "User"}
         </Text>
       </View>
 
-      {/* CONTACT INFO */}
+    
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Contact Information</Text>
 
-        {/* ✅ Dynamic email */}
+       
         <InfoRow
           icon="mail"
           title="Email"
           value={user?.email || "Loading..."}
         />
 
-        {/* (Keep these static if not in backend yet) */}
+        
         <InfoRow
   icon="call"
   title="Phone"
@@ -115,7 +115,7 @@ setLocation(res.data.location || "");
 />
       </View>
 
-      {/* IMPACT (unchanged) */}
+   
       <View style={styles.impactCard}>
         <Text style={styles.impactTitle}>Your Impact</Text>
 
@@ -126,7 +126,7 @@ setLocation(res.data.location || "");
         </View>
       </View>
 
-      {/* BADGES (unchanged) */}
+     
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Badges</Text>
 
@@ -139,7 +139,7 @@ setLocation(res.data.location || "");
         </View>
       </View>
 
-{/* EDIT PROFILE */}
+
         <TouchableOpacity
   style={styles.editBtn}
   onPress={() => setShowEditModal(true)}
@@ -155,7 +155,7 @@ setLocation(res.data.location || "");
   </Text>
 </TouchableOpacity>
 
-      {/* LOGOUT */}
+    
       <TouchableOpacity style={styles.logout} onPress={handleLogout}>
         <MaterialIcons name="logout" size={18} color="red" />
         <Text style={styles.logoutText}> Logout</Text>
@@ -172,7 +172,7 @@ setLocation(res.data.location || "");
         Edit Profile
       </Text>
 
-      {/* NAME */}
+     
       <Text style={styles.inputLabel}>
         Name
       </Text>
@@ -184,7 +184,7 @@ setLocation(res.data.location || "");
         placeholder="Enter name"
       />
 
-      {/* EMAIL */}
+    
       <Text style={styles.inputLabel}>
         Email
       </Text>
@@ -196,7 +196,7 @@ setLocation(res.data.location || "");
         placeholder="Enter email"
       />
 
-      {/* PHONE */}
+  
       <Text style={styles.inputLabel}>
         Phone
       </Text>
@@ -208,7 +208,7 @@ setLocation(res.data.location || "");
         placeholder="Enter phone"
       />
 
-      {/* ADDRESS */}
+
       <Text style={styles.inputLabel}>
         Address
       </Text>
@@ -220,7 +220,7 @@ setLocation(res.data.location || "");
         placeholder="Enter address"
       />
 
-      {/* BUTTONS */}
+     
       <View style={styles.modalBtns}>
 
         <TouchableOpacity
@@ -271,7 +271,7 @@ setLocation(res.data.location || "");
   );
 }
 
-/* 🔹 Components */
+
 
 function InfoRow({ icon, title, value }: any) {
   return (
@@ -305,7 +305,6 @@ function Badge({ emoji }: any) {
   );
 }
 
-/* 🎨 Styles — EXACT SAME */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

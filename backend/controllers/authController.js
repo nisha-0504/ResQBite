@@ -90,6 +90,8 @@ exports.updateProfile = async (req, res) => {
 
     user.address =
       req.body.address || user.address;
+    
+    user.vehicleType = req.body.vehicleType || user.vehicleType;
 
     const updatedUser = await user.save();
 

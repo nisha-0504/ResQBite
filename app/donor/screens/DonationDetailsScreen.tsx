@@ -78,7 +78,7 @@ const [donation, setDonation] = useState<Donation | null>(null);
   return (
   <View style={styles.container}>
 
-    {/* Header */}
+    
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Donation Details</Text>
       <Text style={styles.headerSubtitle}>
@@ -86,7 +86,7 @@ const [donation, setDonation] = useState<Donation | null>(null);
       </Text>
     </View>
 
-    {/* Card */}
+    
     <View style={styles.card}>
       <Text style={styles.title}>{donation.title}</Text>
 
@@ -138,7 +138,7 @@ const [donation, setDonation] = useState<Donation | null>(null);
       </View>
     </View>
 
-    {/* Delete Button */}
+   
     {donation.status === "pending" && (
       <TouchableOpacity
         style={styles.deleteBtn}

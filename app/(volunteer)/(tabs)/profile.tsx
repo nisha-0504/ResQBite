@@ -81,6 +81,7 @@ export default function Profile() {
           });
 
           const profileData = await profileRes.json();
+          console.log("PROFILE DATA:", profileData);
           const res = await fetch(`${BASE_URL}/api/volunteer/history`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -138,12 +139,12 @@ export default function Profile() {
           address: user?.address,
           gender: user?.gender,
           age: user?.age,
-          vehicleType: user?.vehicle,
+          vehicleType: user?.vehicleType,
         }),
       });
 
       const data = await res.json();
-
+      console.log("UPDATE RESPONSE:", data);
       setUser(data.user);
 
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
@@ -260,7 +261,7 @@ export default function Profile() {
             </View>
             <View>
               <Text style={label}>Vehicle</Text>
-              <Text style={value}>{user?.vehicle || "Not added"}</Text>
+              <Text style={value}>{user?.vehicleType || "Not added"}</Text>
             </View>
           </View>
         </View>       
@@ -416,7 +417,7 @@ export default function Profile() {
                   { key: "name", label: "Name" },
                   { key: "birthday", label: "Birthday (e.g. DD-MM-YYYY)" },
                   { key: "phone", label: "Phone" },
-                  { key: "vehicle", label: "Vehicle (e.g. Bike, Car)" },
+                  { key: "vehicleType", label: "Vehicle (e.g. Bike, Car)" },
                   { key: "vehicleNumber", label: "Vehicle Number" },
                   { key: "email", label: "Email" },
                   { key: "age", label: "Age" },

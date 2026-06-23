@@ -278,7 +278,6 @@ export default function DonateScreen() {
                 </View>
               ))}
 
-              {/* ADD BUTTON */}
               {images.length < 4 && (
                 <TouchableOpacity style={styles.addBox} onPress={pickImage}>
                   <Text style={{ fontSize: 20 }}>+</Text>
@@ -286,7 +285,7 @@ export default function DonateScreen() {
               )}
             </View>
 
-            {/* CAMERA + GALLERY */}
+            
             <View style={{ flexDirection: "row", marginTop: 10 }}>
               <TouchableOpacity onPress={pickImage}>
                 <Text style={styles.optionText}>Gallery</Text>
@@ -298,7 +297,6 @@ export default function DonateScreen() {
             </View>
           </View>
 
-          {/* Submit Button */}
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
             <Text style={{ color: "white", fontWeight: "bold" }}>
               {loading ? "Submitting..." : "Submit Donation"}

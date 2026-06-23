@@ -71,7 +71,7 @@ export default function DonorDashboard() {
     />
   }
   >
-      {/* Header */}
+     
       <View style={styles.header}>
         <Text style={styles.title}>Hello, {user?.name || "User"}</Text>
         <Text style={styles.subtitle}>Save Food • Feed People</Text>
@@ -86,14 +86,14 @@ export default function DonorDashboard() {
         </TouchableOpacity>
       </View>
 
-      {/* Stats (still static for now) */}
+     
       <View style={styles.statsContainer}>
         <StatCard value="0" label="Meals Donated" />
         <StatCard value="0 kg" label="Food Saved" />
         <StatCard value="0" label="People Helped" />
       </View>
 
-      {/* Active Donations */}
+    
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Active Donations</Text>
         {donations.length === 0 ? (
@@ -130,7 +130,7 @@ export default function DonorDashboard() {
   );
 }
 
-/* 🔹 Status Color Helper */
+
 const getStatusColor = (status: any) => {
   switch (status) {
     case "pending":
@@ -148,7 +148,7 @@ const getStatusColor = (status: any) => {
   }
 };
 
-/* 🔹 Stat Card */
+
 function StatCard({ value, label }: any) {
   return (
     <View style={styles.card}>
@@ -158,7 +158,7 @@ function StatCard({ value, label }: any) {
   );
 }
 
-/* 🔹 Donation Card */
+
 function DonationCard({ id, title, qty, time, status, statusColor }: any) {
   const router = useRouter();
 
