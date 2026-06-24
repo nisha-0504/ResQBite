@@ -63,9 +63,17 @@ export default function ActiveScreen() {
 
             <Text style={styles.activeText}>🍱 {item.quantity} meals</Text>
 
-            <Text style={styles.status}>Status: Accepted</Text>
+            <Text style={styles.status}>Status: {item.status}</Text>
 
-            <TouchableOpacity style={styles.trackBtn}>
+            <TouchableOpacity
+              style={styles.trackBtn}
+              onPress={() =>
+                router.push({
+                  pathname: "/ngo/tracking",
+                  params: { id: item._id },
+                })
+              }
+            >
               <Ionicons name="location-outline" size={16} color="#fff" />
 
               <Text style={styles.btnText}>Track Pickup</Text>
@@ -85,10 +93,12 @@ const styles = StyleSheet.create({
 
   header: {
     backgroundColor: "#2fb463",
-    padding: 20,
-    paddingTop: 60, 
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    minHeight: 140,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -113,11 +123,11 @@ const styles = StyleSheet.create({
 
   activeCard: {
     backgroundColor: "#ff7a3c",
-    margin: 20,
+    margin: 10,
     marginTop: 10, 
-    padding: 18,
-    borderRadius: 18,
-    elevation: 4,
+    padding: 16,
+    borderRadius: 20,
+    elevation: 3,
   },
 
   activeTitle: {

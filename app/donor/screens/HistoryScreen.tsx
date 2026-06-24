@@ -35,12 +35,12 @@ export default function HistoryScreen() {
   return (
     <ScrollView style={styles.container}>
 
-      
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Donation History</Text>
       </View>
 
-      
+      {/* List */}
       <View style={styles.list}>
         {data.map((item) => (
           <HistoryCard key={item._id} item={item} />
@@ -51,6 +51,7 @@ export default function HistoryScreen() {
   );
 }
 
+/* 🔥 Card */
 function HistoryCard({ item }: any) {
 
   const getStatusUI = () => {
@@ -87,12 +88,12 @@ function HistoryCard({ item }: any) {
   return (
     <View style={styles.card}>
 
-      
+      {/* Icon */}
       <View style={[styles.iconBox, { backgroundColor: status.bg }]}>
         <Ionicons name={status.icon} size={20} color={status.color} />
       </View>
 
-      
+      {/* Content */}
       <View style={styles.content}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.qty}>{item.quantity}</Text>
@@ -101,7 +102,7 @@ function HistoryCard({ item }: any) {
         </Text>
       </View>
 
-     
+      {/* Status Badge */}
       <View style={[styles.badge, { backgroundColor: status.bg }]}>
         <Text style={{ color: status.color, fontSize: 12 }}>
           {item.status}

@@ -5,9 +5,9 @@ exports.getDonations = async (req, res) => {
   try {
     const donations = await Donation.find({ status: "pending" });
     console.log(
-  "AVAILABLE DONATIONS:",
-  donations
-);
+      "AVAILABLE DONATIONS:",
+      donations
+    );
     res.json(donations);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -25,23 +25,30 @@ exports.acceptDonation = async (req, res) => {
       return res.status(404).json({ message: "Not found" });
     }
 
+    const User = require("../models/User");
+    const ngoUser = await User.findById(req.user.id);
+
+    
+
     donation.status = "accepted";
-    // save NGO ID
+
     donation.ngoId = req.user.id;
+
+    donation.ngo = ngoUser ? ngoUser.name : "NGO";
     await donation.save();
 
     res.json({ message: "Donation accepted", donation });
   } catch (err) {
 
-  console.log(
-    "ACCEPT ERROR:",
-    err
-  );
+    console.log(
+      "ACCEPT ERROR:",
+      err
+    );
 
-  res.status(500).json({
-    error: err.message
-  });
-}
+    res.status(500).json({
+      error: err.message
+    });
+  }
 };
 // 3. Get accepted donations for NGO
 exports.getActiveDonations = async (
@@ -53,7 +60,7 @@ exports.getActiveDonations = async (
     const donations =
       await Donation.find({
         ngoId: req.user.id,
-        status: "accepted",
+        status: { $in: ["accepted", "assigned", "picked"] },
       }).sort({
         createdAt: -1,
       });
@@ -89,5 +96,18 @@ exports.getHistory = async (
     res.status(500).json({
       error: err.message,
     });
+  }
+};
+
+// 5. Get donation by ID (populated for NGO tracking)
+exports.getDonationById = async (req, res) => {
+  try {
+    const donation = await Donation.findById(req.params.id).populate("ngoId");
+    if (!donation) {
+      return res.status(404).json({ message: "Not found" });
+    }
+    res.json(donation);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

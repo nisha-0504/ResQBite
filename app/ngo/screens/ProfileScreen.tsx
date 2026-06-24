@@ -23,6 +23,7 @@ export default function ProfileScreen() {
   const [phone, setPhone] = useState("Not Added");
 
   const [address, setAddress] = useState("Not Added");
+  const [history, setHistory] = useState<any[]>([]);
 
   const fetchProfile = async () => {
     try {
@@ -35,6 +36,9 @@ export default function ProfileScreen() {
       setPhone(res.data.phone || "Not Added");
 
       setAddress(res.data.address || "Not Added");
+      const historyRes = await API.get("/ngo/history");
+
+      setHistory(historyRes.data);
     } catch (err) {
       console.log(err);
     }
@@ -52,6 +56,14 @@ export default function ProfileScreen() {
       console.log("Logout error:", e);
     }
   };
+  const mealsRescued = history.reduce(
+    (sum, item) => sum + (Number(item.quantity) || 0),
+    0
+  );
+
+  const peopleFed = Math.floor(mealsRescued / 2);
+
+  const foodSaved = mealsRescued;
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -117,17 +129,23 @@ export default function ProfileScreen() {
 
         <View style={styles.impactRow}>
           <View style={styles.impactBox}>
-            <Text style={styles.impactNumber}>0</Text>
+            <Text style={styles.impactNumber}>
+              {mealsRescued}
+            </Text>
             <Text style={styles.impactLabel}>Meals</Text>
           </View>
 
           <View style={styles.impactBox}>
-            <Text style={styles.impactNumber}>0 kg</Text>
+            <Text style={styles.impactNumber}>
+              {foodSaved} kg
+            </Text>
             <Text style={styles.impactLabel}>Food Saved</Text>
           </View>
 
           <View style={styles.impactBox}>
-            <Text style={styles.impactNumber}>0</Text>
+            <Text style={styles.impactNumber}>
+              {peopleFed}
+            </Text>
             <Text style={styles.impactLabel}>People</Text>
           </View>
         </View>
@@ -167,7 +185,7 @@ export default function ProfileScreen() {
       {/* Logout */}
       <TouchableOpacity
         style={styles.logoutBtn}
-        onPress={() => router.replace("/role")} 
+        onPress={handleLogout}
       >
         <MaterialIcons name="logout" size={18} color="red" />
         <Text style={styles.logoutText}> Logout</Text>
@@ -311,9 +329,9 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: "#fff",
-    margin: 20,
+    margin: 10,
     padding: 15,
-    borderRadius: 15,
+    borderRadius: 20,
     elevation: 3,
   },
 
@@ -348,9 +366,10 @@ const styles = StyleSheet.create({
 
   impactCard: {
     backgroundColor: "#2fb463",
-    marginHorizontal: 20,
-    borderRadius: 15,
+    marginHorizontal: 10,
+    borderRadius: 20,
     padding: 15,
+    elevation: 3,
   },
 
   impactTitle: {
@@ -437,7 +456,7 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)", 
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },

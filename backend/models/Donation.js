@@ -43,6 +43,8 @@ const donationSchema = new mongoose.Schema(
     images: [String],
     earnings: Number,
     paid: { type: Boolean, default: false },
+    volunteerLatitude: Number,
+    volunteerLongitude: Number,
   },
   { timestamps: true }
 );

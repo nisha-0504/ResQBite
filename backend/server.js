@@ -13,8 +13,7 @@ const ngoRoutes = require("./routes/ngoRoutes");
 // Initialize app
 const app = express();
 
-// Connect DB
-connectDB();
+
 
 // Middleware
 app.use(cors());
@@ -33,6 +32,8 @@ app.get("/", (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
+// Connect DB
+connectDB();
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);

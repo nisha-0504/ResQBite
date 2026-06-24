@@ -150,6 +150,19 @@ router.put(
       user.address =
         req.body.address || user.address;
 
+      if (req.body.age !== undefined) {
+        user.age = req.body.age;
+      }
+      if (req.body.gender !== undefined) {
+        user.gender = req.body.gender;
+      }
+      if (req.body.vehicleType !== undefined) {
+        user.vehicleType = req.body.vehicleType;
+      }
+      if (req.body.dob !== undefined) {
+        user.dob = req.body.dob;
+      }
+
       const updatedUser =
         await user.save();
 

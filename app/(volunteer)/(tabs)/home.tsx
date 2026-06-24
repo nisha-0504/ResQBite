@@ -11,6 +11,7 @@ import {
   View,
   StyleSheet,
 } from "react-native";
+import * as Location from "expo-location";
 
 
 interface User {
@@ -144,6 +145,18 @@ export default function Home() {
       const token = await AsyncStorage.getItem("token");
       if (!storedUser) return;
 
+      let lat = undefined;
+      let lng = undefined;
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({});
+          lat = loc.coords.latitude;
+          lng = loc.coords.longitude;
+        }
+      } catch (e) {
+        console.log("Error getting location on accept:", e);
+      }
 
       await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
         method: "PUT",
@@ -151,6 +164,10 @@ export default function Home() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          volunteerLatitude: lat,
+          volunteerLongitude: lng,
+        }),
       });
 
       setModalVisible(false);
@@ -296,10 +313,22 @@ export default function Home() {
 
             <View style={uiStyles.detailContainer}>
               <DetailRow label="Food Type:" value={selectedTask?.foodType} />
-              <DetailRow label="Location:" value={selectedTask?.location} />
               <DetailRow
-                label="Distance:"
-                value={`${selectedTask?.distance} km`}
+                label="Donor:"
+                value={selectedTask?.restaurant}
+              />
+
+              <DetailRow
+                label="NGO:"
+                value={selectedTask?.ngo}
+              />
+              <DetailRow
+                label="Donor Address:"
+                value={selectedTask?.location}
+              />
+              <DetailRow
+                label="Donor -> NGO:"
+                value={`${selectedTask?.distance ?? 0} km`}
               />
               <DetailRow label="Quantity:" value={selectedTask?.quantity} />
               <DetailRow

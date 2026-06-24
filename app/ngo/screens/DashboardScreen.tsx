@@ -104,7 +104,12 @@ export default function DashboardScreen() {
 
           <TouchableOpacity
             style={styles.mapPlaceholder}
-            onPress={() => router.push("/ngo/tracking")}
+            onPress={() =>
+              router.push({
+                pathname: "/ngo/tracking",
+                params: { id: activeDonation._id },
+              })
+            }
           >
             <Text style={styles.trackText}>Track</Text>
           </TouchableOpacity>
@@ -116,10 +121,10 @@ export default function DashboardScreen() {
 
       {/* Food Cards */}
       {foodData.map((item) => {
-        const isClaimed = claimedItems.includes(item.id);
+        const isClaimed = claimedItems.includes(item._id);
 
         return (
-          <View key={item.id} style={styles.card}>
+          <View key={item._id} style={styles.card}>
             <Image
               source={{
                 uri: item.images?.[0] || "https://via.placeholder.com/300",
@@ -184,10 +189,12 @@ const styles = StyleSheet.create({
 
   header: {
     backgroundColor: "#2fb463",
-    padding: 20,
     paddingTop: 50,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    minHeight: 140,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -212,9 +219,10 @@ const styles = StyleSheet.create({
 
   activeCard: {
     backgroundColor: "#ff7a3c",
-    margin: 20,
-    padding: 15,
-    borderRadius: 15,
+    margin: 10,
+    padding: 16,
+    borderRadius: 20,
+    elevation: 3,
   },
 
   activeTitle: {
@@ -260,9 +268,9 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: "#fff",
-    marginHorizontal: 20,
+    marginHorizontal: 10,
     marginBottom: 15,
-    borderRadius: 15,
+    borderRadius: 20,
     overflow: "hidden",
     elevation: 3,
   },

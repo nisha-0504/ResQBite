@@ -81,7 +81,10 @@ export default function Profile() {
           });
 
           const profileData = await profileRes.json();
-          console.log("PROFILE DATA:", profileData);
+          profileData.birthday = profileData.dob;
+          profileData.vehicle = profileData.vehicleType;
+          setUser(profileData);
+          
           const res = await fetch(`${BASE_URL}/api/volunteer/history`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -92,7 +95,6 @@ export default function Profile() {
           const deliveries = data.length;
           const storedUser = await AsyncStorage.getItem("user");
 
-          setUser(profileData);
           const meals = data.reduce(
             (sum: number, item: any) => sum + (item.quantity || 0),
             0,
@@ -139,15 +141,22 @@ export default function Profile() {
           address: user?.address,
           gender: user?.gender,
           age: user?.age,
-          vehicleType: user?.vehicleType,
+          vehicleType: user?.vehicle,
+          dob: user?.birthday,
         }),
       });
 
       const data = await res.json();
-      console.log("UPDATE RESPONSE:", data);
-      setUser(data.user);
+      
+      const updatedUser = {
+        ...data.user,
+        birthday: data.user.dob,
+        vehicle: data.user.vehicleType,
+      };
 
-      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      setUser(updatedUser);
+
+      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
 
       setModalVisible(false);
     } catch (err) {
@@ -261,7 +270,7 @@ export default function Profile() {
             </View>
             <View>
               <Text style={label}>Vehicle</Text>
-              <Text style={value}>{user?.vehicleType || "Not added"}</Text>
+              <Text style={value}>{user?.vehicle || "Not added"}</Text>
             </View>
           </View>
         </View>       
@@ -417,7 +426,7 @@ export default function Profile() {
                   { key: "name", label: "Name" },
                   { key: "birthday", label: "Birthday (e.g. DD-MM-YYYY)" },
                   { key: "phone", label: "Phone" },
-                  { key: "vehicleType", label: "Vehicle (e.g. Bike, Car)" },
+                  { key: "vehicle", label: "Vehicle (e.g. Bike, Car)" },
                   { key: "vehicleNumber", label: "Vehicle Number" },
                   { key: "email", label: "Email" },
                   { key: "age", label: "Age" },

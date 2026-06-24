@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as Location from "expo-location";
 
 export default function CurrentTask() {
   const [status, setStatus] = useState("accepted");
@@ -20,6 +21,19 @@ export default function CurrentTask() {
 
   useFocusEffect(
     useCallback(() => {
+      const getVolunteerLocation = async () => {
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status === "granted") {
+            const loc = await Location.getCurrentPositionAsync({});
+            return loc.coords;
+          }
+        } catch (err) {
+          console.log("Error getting volunteer GPS location:", err);
+        }
+        return null;
+      };
+
       const loadTask = async () => {
         try {
           const storedUser = await AsyncStorage.getItem("user");
@@ -49,6 +63,9 @@ export default function CurrentTask() {
           } else if (data?.status === "assigned") {
             setStatus("accepted");
           }
+
+          // Warm up GPS location
+          getVolunteerLocation();
         } catch (err) {
           console.log(err);
         }
@@ -57,11 +74,19 @@ export default function CurrentTask() {
       loadTask();
     }, []),
   );
-  useEffect(() => {
-    if (!showDeliveredPopup) {
-      setTask(null);
+
+  const getVolunteerLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        const loc = await Location.getCurrentPositionAsync({});
+        return loc.coords;
+      }
+    } catch (err) {
+      console.log("Error getting volunteer GPS location:", err);
     }
-  }, [showDeliveredPopup]);
+    return null;
+  };
 
   const cancelTask = async () => {
     if (!task) return;
@@ -87,12 +112,17 @@ export default function CurrentTask() {
     const token = await AsyncStorage.getItem("token");
     if (status === "accepted") {
       try {
+        const coords = await getVolunteerLocation();
         await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
           method: "PUT",
-
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({
+            volunteerLatitude: coords?.latitude,
+            volunteerLongitude: coords?.longitude,
+          }),
         });
 
         setStatus("picked_up");
@@ -101,12 +131,17 @@ export default function CurrentTask() {
       }
     } else if (status === "picked_up") {
       try {
+        const coords = await getVolunteerLocation();
         await fetch(`${BASE_URL}/api/volunteer/complete/${task._id}`, {
           method: "PUT",
-
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({
+            volunteerLatitude: coords?.latitude,
+            volunteerLongitude: coords?.longitude,
+          }),
         });
 
         setShowDeliveredPopup(true);
@@ -292,6 +327,7 @@ export default function CurrentTask() {
               style={[styles.button, { width: "50%", paddingVertical: 14 }]}
               onPress={() => {
                 setShowDeliveredPopup(false);
+                setTask(null);
               }}
             >
               <Text style={[styles.buttonText, { fontSize: 18 }]}>Close</Text>

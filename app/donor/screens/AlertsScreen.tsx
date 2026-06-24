@@ -123,7 +123,7 @@ export default function AlertsScreen() {
   );
 }
 
-
+/* 🔥 Alert Card */
 function AlertCard({ item, onPress, onDelete }: any) {
   const getIcon = () => {
     switch (item.type) {
@@ -169,7 +169,7 @@ function AlertCard({ item, onPress, onDelete }: any) {
     </TouchableOpacity>
   );
 }
-
+/* 🎨 Styles */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

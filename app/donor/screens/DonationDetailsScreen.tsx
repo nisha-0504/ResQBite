@@ -78,7 +78,7 @@ const [donation, setDonation] = useState<Donation | null>(null);
   return (
   <View style={styles.container}>
 
-    
+    {/* Header */}
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Donation Details</Text>
       <Text style={styles.headerSubtitle}>
@@ -86,7 +86,7 @@ const [donation, setDonation] = useState<Donation | null>(null);
       </Text>
     </View>
 
-    
+    {/* Card */}
     <View style={styles.card}>
       <Text style={styles.title}>{donation.title}</Text>
 
@@ -138,7 +138,7 @@ const [donation, setDonation] = useState<Donation | null>(null);
       </View>
     </View>
 
-   
+    {/* Delete Button */}
     {donation.status === "pending" && (
       <TouchableOpacity
         style={styles.deleteBtn}
@@ -146,6 +146,23 @@ const [donation, setDonation] = useState<Donation | null>(null);
       >
         <Text style={styles.deleteText}>
           Delete Donation
+        </Text>
+      </TouchableOpacity>
+    )}
+
+    {/* Track Button */}
+    {donation.status !== "pending" && donation.status !== "rejected" && (
+      <TouchableOpacity
+        style={styles.trackBtn}
+        onPress={() =>
+          router.push({
+            pathname: "/donor/tracking",
+            params: { id: donation._id },
+          })
+        }
+      >
+        <Text style={styles.trackText}>
+          Track Delivery 📍
         </Text>
       </TouchableOpacity>
     )}
@@ -235,6 +252,21 @@ const styles = StyleSheet.create({
   },
 
   deleteText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
+  },
+
+  trackBtn: {
+    marginHorizontal: 18,
+    marginTop: 10,
+    backgroundColor: "#2ECC71",
+    padding: 15,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+
+  trackText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 15,

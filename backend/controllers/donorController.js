@@ -5,8 +5,19 @@ const Donation = require("../models/Donation");
 // ✅ Create Donation
 exports.createDonation = async (req, res) => {
   try {
+
+
+    const User = require("../models/User");
+
+    const donor = await User.findById(req.user.id);
+
     const donation = await Donation.create({
       donorId: req.user.id,
+
+      restaurant: donor?.name || "Restaurant",
+
+      title: req.body.foodType,
+
       description: req.body.description,
       foodType: req.body.foodType,
       quantity: req.body.quantity,
@@ -14,6 +25,9 @@ exports.createDonation = async (req, res) => {
       images: req.body.images,
       pickupTime: req.body.pickupTime,
       expiryTime: req.body.expiryTime,
+
+      distance: 0,
+      earnings: 0,
     });
 
     res.status(201).json(donation);

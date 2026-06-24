@@ -28,21 +28,29 @@ export default function DonorDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [donations, setDonations] = useState<any[]>([]);
+  const mealsDonated = donations.reduce(
+    (sum, item) => sum + (Number(item.quantity) || 0),
+    0
+  );
+
+  const peopleHelped = Math.floor(mealsDonated / 2);
+
+  const foodSaved = mealsDonated;
   useEffect(() => {
     const fetchUser = async () => {
-  try {
-    const res = await API.get("/auth/profile");
+      try {
+        const res = await API.get("/auth/profile");
 
-    console.log("PROFILE DATA:", res.data);
+        console.log("PROFILE DATA:", res.data);
 
-    setUser(res.data);
-  } catch (err: unknown) {
-    console.log("❌ USER FETCH DETAILS:", getErrorMessage(err));
-  }
-};
+        setUser(res.data);
+      } catch (err: unknown) {
+        console.log("❌ USER FETCH DETAILS:", getErrorMessage(err));
+      }
+    };
     fetchUser();
   }, []);
-  
+
   const fetchDonations = async () => {
     try {
       const res = await API.get("/donor/donations");
@@ -52,26 +60,26 @@ export default function DonorDashboard() {
     }
   };
   const onRefresh = async () => {
-  setRefreshing(true);
-  await fetchDonations();
-  setRefreshing(false);
-};
+    setRefreshing(true);
+    await fetchDonations();
+    setRefreshing(false);
+  };
   useEffect(() => {
     fetchDonations();
   }, []);
 
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.container}
       refreshControl={
-    <RefreshControl
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      colors={["#2ECC71"]}
-    />
-  }
-  >
-     
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#2ECC71"]}
+        />
+      }
+    >
+
       <View style={styles.header}>
         <Text style={styles.title}>Hello, {user?.name || "User"}</Text>
         <Text style={styles.subtitle}>Save Food • Feed People</Text>
@@ -86,28 +94,30 @@ export default function DonorDashboard() {
         </TouchableOpacity>
       </View>
 
-     
+
       <View style={styles.statsContainer}>
-        <StatCard value="0" label="Meals Donated" />
-        <StatCard value="0 kg" label="Food Saved" />
-        <StatCard value="0" label="People Helped" />
+        <StatCard value={String(mealsDonated)} label="Meals Donated" />
+
+        <StatCard value={`${foodSaved} kg`} label="Food Saved" />
+
+        <StatCard value={String(peopleHelped)} label="People Helped" />
       </View>
 
-    
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Active Donations</Text>
         {donations.length === 0 ? (
           <View style={styles.emptyContainer}>
-  <Text style={{ fontSize: 50 }}>🍱</Text>
+            <Text style={{ fontSize: 50 }}>🍱</Text>
 
-  <Text style={styles.emptyTitle}>
-    No Donations Yet
-  </Text>
+            <Text style={styles.emptyTitle}>
+              No Donations Yet
+            </Text>
 
-  <Text style={styles.emptyText}>
-    Start donating food to help people.
-  </Text>
-</View>
+            <Text style={styles.emptyText}>
+              Start donating food to help people.
+            </Text>
+          </View>
         ) : (
           donations.map((item) => (
             <DonationCard
@@ -124,13 +134,13 @@ export default function DonorDashboard() {
               statusColor={getStatusColor(item.status)}
             />
           ))
-        )}{" "}
+        )}
       </View>
     </ScrollView>
   );
 }
 
-
+/* 🔹 Status Color Helper */
 const getStatusColor = (status: any) => {
   switch (status) {
     case "pending":
@@ -148,7 +158,7 @@ const getStatusColor = (status: any) => {
   }
 };
 
-
+/* 🔹 Stat Card */
 function StatCard({ value, label }: any) {
   return (
     <View style={styles.card}>
@@ -158,7 +168,7 @@ function StatCard({ value, label }: any) {
   );
 }
 
-
+/* 🔹 Donation Card */
 function DonationCard({ id, title, qty, time, status, statusColor }: any) {
   const router = useRouter();
 
@@ -197,10 +207,12 @@ const styles = StyleSheet.create({
 
   header: {
     backgroundColor: "#2ECC71",
-    padding: 20,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    minHeight: 140,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    marginTop: 20,
   },
 
   title: {
@@ -230,10 +242,12 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: "white",
-    padding: 15,
-    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    borderRadius: 16,
     alignItems: "center",
-    width: 100,
+    width: 108,
+    elevation: 5,
   },
 
   cardValue: {
@@ -259,9 +273,10 @@ const styles = StyleSheet.create({
 
   donationCard: {
     backgroundColor: "white",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 12,
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 15,
+    elevation: 3,
   },
 
   row: {
@@ -308,18 +323,18 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   emptyContainer: {
-  alignItems: "center",
-  marginTop: 30,
-},
+    alignItems: "center",
+    marginTop: 30,
+  },
 
-emptyTitle: {
-  fontWeight: "bold",
-  fontSize: 18,
-  marginTop: 10,
-},
+  emptyTitle: {
+    fontWeight: "bold",
+    fontSize: 18,
+    marginTop: 10,
+  },
 
-emptyText: {
-  color: "#6B7280",
-  marginTop: 5,
-},
+  emptyText: {
+    color: "#6B7280",
+    marginTop: 5,
+  },
 });

@@ -17,7 +17,7 @@ exports.getCurrentTask =
             ],
           },
         });
-
+      console.log(donation);
       res.json(donation || null);
 
     } catch (err) {
@@ -33,7 +33,7 @@ exports.getCurrentTask =
 // 📌 AVAILABLE TASKS (MULTIPLE)
 exports.getAvailableTasks =
   async (req, res) => {
-    
+
 
     try {
 
@@ -127,6 +127,13 @@ exports.pickupTask =
           new Date();
       }
 
+      if (req.body.volunteerLatitude !== undefined) {
+        donation.volunteerLatitude = req.body.volunteerLatitude;
+      }
+      if (req.body.volunteerLongitude !== undefined) {
+        donation.volunteerLongitude = req.body.volunteerLongitude;
+      }
+
       await donation.save();
 
       res.json(donation);
@@ -168,6 +175,13 @@ exports.completeTask =
 
       donation.completedAt =
         new Date();
+
+      if (req.body.volunteerLatitude !== undefined) {
+        donation.volunteerLatitude = req.body.volunteerLatitude;
+      }
+      if (req.body.volunteerLongitude !== undefined) {
+        donation.volunteerLongitude = req.body.volunteerLongitude;
+      }
 
       await donation.save();
 

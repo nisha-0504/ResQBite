@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,20 @@ export default function DonateScreen() {
   const [location, setLocation] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const router = useRouter();
+  
+  useEffect(() => {
+    const fetchProfileAddress = async () => {
+      try {
+        const res = await API.get("/auth/profile");
+        if (res.data && res.data.address && res.data.address !== "Not Added") {
+          setLocation(res.data.address);
+        }
+      } catch (err) {
+        console.log("Error fetching profile address for donation:", err);
+      }
+    };
+    fetchProfileAddress();
+  }, []);
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
   const [expiryDate, setExpiryDate] = useState(new Date());
@@ -278,6 +292,7 @@ export default function DonateScreen() {
                 </View>
               ))}
 
+              {/* ADD BUTTON */}
               {images.length < 4 && (
                 <TouchableOpacity style={styles.addBox} onPress={pickImage}>
                   <Text style={{ fontSize: 20 }}>+</Text>
@@ -285,7 +300,7 @@ export default function DonateScreen() {
               )}
             </View>
 
-            
+            {/* CAMERA + GALLERY */}
             <View style={{ flexDirection: "row", marginTop: 10 }}>
               <TouchableOpacity onPress={pickImage}>
                 <Text style={styles.optionText}>Gallery</Text>
@@ -297,6 +312,7 @@ export default function DonateScreen() {
             </View>
           </View>
 
+          {/* Submit Button */}
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
             <Text style={{ color: "white", fontWeight: "bold" }}>
               {loading ? "Submitting..." : "Submit Donation"}

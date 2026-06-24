@@ -40,7 +40,7 @@ export default function Login() {
 
     try {
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/login`,
+        `${BASE_URL}/api/auth/login`,
         {
           method: "POST",
           headers: {

@@ -8,9 +8,11 @@ const {
   acceptDonation,
   getActiveDonations,
   getHistory,
+  getDonationById,
 } = require("../controllers/ngoController");
 
 router.get("/donations", getDonations);
+router.get("/donations/:id", authMiddleware, getDonationById);
 
 router.put(
   "/accept/:id",

@@ -117,7 +117,7 @@ export default function History() {
   return (
     <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
       <ScrollView>
-        
+
         <View
           style={{
             backgroundColor: "#2ECC71",
@@ -129,7 +129,7 @@ export default function History() {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            
+
             <Text style={{ fontSize: 30, fontWeight: "bold", color: "#fff" }}>
               History
             </Text>
@@ -145,7 +145,7 @@ export default function History() {
           </Text>
         </View>
 
-        
+
         <View style={{ padding: 20 }}>
           <View
             style={{
@@ -167,7 +167,7 @@ export default function History() {
           </View>
 
           <View style={{ flexDirection: "row", marginTop: 15 }}>
-            
+
             {["all", "today", "week"].map((f) => (
               <Pressable
                 key={f}
@@ -185,7 +185,7 @@ export default function History() {
               </Pressable>
             ))}
           </View>
-          
+
           <View
             style={{
               flexDirection: "row",
@@ -245,7 +245,7 @@ export default function History() {
               <Text>This Week</Text>
             </View>
           </View>
-          
+
 
           {filteredData.length === 0 && (
             <View
@@ -313,6 +313,13 @@ export default function History() {
                     <Text style={{ fontWeight: "bold" }}>
                       {item?.foodType || "Food Donation"}
                     </Text>
+                    <Text style={{ color: "#6B7280" }}>
+                      👤 {item?.restaurant || "Donor"}
+                    </Text>
+
+                    <Text style={{ color: "#6B7280" }}>
+                      🏢 {item?.ngo || "NGO"}
+                    </Text>
 
                     <Text style={{ color: "#6B7280", marginTop: 5 }}>
                       🍱 {item?.quantity || 0} meals • ₹{item?.earnings || 0}
@@ -347,7 +354,7 @@ export default function History() {
               backgroundColor: "#fff",
             }}
           >
-            
+
             <View
               style={{
                 flexDirection: "row",
@@ -364,7 +371,7 @@ export default function History() {
               </Pressable>
             </View>
 
-            
+
             <View style={styles.detailContainer}>
               <View style={styles.detailRow}>
                 <Text style={[styles.key, { width: 110 }]}>Food Type:</Text>
@@ -372,8 +379,23 @@ export default function History() {
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={[styles.key, { width: 110 }]}>Location:</Text>
-                <Text style={styles.value}>{selectedTask?.location}</Text>
+                <Text style={[styles.key, { width: 110 }]}>
+                  Donor:
+                </Text>
+
+                <Text style={styles.value}>
+                  {selectedTask?.restaurant || "-"}
+                </Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>
+                  NGO:
+                </Text>
+
+                <Text style={styles.value}>
+                  {selectedTask?.ngo || "-"}
+                </Text>
               </View>
 
               <View style={styles.detailRow}>
