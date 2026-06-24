@@ -33,6 +33,8 @@ interface Task {
 
   ngo?: string;
 
+  ngoAddress?: string;
+
   distance?: number;
 
   images?: string[];
@@ -116,10 +118,19 @@ export default function Home() {
             (sum: number, item: any) => sum + (item.quantity || 0),
             0,
           );
-          const earnings = history.reduce(
-            (sum: number, item: any) => sum + (item.earnings || 0),
-            0,
-          );
+          const today = new Date().toDateString();
+
+          const earnings = history
+            .filter(
+              (item: any) =>
+                item.completedAt &&
+                new Date(item.completedAt).toDateString() === today
+            )
+            .reduce(
+              (sum: number, item: any) =>
+                sum + (item.earnings || 0),
+              0
+            );
 
           setStats({ deliveries, meals, earnings });
         } catch (error) {
@@ -330,10 +341,21 @@ export default function Home() {
                 label="Donor -> NGO:"
                 value={`${selectedTask?.distance ?? 0} km`}
               />
+              <DetailRow
+                label="NGO Address:"
+                value={selectedTask?.ngoAddress}
+              />
               <DetailRow label="Quantity:" value={selectedTask?.quantity} />
               <DetailRow
                 label="Pickup Time:"
-                value={selectedTask?.pickupTime}
+                value={
+                  selectedTask?.pickupTime
+                    ? `${new Date(selectedTask.pickupTime).toLocaleDateString()}  ${new Date(selectedTask.pickupTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}`
+                    : "-"
+                }
               />
               <DetailRow
                 label="Earnings:"
@@ -341,7 +363,14 @@ export default function Home() {
               />
               <DetailRow
                 label="Pickup Deadline:"
-                value={selectedTask?.pickupTime}
+                value={
+                  selectedTask?.expiryTime
+                    ? `${new Date(selectedTask.expiryTime).toLocaleDateString()}  ${new Date(selectedTask.expiryTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}`
+                    : "-"
+                }
               />
               {selectedTask?.notes && (
                 <DetailRow label="Notes:" value={selectedTask?.notes} />

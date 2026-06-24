@@ -17,6 +17,7 @@ const donationSchema = new mongoose.Schema(
     // --- Pickup / delivery info ---
     restaurant: String,
     ngo: String,
+    ngoAddress: String,
     distance: Number,
 
     // --- Status ---

@@ -18,7 +18,8 @@ export default function CurrentTask() {
   const [task, setTask] = useState<any>(null);
   const [showDeliveredPopup, setShowDeliveredPopup] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [coords, setCoords] = useState<any>(null);
   useFocusEffect(
     useCallback(() => {
       const getVolunteerLocation = async () => {
@@ -26,6 +27,7 @@ export default function CurrentTask() {
           const { status } = await Location.requestForegroundPermissionsAsync();
           if (status === "granted") {
             const loc = await Location.getCurrentPositionAsync({});
+            setCoords(loc.coords);
             return loc.coords;
           }
         } catch (err) {
@@ -65,7 +67,7 @@ export default function CurrentTask() {
           }
 
           // Warm up GPS location
-          getVolunteerLocation();
+          await getVolunteerLocation();
         } catch (err) {
           console.log(err);
         }
@@ -112,7 +114,8 @@ export default function CurrentTask() {
     const token = await AsyncStorage.getItem("token");
     if (status === "accepted") {
       try {
-        const coords = await getVolunteerLocation();
+        const currentCoords =
+          coords || (await getVolunteerLocation());
         await fetch(`${BASE_URL}/api/volunteer/pickup/${task._id}`, {
           method: "PUT",
           headers: {
@@ -120,8 +123,8 @@ export default function CurrentTask() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            volunteerLatitude: coords?.latitude,
-            volunteerLongitude: coords?.longitude,
+            volunteerLatitude: currentCoords?.latitude,
+            volunteerLongitude: currentCoords?.longitude,
           }),
         });
 
@@ -131,7 +134,8 @@ export default function CurrentTask() {
       }
     } else if (status === "picked_up") {
       try {
-        const coords = await getVolunteerLocation();
+        const currentCoords =
+          coords || (await getVolunteerLocation());
         await fetch(`${BASE_URL}/api/volunteer/complete/${task._id}`, {
           method: "PUT",
           headers: {
@@ -139,8 +143,8 @@ export default function CurrentTask() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            volunteerLatitude: coords?.latitude,
-            volunteerLongitude: coords?.longitude,
+            volunteerLatitude: currentCoords?.latitude,
+            volunteerLongitude: currentCoords?.longitude,
           }),
         });
 
@@ -255,7 +259,7 @@ export default function CurrentTask() {
           </TouchableOpacity>
         </View>
 
-        
+
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Order Status</Text>

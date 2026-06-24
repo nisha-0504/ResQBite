@@ -17,7 +17,7 @@ export default function History() {
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [historyData, setHistoryData] = useState<any[]>([]);
-  const [filter, setFilter] = useState("all");
+
 
   useFocusEffect(
     useCallback(() => {
@@ -166,26 +166,6 @@ export default function History() {
             />
           </View>
 
-          <View style={{ flexDirection: "row", marginTop: 15 }}>
-
-            {["all", "today", "week"].map((f) => (
-              <Pressable
-                key={f}
-                onPress={() => setFilter(f)}
-                style={{
-                  marginRight: 10,
-                  padding: 8,
-                  backgroundColor: filter === f ? "#2ECC71" : "#ddd",
-                  borderRadius: 8,
-                }}
-              >
-                <Text style={{ color: filter === f ? "#fff" : "#000" }}>
-                  {f === "all" ? "All" : f === "today" ? "Today" : "This Week"}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
           <View
             style={{
               flexDirection: "row",
@@ -322,8 +302,9 @@ export default function History() {
                     </Text>
 
                     <Text style={{ color: "#6B7280", marginTop: 5 }}>
-                      🍱 {item?.quantity || 0} meals • ₹{item?.earnings || 0}
-                    </Text>
+                      🍱 {item?.quantity || 0} meals •
+                      📍 {item?.distance || 0} km •
+                      ₹{item?.earnings || 0}                    </Text>
 
                     <Text style={{ fontSize: 12, color: "gray", marginTop: 5 }}>
                       {item?.completedAt
@@ -406,6 +387,24 @@ export default function History() {
               <View style={styles.detailRow}>
                 <Text style={[styles.key, { width: 110 }]}>Earnings:</Text>
                 <Text style={styles.value}>₹{selectedTask?.earnings || 0}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Distance:</Text>
+                <Text style={styles.value}>
+                  {selectedTask?.distance || 0} km
+                </Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.key, { width: 110 }]}>Payment:</Text>
+                <Text
+                  style={{
+                    color: selectedTask?.paid ? "#2ECC71" : "#F59E0B",
+                    fontWeight: "600",
+                  }}
+                >
+                  {selectedTask?.paid ? "Paid" : "Pending"}
+                </Text>
               </View>
 
               <View style={styles.detailRow}>

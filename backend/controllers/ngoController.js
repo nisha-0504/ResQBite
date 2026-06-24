@@ -1,4 +1,5 @@
 const Donation = require("../models/Donation");
+const { getDistance } = require("geolib");
 
 // 1. Get all available food
 exports.getDonations = async (req, res) => {
@@ -28,13 +29,26 @@ exports.acceptDonation = async (req, res) => {
     const User = require("../models/User");
     const ngoUser = await User.findById(req.user.id);
 
-    
+
 
     donation.status = "accepted";
 
     donation.ngoId = req.user.id;
 
-    donation.ngo = ngoUser ? ngoUser.name : "NGO";
+    donation.ngo =
+      ngoUser?.name || "NGO";
+
+    donation.ngoAddress =
+      ngoUser?.address || "";
+    const distance =
+      Math.floor(Math.random() * 8) + 2;
+
+    const earnings =
+      20 + distance * 5;
+
+    donation.distance = distance;
+    donation.earnings = earnings;
+
     await donation.save();
 
     res.json({ message: "Donation accepted", donation });

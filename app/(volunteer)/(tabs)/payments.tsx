@@ -104,7 +104,7 @@ export default function PaymentsScreen() {
             );
 
             const allPaid = week.orders.every((o: any) => o.paid);
-            week.status = allPaid ? "Paid" : "Unpaid";
+            week.status = allPaid ? "Paid" : "Pending";
 
             week.count = week.orders.length;
           });
@@ -191,28 +191,7 @@ export default function PaymentsScreen() {
             style={{ marginLeft: 10, flex: 1 }}
           />
         </View>
-        <View style={{ flexDirection: "row", marginTop: 15 }}>
-          {["all", "week", "month"].map((f) => (
-            <TouchableOpacity
-              key={f}
-              onPress={() => setFilter(f)}
-              style={{
-                marginRight: 10,
-                padding: 8,
-                backgroundColor: filter === f ? "#2ECC71" : "#ddd",
-                borderRadius: 8,
-              }}
-            >
-              <Text style={{ color: filter === f ? "#fff" : "#000" }}>
-                {f === "all"
-                  ? "All"
-                  : f === "week"
-                    ? "This Week"
-                    : "This Month"}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        
         <View
           style={{
             flexDirection: "row",
@@ -391,7 +370,7 @@ export default function PaymentsScreen() {
                         marginTop: 5,
                       }}
                     >
-                      {item.paid ? "Paid" : "Unpaid"}
+                      {item.paid ? "Paid" : "Pending"}
                     </Text>
                   </View>
                 )}
