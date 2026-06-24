@@ -4,7 +4,7 @@ import { LogBox } from "react-native";
 
 LogBox.ignoreAllLogs(false);
 console.error = (...args) => {
-  console.log("🔥 FULL ERROR:", ...args);
+  console.log("FULL ERROR:", ...args);
 };
 export default function TabLayout() {
   return (

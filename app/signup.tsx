@@ -33,7 +33,6 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [customVehicle, setCustomVehicle] = useState("");
 
   const handleSignup = async () => {
@@ -43,10 +42,6 @@ export default function Signup() {
     }
     if (!email.endsWith("@gmail.com")) {
       setError("Only Gmail addresses are allowed");
-      return;
-    }
-    if (!acceptedTerms) {
-      setError("Please accept Terms & Conditions");
       return;
     }
     if (password !== confirmPassword) {
@@ -334,18 +329,6 @@ export default function Signup() {
             }}
           />
         )}
-
-        <View style={styles.termsContainer}>
-          <TouchableOpacity onPress={() => setAcceptedTerms(!acceptedTerms)}>
-            <Ionicons
-              name={acceptedTerms ? "checkbox" : "square-outline"}
-              size={24}
-              color="#F58634"
-            />
-          </TouchableOpacity>
-
-          <Text style={styles.termsText}>I agree to Terms & Conditions</Text>
-        </View>
 
         {/* Signup Button */}
         <TouchableOpacity
